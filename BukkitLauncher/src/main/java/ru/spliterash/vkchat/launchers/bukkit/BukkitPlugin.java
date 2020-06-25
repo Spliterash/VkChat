@@ -5,7 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import ru.spliterash.vkchat.VkChat;
-import ru.spliterash.vkchat.launchers.Launcher;
+import ru.spliterash.vkchat.obj.Launcher;
 import ru.spliterash.vkchat.obj.AbstractConfig;
 import ru.spliterash.vkchat.obj.AbstractPlayer;
 
@@ -14,8 +14,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class BukkitPlugin extends JavaPlugin implements Launcher {
-    @Getter
-    private AbstractConfig vkConfig;
 
     @Override
     public void onEnable() {
@@ -24,6 +22,8 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
         vkConfig = new BukkitConfig(this);
     }
 
+    @Getter
+    private AbstractConfig vkConfig;
     @Override
     public void onDisable() {
         VkChat.onDisable();

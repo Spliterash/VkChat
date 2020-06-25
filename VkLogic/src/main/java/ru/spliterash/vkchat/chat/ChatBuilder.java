@@ -1,0 +1,59 @@
+package ru.spliterash.vkchat.chat;
+
+import lombok.experimental.UtilityClass;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.TextComponent;
+
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * Класс для динамической замены плейсхолдеров на кликабельные компоненты
+ */
+@UtilityClass
+public class ChatBuilder {
+    private final Pattern pattern = Pattern.compile("\\{(.*?)}");
+
+    /**
+     * Метод для простого создания кликабельных сообщений
+     *
+     * @param text    Исходный текст с плейсхолдерами
+     * @param bindMap Мапа, где ключ это плейсхолдер, а значение то что будет вместо него
+     */
+    public BaseComponent[] compile(String text, Map<String, BaseComponent[]> bindMap) {
+        ComponentBuilder builder = new ComponentBuilder("");
+        Matcher m = pattern.matcher(text);
+        m.reset();
+        int oldEnd = 0;
+        int endIndex = -1;
+        // Пока есть плейсхолдеры
+        while (m.find()) {
+            //Текст до плейсхолдера
+            String pre = text.substring(oldEnd, m.start());
+            //Сразу же его добавляем
+            builder.append(TextComponent.fromLegacyText(pre), ComponentBuilder.FormatRetention.NONE);
+            //Плейсхолдер
+            String placeholder = m.group();
+            BaseComponent[] components = bindMap.get(placeholder);
+            //Если есть то добавляем
+            if (components != null)
+                builder.append(components, ComponentBuilder.FormatRetention.NONE);
+            //Иначе добавляем его как текст
+            else
+                builder.append(TextComponent.fromLegacyText(placeholder), ComponentBuilder.FormatRetention.NONE);
+            endIndex = m.end();
+            oldEnd = m.end();
+        }
+        //Если ни разу не сработало, то просто возращаем текст
+        if (endIndex == -1) {
+            builder.append(TextComponent.fromLegacyText(text));
+        }
+        //Иначе просто добавляем недостающее(если есть)
+        else if (endIndex < text.length()) {
+            builder.append(TextComponent.fromLegacyText(text.substring(endIndex)));
+        }
+        return builder.create();
+    }
+}

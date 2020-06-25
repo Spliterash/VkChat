@@ -15,7 +15,7 @@
             <groupId>com.vk.api</groupId>
             <artifactId>sdk</artifactId>
             <version>1.0.6</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.md-5</groupId>

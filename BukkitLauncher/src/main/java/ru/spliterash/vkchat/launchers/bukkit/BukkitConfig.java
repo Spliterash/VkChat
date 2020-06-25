@@ -1,6 +1,5 @@
 package ru.spliterash.vkchat.launchers.bukkit;
 
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.configuration.file.FileConfiguration;
 import ru.spliterash.vkchat.obj.AbstractConfig;
 

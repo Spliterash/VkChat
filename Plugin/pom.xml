@@ -19,7 +19,13 @@
         </dependency>
         <dependency>
             <groupId>ru.spliterash</groupId>
-            <artifactId>BukkitModule</artifactId>
+            <artifactId>FxLauncher</artifactId>
+            <version>${revision}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>ru.spliterash</groupId>
+            <artifactId>BukkitLauncher</artifactId>
             <version>${revision}</version>
             <scope>compile</scope>
         </dependency>

@@ -1,7 +1,4 @@
-package ru.spliterash.vkchat.launchers;
-
-import ru.spliterash.vkchat.obj.AbstractConfig;
-import ru.spliterash.vkchat.obj.AbstractPlayer;
+package ru.spliterash.vkchat.obj;
 
 import java.io.File;
 import java.util.Collection;

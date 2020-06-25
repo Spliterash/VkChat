@@ -9,8 +9,9 @@
     <version>${revision}</version>
     <modules>
         <module>Plugin</module>
-        <module>BukkitModule</module>
+        <module>BukkitLauncher</module>
         <module>VkLogic</module>
+        <module>FxLauncher</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -18,8 +19,10 @@
 
     <properties>
         <revision>2.0</revision>
-        <mainClass>ru.spliterash.vkchat.launchers.console.ConsoleLauncher</mainClass>
+        <mainClass>ru.spliterash.vkchat.launchers.ConsoleLauncher</mainClass>
         <java.version>1.8</java.version>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -40,6 +43,11 @@
             <dependency>
                 <groupId>ru.spliterash</groupId>
                 <artifactId>VkLogic</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>ru.spliterash</groupId>
+                <artifactId>FxLauncher</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

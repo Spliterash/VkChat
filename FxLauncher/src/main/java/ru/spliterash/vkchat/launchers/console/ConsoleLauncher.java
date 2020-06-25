@@ -1,14 +1,13 @@
 package ru.spliterash.vkchat.launchers.console;
 
 import ru.spliterash.vkchat.VkChat;
-import ru.spliterash.vkchat.launchers.Launcher;
+import ru.spliterash.vkchat.obj.Launcher;
 import ru.spliterash.vkchat.obj.AbstractConfig;
 import ru.spliterash.vkchat.obj.AbstractPlayer;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.security.CodeSource;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Logger;

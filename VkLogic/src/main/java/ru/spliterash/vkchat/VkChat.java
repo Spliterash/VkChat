@@ -6,8 +6,9 @@ import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.messages.Message;
+import com.vk.api.sdk.objects.messages.MessageAction;
 import lombok.Getter;
-import ru.spliterash.vkchat.launchers.Launcher;
+import ru.spliterash.vkchat.obj.Launcher;
 import ru.spliterash.vkchat.vk.CallbackApiLongPoll;
 import ru.spliterash.vkchat.vk.VkUtils;
 
@@ -74,8 +75,16 @@ public class VkChat {
         }
     }
 
+    //TODO доработать
     private void processMessage(Message message) {
-
+        MessageAction action = message.getAction();
+        if (action != null) {
+            switch (action.getType()) {
+                case CHAT_INVITE_USER_BY_LINK:
+                    break;
+            }
+            return;
+        }
     }
 
     public static void onEnable(Launcher launcher) {

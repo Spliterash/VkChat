@@ -35,6 +35,19 @@ public class BukkitPlayer extends AbstractPlayer {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BukkitPlayer that = (BukkitPlayer) o;
+        return Objects.equals(player, that.player);
+    }
+
+    @Override
+    public int hashCode() {
+        return player.hashCode();
+    }
+
+    @Override
     public void sendJsonMessage(BaseComponent... json) {
         player.spigot().sendMessage(json);
     }

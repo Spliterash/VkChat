@@ -33,4 +33,8 @@ public class VkUtils {
         } else
             throw new RuntimeException("Token is not group token\n" + result.toString());
     }
+
+    public void sendToMinecraft(){
+
+    }
 }
