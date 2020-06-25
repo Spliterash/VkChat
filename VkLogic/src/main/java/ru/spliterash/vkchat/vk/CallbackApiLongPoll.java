@@ -1,31 +1,38 @@
 package ru.spliterash.vkchat.vk;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.vk.api.sdk.callback.CallbackApi;
+import com.google.gson.reflect.TypeToken;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.exceptions.LongPollServerKeyExpiredException;
 import com.vk.api.sdk.objects.callback.longpoll.responses.GetLongPollEventsResponse;
+import com.vk.api.sdk.objects.callback.messages.CallbackMessage;
 import com.vk.api.sdk.objects.groups.LongPollServer;
+import com.vk.api.sdk.objects.messages.Message;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.spliterash.vkchat.VkChat;
 
-public abstract class CallbackApiLongPoll extends CallbackApi {
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
+public abstract class CallbackApiLongPoll {
 
     private static final Logger LOG = LogManager.getLogger(com.vk.api.sdk.callback.longpoll.CallbackApiLongPoll.class);
 
     private int lastTimeStamp;
     private LongPollServer longPollServer;
-
+    private static final Type messageNew = new TypeToken<CallbackMessage<Message>>() {
+    }.getType();
     private final VkApiClient client;
     private final GroupActor groupActor;
     private final Integer waitTime;
+    private final static Gson gson = new Gson();
 
-
-    public CallbackApiLongPoll(VkApiClient client, GroupActor actor,int wait) throws ClientException, ApiException {
+    public CallbackApiLongPoll(VkApiClient client, GroupActor actor, int wait) throws ClientException, ApiException {
         this.client = client;
         this.groupActor = actor;
         longPollServer = getLongPollServer();
@@ -45,9 +52,17 @@ public abstract class CallbackApiLongPoll extends CallbackApi {
                             lastTimeStamp)
                     .waitTime(waitTime)
                     .execute();
-            for (JsonObject jsonObject : eventsResponse.getUpdates()) {
-                parse(jsonObject);
+            List<Message> messages = new ArrayList<>(eventsResponse.getUpdates().size());
+            for (JsonObject json : eventsResponse.getUpdates()) {
+                String type = json.get("type").getAsString();
+                if (type.equals("message_new")) {
+                    CallbackMessage<Message> message = gson.fromJson(json, messageNew);
+                    Message msg = message.getObject();
+                    messages.add(msg);
+                }
             }
+            if (messages.size() > 0)
+                processMessages(messages);
             lastTimeStamp = eventsResponse.getTs();
         } catch (LongPollServerKeyExpiredException e) {
             longPollServer = getLongPollServer();
@@ -55,6 +70,8 @@ public abstract class CallbackApiLongPoll extends CallbackApi {
             ex.printStackTrace();
         }
     }
+
+    protected abstract void processMessages(List<Message> messages);
 
     private LongPollServer getLongPollServer() throws ClientException, ApiException {
         return client.groupsLongPoll().getLongPollServer(groupActor, groupActor.getGroupId()).execute();
