@@ -25,12 +25,12 @@ public abstract class CallbackApiLongPoll extends CallbackApi {
     private final Integer waitTime;
 
 
-    public CallbackApiLongPoll(VkApiClient client, GroupActor actor) throws ClientException, ApiException {
+    public CallbackApiLongPoll(VkApiClient client, GroupActor actor,int wait) throws ClientException, ApiException {
         this.client = client;
         this.groupActor = actor;
         longPollServer = getLongPollServer();
         lastTimeStamp = Integer.parseInt(longPollServer.getTs());
-        waitTime = VkChat.getInstance().getLauncher().getVkConfig().getWait();
+        waitTime = wait;
     }
 
 

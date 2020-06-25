@@ -1,12 +1,13 @@
 package ru.spliterash.vkchat.launchers.bukkit;
 
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.configuration.file.FileConfiguration;
-import ru.spliterash.vkchat.obj.VkChatConfig;
+import ru.spliterash.vkchat.obj.AbstractConfig;
 
 import java.io.File;
 import java.io.IOException;
 
-public class BukkitConfig extends VkChatConfig {
+public class BukkitConfig extends AbstractConfig {
     private final BukkitPlugin plugin;
     private final FileConfiguration conf;
 
@@ -16,23 +17,13 @@ public class BukkitConfig extends VkChatConfig {
     }
 
     @Override
-    public String getToken() {
-        return conf.getString("token");
+    public String get(String key) {
+        return conf.getString(key);
     }
 
     @Override
-    public int getWait() {
-        return conf.getInt("wait", 5000);
-    }
-
-    @Override
-    public Integer getPeer() {
-        return conf.getInt("peer");
-    }
-
-    @Override
-    public void setPeer(int peer) {
-        conf.set("peer", peer);
+    public void set(String key, String value) {
+        conf.set(key, value);
     }
 
     @Override

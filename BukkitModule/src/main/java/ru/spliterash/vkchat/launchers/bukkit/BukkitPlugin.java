@@ -2,14 +2,20 @@ package ru.spliterash.vkchat.launchers.bukkit;
 
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.launchers.Launcher;
-import ru.spliterash.vkchat.obj.VkChatConfig;
+import ru.spliterash.vkchat.obj.AbstractConfig;
+import ru.spliterash.vkchat.obj.AbstractPlayer;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public class BukkitPlugin extends JavaPlugin implements Launcher {
     @Getter
-    private VkChatConfig vkConfig;
+    private AbstractConfig vkConfig;
 
     @Override
     public void onEnable() {
@@ -31,6 +37,15 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
     @Override
     public void unload() {
         Bukkit.getPluginManager().disablePlugin(this);
+    }
+
+    @Override
+    public Collection<? extends AbstractPlayer> getOnlinePlayers() {
+        Set<BukkitPlayer> players = new HashSet<>();
+        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+            players.add(new BukkitPlayer(onlinePlayer));
+        }
+        return players;
     }
 
 }

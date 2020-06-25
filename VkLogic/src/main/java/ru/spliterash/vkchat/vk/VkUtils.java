@@ -9,8 +9,8 @@ import ru.spliterash.vkchat.VkChat;
 
 @UtilityClass
 public class VkUtils {
-    public int getMyId() throws ClientException, ApiException {
-        GroupActor anonActor = new GroupActor(null, VkChat.getInstance().getLauncher().getVkConfig().getToken());
+    public int getMyId(String token) throws ClientException, ApiException {
+        GroupActor anonActor = new GroupActor(null,token);
         JsonObject result = VkChat
                 .getClient()
                 .execute()

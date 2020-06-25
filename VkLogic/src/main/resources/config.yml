@@ -1,0 +1,4 @@
+# VK GROUP TOKEN
+token: ""
+# LongPoll wait time, DO NOT SET 0
+wait: 5000
