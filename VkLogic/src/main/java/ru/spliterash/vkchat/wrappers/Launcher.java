@@ -1,4 +1,4 @@
-package ru.spliterash.vkchat.obj;
+package ru.spliterash.vkchat.wrappers;
 
 import java.io.File;
 import java.util.Collection;

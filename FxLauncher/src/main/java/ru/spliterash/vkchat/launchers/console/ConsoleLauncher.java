@@ -1,9 +1,10 @@
 package ru.spliterash.vkchat.launchers.console;
 
 import ru.spliterash.vkchat.VkChat;
-import ru.spliterash.vkchat.obj.Launcher;
-import ru.spliterash.vkchat.obj.AbstractConfig;
-import ru.spliterash.vkchat.obj.AbstractPlayer;
+import ru.spliterash.vkchat.wrappers.AbstractCommandExecutor;
+import ru.spliterash.vkchat.wrappers.Launcher;
+import ru.spliterash.vkchat.wrappers.AbstractConfig;
+import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 
 import java.io.File;
 import java.io.IOException;
@@ -91,6 +92,11 @@ public class ConsoleLauncher implements Launcher {
     @Override
     public Collection<? extends AbstractPlayer> getOnlinePlayers() {
         return Collections.singleton(player);
+    }
+
+    @Override
+    public void registerCommand(String command, AbstractCommandExecutor executor) {
+        //NOP
     }
 
 }

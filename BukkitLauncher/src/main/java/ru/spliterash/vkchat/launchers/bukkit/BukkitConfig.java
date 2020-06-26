@@ -1,7 +1,7 @@
 package ru.spliterash.vkchat.launchers.bukkit;
 
 import org.bukkit.configuration.file.FileConfiguration;
-import ru.spliterash.vkchat.obj.AbstractConfig;
+import ru.spliterash.vkchat.wrappers.AbstractConfig;
 
 import java.io.File;
 import java.io.IOException;

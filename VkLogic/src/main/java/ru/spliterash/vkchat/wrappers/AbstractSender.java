@@ -1,4 +1,6 @@
-package ru.spliterash.vkchat.obj;
+package ru.spliterash.vkchat.wrappers;
+
+import net.md_5.bungee.api.chat.BaseComponent;
 
 public interface AbstractSender {
     String getName();
@@ -7,5 +9,5 @@ public interface AbstractSender {
 
     boolean hasPermission(String pex);
 
-    void sendJsonMessage(String json);
+    void sendJsonMessage(BaseComponent... json);
 }

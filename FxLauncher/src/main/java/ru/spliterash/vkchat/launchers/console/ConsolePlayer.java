@@ -1,9 +1,11 @@
 package ru.spliterash.vkchat.launchers.console;
 
 import net.md_5.bungee.api.chat.BaseComponent;
-import ru.spliterash.vkchat.obj.AbstractPlayer;
+import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 
-public class ConsolePlayer extends AbstractPlayer {
+import java.util.UUID;
+
+public class ConsolePlayer implements AbstractPlayer {
     @Override
     public String getName() {
         return "Console";
@@ -17,6 +19,11 @@ public class ConsolePlayer extends AbstractPlayer {
     @Override
     public boolean isOnline() {
         return true;
+    }
+
+    @Override
+    public UUID getUUID() {
+        return UUID.randomUUID();
     }
 
     @Override

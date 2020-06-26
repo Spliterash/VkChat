@@ -4,8 +4,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import ru.spliterash.vkchat.obj.AbstractCommandExecutor;
-import ru.spliterash.vkchat.obj.AbstractSender;
+import ru.spliterash.vkchat.wrappers.AbstractCommandExecutor;
+import ru.spliterash.vkchat.wrappers.AbstractSender;
 
 import java.util.List;
 

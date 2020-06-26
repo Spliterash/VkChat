@@ -11,7 +11,7 @@ import com.vk.api.sdk.objects.users.Fields;
 import com.vk.api.sdk.objects.users.UserFull;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
 import lombok.Getter;
-import ru.spliterash.vkchat.obj.Launcher;
+import ru.spliterash.vkchat.wrappers.Launcher;
 import ru.spliterash.vkchat.utils.VkUtils;
 import ru.spliterash.vkchat.vk.CallbackApiLongPoll;
 
