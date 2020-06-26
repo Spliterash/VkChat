@@ -26,6 +26,7 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
 
     @Getter
     private AbstractConfig vkConfig;
+
     @Override
     public void onDisable() {
         VkChat.onDisable();
@@ -53,6 +54,9 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
     @Override
     public void registerCommand(String command, AbstractCommandExecutor executor) {
         PluginCommand cmd = getCommand(command);
+        BukkitCommand bukkitExecutor = new BukkitCommand(executor);
+        cmd.setExecutor(bukkitExecutor);
+        cmd.setTabCompleter(bukkitExecutor);
     }
 
 }
