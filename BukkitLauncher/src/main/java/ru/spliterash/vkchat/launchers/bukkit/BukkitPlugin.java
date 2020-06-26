@@ -14,6 +14,7 @@ import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 public class BukkitPlugin extends JavaPlugin implements Launcher {
 
@@ -49,6 +50,24 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
             players.add(new BukkitPlayer(onlinePlayer));
         }
         return players;
+    }
+
+    @Override
+    public AbstractPlayer getPlayer(UUID uuid) {
+        Player p = Bukkit.getPlayer(uuid);
+        if (p != null)
+            return new BukkitPlayer(p);
+        else
+            return null;
+    }
+
+    @Override
+    public AbstractPlayer getPlayer(String nickname) {
+        Player p = Bukkit.getPlayer(nickname);
+        if (p != null)
+            return new BukkitPlayer(p);
+        else
+            return null;
     }
 
     @Override

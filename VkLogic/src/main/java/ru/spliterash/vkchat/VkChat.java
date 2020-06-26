@@ -10,10 +10,12 @@ import com.vk.api.sdk.objects.messages.Message;
 import com.vk.api.sdk.objects.users.Fields;
 import com.vk.api.sdk.objects.users.UserFull;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
+import lombok.AccessLevel;
 import lombok.Getter;
-import ru.spliterash.vkchat.wrappers.Launcher;
 import ru.spliterash.vkchat.utils.VkUtils;
 import ru.spliterash.vkchat.vk.CallbackApiLongPoll;
+import ru.spliterash.vkchat.wrappers.AbstractConfig;
+import ru.spliterash.vkchat.wrappers.Launcher;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,9 +26,12 @@ public class VkChat {
     private static VkChat instance;
     private final Launcher launcher;
     private final VkApiClient executor = new VkApiClient(HttpTransportClient.getInstance());
-    private GroupActor actor;
-    private String peerId;
+    private final GroupActor actor;
+    private final String peerId;
     private boolean enable = true;
+    private final boolean conversationMode;
+    private String peerUrl;
+    @Getter(AccessLevel.NONE)
     private final Map<Integer, UserFull> savedUsers = new HashMap<>();
 
     public static VkApiClient getExecutor() {
@@ -35,35 +40,33 @@ public class VkChat {
 
     private VkChat(Launcher launcher) {
         this.launcher = launcher;
-        launcher.runAsync(() -> {
-            String token = launcher.getVkConfig().get("token");
-            if (token == null) {
-                launcher.getLogger().warning("Set config");
-                launcher.unload();
-                throw new RuntimeException("Token is null");
-            }
-            int id;
-            try {
-                id = VkUtils.getMyId(token);
-            } catch (Exception exception) {
-                launcher.unload();
-                throw new RuntimeException(exception);
-            }
-            actor = new GroupActor(id, token);
-            peerId = launcher.getVkConfig().get("peer");
-            int wait = Integer.parseInt(launcher.getVkConfig().get("wait", "5000"));
-            try {
-                startLongPoll(wait);
-            } catch (ClientException | ApiException e) {
-                e.printStackTrace();
-                launcher.unload();
-            }
-        });
+        AbstractConfig config = launcher.getVkConfig();
+        String token = config.get("token");
+        peerUrl = config.get("invite_link");
+        if (token == null) {
+            launcher.getLogger().warning("Set config");
+            launcher.unload();
+            throw new RuntimeException("Token is null");
+        }
+        int id;
+        try {
+            id = VkUtils.getMyId(token);
+        } catch (Exception exception) {
+            launcher.unload();
+            throw new RuntimeException(exception);
+        }
+        actor = new GroupActor(id, token);
+        peerId = config.get("peer");
+        int wait = Integer.parseInt(config.get("wait", "5000"));
+        conversationMode = Boolean.parseBoolean(config.get("conversation_mode", "true"));
+        try {
+            startLongPoll(wait);
+        } catch (ClientException | ApiException e) {
+            e.printStackTrace();
+            launcher.unload();
+        }
     }
 
-    /**
-     * Вызывать только асинхронно
-     */
     private void startLongPoll(int wait) throws ClientException, ApiException {
         executor
                 .groups()
@@ -97,7 +100,23 @@ public class VkChat {
                 VkUtils.scanMessageIds(ids, reply);
         }
         loadUsers(ids);
-        //Загрузили никнеймы, терь можно обработать сообщения TODO
+        //Загрузили никнеймы, терь можно обработать сообщения
+        for (Message message : messages) {
+            processMessages(message);
+        }
+    }
+
+    /**
+     * Обрабатываем сообщение, не зная какие есть ещё TODO
+     */
+    private void processMessages(Message message) {
+        //Если отослано в беседу, то отсылаем всем, иначе по другому делаем
+        if (message.getPeerId().toString().equals(peerId)) {
+            launcher.sendAll();
+        } else {
+
+        }
+
     }
 
     private void loadUsers(Set<Integer> needLoad) throws ClientException, ApiException {
@@ -117,7 +136,7 @@ public class VkChat {
     }
 
     public static void onEnable(Launcher launcher) {
-        instance = new VkChat(launcher);
+        launcher.runAsync(() -> instance = new VkChat(launcher));
     }
 
     public static void onDisable() {
@@ -129,5 +148,9 @@ public class VkChat {
 
     private void disable() {
         enable = false;
+    }
+
+    public UserFull getUserById(int user) {
+        return savedUsers.get(user);
     }
 }

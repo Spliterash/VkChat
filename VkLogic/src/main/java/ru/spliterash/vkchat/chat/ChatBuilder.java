@@ -33,16 +33,16 @@ public class ChatBuilder {
             //Текст до плейсхолдера
             String pre = text.substring(oldEnd, m.start());
             //Сразу же его добавляем
-            builder.append(TextComponent.fromLegacyText(pre), ComponentBuilder.FormatRetention.NONE);
+            builder.append(TextComponent.fromLegacyText(pre), ComponentBuilder.FormatRetention.FORMATTING);
             //Плейсхолдер
             String placeholder = m.group();
             BaseComponent[] components = bindMap.get(placeholder);
             //Если есть то добавляем
             if (components != null)
-                builder.append(components, ComponentBuilder.FormatRetention.NONE);
-            //Иначе добавляем его как текст
+                builder.append(components, ComponentBuilder.FormatRetention.FORMATTING);
+                //Иначе добавляем его как текст
             else
-                builder.append(TextComponent.fromLegacyText(placeholder), ComponentBuilder.FormatRetention.NONE);
+                builder.append(TextComponent.fromLegacyText(placeholder), ComponentBuilder.FormatRetention.FORMATTING);
             endIndex = m.end();
             oldEnd = m.end();
         }

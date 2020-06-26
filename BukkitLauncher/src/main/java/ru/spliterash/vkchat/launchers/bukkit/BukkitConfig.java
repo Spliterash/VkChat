@@ -6,7 +6,7 @@ import ru.spliterash.vkchat.wrappers.AbstractConfig;
 import java.io.File;
 import java.io.IOException;
 
-public class BukkitConfig extends AbstractConfig {
+public class BukkitConfig implements AbstractConfig {
     private final BukkitPlugin plugin;
     private final FileConfiguration conf;
 

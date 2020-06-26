@@ -11,8 +11,7 @@ import java.util.List;
 
 //TODO Написать этот класс
 public enum Lang {
-    CONVERSATION_JOIN("User {inviter} invite {invited}", "Пользователь {inviter} пригласил {invited}"),
-    USER_TEXT("&a{first_name} {last_name}"),
+    CONVERSATION_INVITE("User {inviter} invite {invited}", "Пользователь {inviter} пригласил {invited}"),
     UNKNOWN("unknown", "неизвестно"),
     USER_HOVER(
             Arrays.asList(
@@ -28,8 +27,12 @@ public enum Lang {
                     "День рождение: {birthday}"
             )
     ),
+    USER_FORMAT("{first_name} {last_name}"),
+    PEER_COMPONENT("[VK]"),
+    VK_TO_MINECRAFT("&9{vk}&a{user}&e:&f{text}"),
     MALE("Male", "Мужской"),
-    FEMALE("Female", "Женский");
+    FEMALE("Female", "Женский"),
+    OPEN_URL_HOVER("&6Click me to open a &bvk.com&6 conversation", "&6Нажми на меня чтобы открыть беседу &bvk.com");
 
 
     /**

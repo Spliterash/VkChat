@@ -5,14 +5,16 @@ import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.messages.ForeignMessage;
+import com.vk.api.sdk.objects.messages.Message;
 import com.vk.api.sdk.objects.users.UserFull;
 import lombok.experimental.UtilityClass;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.*;
 import ru.spliterash.vkchat.Lang;
 import ru.spliterash.vkchat.VkChat;
+import ru.spliterash.vkchat.chat.ChatBuilder;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 @UtilityClass
@@ -43,7 +45,7 @@ public class VkUtils {
     }
 
     public TextComponent getUserComponent(UserFull user) {
-        String title = Lang.USER_TEXT.toString()
+        String title = Lang.USER_FORMAT.toString()
                 .replace("{first_name}", user.getFirstName())
                 .replace("{last_name}", user.getLastName());
         ComponentBuilder hoverBuilder = new ComponentBuilder("");
@@ -87,8 +89,28 @@ public class VkUtils {
         return component;
     }
 
-    public void sendToMinecraft() {
+    public BaseComponent[] getInviteLink() {
+        ComponentBuilder builder = new ComponentBuilder("");
+        builder.append(TextComponent.fromLegacyText(Lang.PEER_COMPONENT.toString()));
+        builder.event(new ClickEvent(ClickEvent.Action.OPEN_URL, VkChat.getInstance().getPeerId()));
+        builder.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(Lang.OPEN_URL_HOVER.toString())));
+        return builder.create();
+    }
 
+    public BaseComponent[] buildMessage(int fromId, String text, boolean peerLink) {
+        String messageStructure = Lang.VK_TO_MINECRAFT.toString();
+        Map<String, BaseComponent[]> replaceMap = new HashMap<>();
+        if (peerLink)
+            replaceMap.put("{vk}", getInviteLink());
+        else
+            replaceMap.put("{vk}", new BaseComponent[]{new TextComponent()});
+        replaceMap.put("{user}", new BaseComponent[]{getUserComponent(fromId)});
+        replaceMap.put("{text}", new BaseComponent[]{new TextComponent(text)});
+        return ChatBuilder.compile(messageStructure, replaceMap);
+    }
+
+    private TextComponent getUserComponent(Integer user) {
+        return getUserComponent(VkChat.getInstance().getUserById(user));
     }
 
     public void scanMessageIds(Set<Integer> ids, ForeignMessage message) {
