@@ -2,9 +2,11 @@ package ru.spliterash.vkchat.launchers.bukkit;
 
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import ru.spliterash.vkchat.VkChat;
+import ru.spliterash.vkchat.obj.AbstractCommandExecutor;
 import ru.spliterash.vkchat.obj.Launcher;
 import ru.spliterash.vkchat.obj.AbstractConfig;
 import ru.spliterash.vkchat.obj.AbstractPlayer;
@@ -46,6 +48,11 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
             players.add(new BukkitPlayer(onlinePlayer));
         }
         return players;
+    }
+
+    @Override
+    public void registerCommand(String command, AbstractCommandExecutor executor) {
+        PluginCommand cmd = getCommand(command);
     }
 
 }

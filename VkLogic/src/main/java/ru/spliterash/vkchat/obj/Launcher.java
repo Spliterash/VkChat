@@ -18,4 +18,6 @@ public interface Launcher {
 
     Collection<? extends AbstractPlayer> getOnlinePlayers();
 
+    void registerCommand(String command, AbstractCommandExecutor executor);
+
 }
