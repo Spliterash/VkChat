@@ -31,7 +31,7 @@ public class Database {
 
     }
 
-    public <D extends Dao<T, ?>, T> D getDao(ConnectionSource connectionSource, Class<T> clazz) {
+    public <D extends Dao<T, ?>, T> D getDao(Class<T> clazz) {
         try {
             return DaoManager.createDao(connectionSource, clazz);
         } catch (SQLException throwables) {

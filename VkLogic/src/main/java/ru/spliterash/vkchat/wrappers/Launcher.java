@@ -32,14 +32,19 @@ public interface Launcher {
     default void sendAdmin(BaseComponent... message) {
         for (AbstractPlayer player : getOnlinePlayers()) {
             if (player.hasPermission("vkchat.admin")) {
-                player.sendJsonMessage(message);
+                player.sendMessage(message);
             }
         }
     }
 
     default void sendAll(BaseComponent... components) {
         for (AbstractPlayer player : getOnlinePlayers()) {
-            player.sendJsonMessage(components);
+            player.sendMessage(components);
         }
     }
+
+    void runSync(Runnable runnable);
+
+    boolean isPrimaryThread();
+
 }

@@ -19,7 +19,7 @@ import ru.spliterash.vkchat.wrappers.Launcher;
 
 import java.io.File;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.function.Consumer;
 
 @Getter
 public class VkChat {
@@ -44,8 +44,8 @@ public class VkChat {
         if (!langFolder.isDirectory()) {
             langFolder.mkdir();
         }
-        String lang = config.getString("lang","en");
-        Lang.reload(langFolder,lang );
+        String lang = config.getString("lang", "en");
+        Lang.reload(langFolder, lang);
         String token = config.getString("token");
         if (token == null) {
             launcher.getLogger().warning("Set config");
@@ -62,7 +62,7 @@ public class VkChat {
         actor = new GroupActor(id, token);
         int wait = Integer.parseInt(config.getString("wait", "5000"));
         conversationMode = Boolean.parseBoolean(config.getString("conversation_mode", "true"));
-
+        launcher.registerCommand("vk", new VkExecutor());
 
         try {
             startLongPoll(wait);
@@ -104,7 +104,7 @@ public class VkChat {
             if (reply != null)
                 VkUtils.scanMessageIds(ids, reply);
         }
-        loadUsers(ids);
+        loadWithChecks(ids);
         //Загрузили никнеймы, терь можно обработать сообщения
         for (Message message : messages) {
             processMessages(message);
@@ -119,21 +119,25 @@ public class VkChat {
 
     }
 
-    private void loadUsers(Set<Integer> needLoad) throws ClientException, ApiException {
+    private void loadUsers(String... forceLoad) throws ClientException, ApiException {
+        for (UserXtrCounters user : executor
+                .users()
+                .get(actor)
+                .userIds(forceLoad)
+                .fields(Fields.CITY, Fields.SEX, Fields.STATUS)
+                .execute()) {
+            savedUsers.put(user.getId(), user);
+        }
+    }
+
+    private void loadWithChecks(Set<Integer> needLoad) throws ClientException, ApiException {
         //Удаляем тех кто загружен
         needLoad.removeAll(savedUsers.keySet());
         if (needLoad.size() > 0) {
-            for (UserXtrCounters user : executor
-                    .users()
-                    .get(actor)
-                    .userIds(needLoad.stream().map(Object::toString).collect(Collectors.toList()))
-                    .fields(Fields.CITY, Fields.SEX, Fields.STATUS)
-                    .execute()) {
-                savedUsers.put(user.getId(), user);
-            }
+            loadUsers(needLoad.stream().map(Object::toString).toArray(value -> new String[0]));
         }
-
     }
+
 
     public static void onEnable(Launcher launcher) {
         launcher.runAsync(() -> instance = new VkChat(launcher));
@@ -150,7 +154,48 @@ public class VkChat {
         enable = false;
     }
 
-    public UserFull getUserById(int user) {
+    public UserFull getCachedUserById(int user) {
         return savedUsers.get(user);
+    }
+
+    public UserFull getCachedUserByDomain(String domain) {
+        return savedUsers
+                .values()
+                .stream()
+                .filter(u -> domain.toLowerCase().equals(u.getDomain()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public void userAction(String id, Consumer<UserFull> consumer) {
+        userAction(id, consumer, false);
+    }
+
+    public void userAction(String id, Consumer<UserFull> consumer, boolean onlySync) {
+        UserFull user = null;
+        try {
+            user = getCachedUserById(Integer.parseInt(id));
+        } catch (Exception ex) {
+            user = getCachedUserByDomain(id);
+        }
+        if (user == null) {
+            getLauncher().runAsync(() -> {
+                try {
+                    loadUsers(id);
+                } catch (ClientException | ApiException e) {
+                    throw new RuntimeException(e);
+                }
+                UserFull serverUser = getCachedUserByDomain(id);
+                if (onlySync)
+                    getLauncher().runSync(() -> consumer.accept(serverUser));
+                else
+                    consumer.accept(serverUser);
+            });
+        } else if (launcher.isPrimaryThread()) {
+            consumer.accept(user);
+        } else {
+            UserFull finalUser = user;
+            getLauncher().runSync(() -> consumer.accept(finalUser));
+        }
     }
 }

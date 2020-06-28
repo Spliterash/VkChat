@@ -6,7 +6,7 @@ import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.TextComponent;
-import ru.spliterash.vkchat.utils.ComponentUtils;
+import ru.spliterash.vkchat.utils.ArrayUtils;
 import ru.spliterash.vkchat.utils.VkUtils;
 
 import java.util.ArrayList;
@@ -49,12 +49,12 @@ public class MessageTree {
             ForeignMessage message = iter.next();
             BaseComponent[] messageComponents = VkUtils.buildMessage(message.getFromId(), message.getText(), null);
             if (i - 1 == messageList.size() - 1) {
-                print.add(ComponentUtils.putAll(messageComponents, TextComponent.fromLegacyText(prefix + color + "└── "), 0));
+                print.add(ArrayUtils.putAll(messageComponents, TextComponent.fromLegacyText(prefix + color + "└── "), 0));
                 if (message.getFwdMessages().size() > 0) {
                     walk(message.getFwdMessages(), prefix + "     ");
                 }
             } else {
-                print.add(ComponentUtils.putAll(messageComponents, TextComponent.fromLegacyText(prefix + color + "├── "), 0));
+                print.add(ArrayUtils.putAll(messageComponents, TextComponent.fromLegacyText(prefix + color + "├── "), 0));
                 if (message.getFwdMessages().size() > 0) {
                     walk(message.getFwdMessages(), prefix + color + "│    ");
                 }

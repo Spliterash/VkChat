@@ -5,9 +5,9 @@ import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.messages.ForeignMessage;
-import com.vk.api.sdk.objects.messages.Message;
 import com.vk.api.sdk.objects.users.UserFull;
 import lombok.experimental.UtilityClass;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.*;
 import ru.spliterash.vkchat.Lang;
 import ru.spliterash.vkchat.VkChat;
@@ -45,6 +45,15 @@ public class VkUtils {
     }
 
     public TextComponent getUserComponent(UserFull user) {
+        if (user == null) {
+            TextComponent component = new TextComponent(ChatColor.RED + "ERROR");
+            component.setHoverEvent(
+                    new HoverEvent(
+                            HoverEvent.Action.SHOW_TEXT,
+                            TextComponent.fromLegacyText(ChatColor.RED + "User not found, sry")
+                    ));
+            return component;
+        }
         String title = Lang.USER_FORMAT.toString()
                 .replace("{first_name}", user.getFirstName())
                 .replace("{last_name}", user.getLastName());
@@ -104,7 +113,7 @@ public class VkUtils {
     public BaseComponent[] buildMessage(int fromId, String text, String peerLink) {
         String messageStructure = Lang.VK_TO_MINECRAFT.toString();
         Map<String, BaseComponent[]> replaceMap = new HashMap<>();
-        if (peerLink!=null)
+        if (peerLink != null)
             replaceMap.put("{vk}", getInviteLink(peerLink));
         else
             replaceMap.put("{vk}", new BaseComponent[]{new TextComponent()});
@@ -114,7 +123,7 @@ public class VkUtils {
     }
 
     private TextComponent getUserComponent(Integer user) {
-        return getUserComponent(VkChat.getInstance().getUserById(user));
+        return getUserComponent(VkChat.getInstance().getCachedUserById(user));
     }
 
     public void scanMessageIds(Set<Integer> ids, ForeignMessage message) {

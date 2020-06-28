@@ -29,7 +29,7 @@ public class BukkitSender implements AbstractSender {
     }
 
     @Override
-    public void sendJsonMessage(BaseComponent... json) {
+    public void sendMessage(BaseComponent... json) {
         executor.spigot().sendMessage(json);
     }
 }

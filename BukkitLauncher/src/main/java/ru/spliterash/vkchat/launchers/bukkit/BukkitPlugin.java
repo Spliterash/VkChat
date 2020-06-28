@@ -3,15 +3,13 @@ package ru.spliterash.vkchat.launchers.bukkit;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
-import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Zombie;
 import org.bukkit.plugin.java.JavaPlugin;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.wrappers.AbstractCommandExecutor;
-import ru.spliterash.vkchat.wrappers.Launcher;
 import ru.spliterash.vkchat.wrappers.AbstractConfig;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
+import ru.spliterash.vkchat.wrappers.Launcher;
 
 import java.io.File;
 import java.util.Collection;
@@ -84,6 +82,16 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
         BukkitCommand bukkitExecutor = new BukkitCommand(executor);
         cmd.setExecutor(bukkitExecutor);
         cmd.setTabCompleter(bukkitExecutor);
+    }
+
+    @Override
+    public void runSync(Runnable runnable) {
+        getServer().getScheduler().runTask(this, runnable);
+    }
+
+    @Override
+    public boolean isPrimaryThread() {
+        return getServer().isPrimaryThread();
     }
 
 }

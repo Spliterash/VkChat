@@ -35,7 +35,18 @@ public enum Lang {
     VK_TO_MINECRAFT("&9{vk}&a{user}&e:&f{text}"),
     MALE("Male", "Мужской"),
     FEMALE("Female", "Женский"),
-    OPEN_URL_HOVER("&6Click me to open a &bvk.com&6 conversation", "&6Нажми на меня чтобы открыть беседу &bvk.com");
+    USER_VK_HELP(Arrays.asList(
+            "&b/vk link &6- Link minecraft to vk",
+            "&b"
+    )),
+    OPEN_URL_HOVER("&6Click me to open a &bvk.com&6 conversation", "&6Нажми на меня чтобы открыть беседу &bvk.com"),
+    ALREADY_LINK("&6You are already link your account to {user}", "&6Вы уже привязали свой аккаунт к {user}"),
+    NOT_LINK(
+            "&6For this action your account need be linked, you can link use &b/vk link [domain]",
+            "&6Ваш аккаунт не привязан, вы можете привязать его с помощью команды &b/vk link [domain]&6, где &bdomain&6 это ваш домен"
+    ),
+    OK("&aOperation completed", "&aОперация выполнена"),
+    WRONG_USER("&6User does not exists", "&6Пользователя не существует");
 
 
     /**

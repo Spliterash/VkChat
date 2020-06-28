@@ -2,8 +2,11 @@ package ru.spliterash.vkchat.utils;
 
 import lombok.experimental.UtilityClass;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @UtilityClass
-public class ComponentUtils {
+public class ArrayUtils {
     public <T> T[] putAll(T[] components, T[] add, int to) {
         int newSize = components.length + add.length;
         @SuppressWarnings("unchecked")
@@ -22,5 +25,11 @@ public class ComponentUtils {
 
         }
         return array;
+    }
+
+    public <K, V> Map<K, V> createMap(K key, V value) {
+        Map<K, V> map = new HashMap<>();
+        map.put(key, value);
+        return map;
     }
 }
