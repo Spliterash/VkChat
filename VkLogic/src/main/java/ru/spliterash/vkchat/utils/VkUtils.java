@@ -89,19 +89,23 @@ public class VkUtils {
         return component;
     }
 
-    public BaseComponent[] getInviteLink() {
+    public BaseComponent[] getInviteLink(String url) {
         ComponentBuilder builder = new ComponentBuilder("");
         builder.append(TextComponent.fromLegacyText(Lang.PEER_COMPONENT.toString()));
-        builder.event(new ClickEvent(ClickEvent.Action.OPEN_URL, VkChat.getInstance().getPeerId()));
+        builder.event(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
         builder.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(Lang.OPEN_URL_HOVER.toString())));
         return builder.create();
     }
 
-    public BaseComponent[] buildMessage(int fromId, String text, boolean peerLink) {
+    public boolean isConversation(int peerId) {
+        return peerId >= 2000000000;
+    }
+
+    public BaseComponent[] buildMessage(int fromId, String text, String peerLink) {
         String messageStructure = Lang.VK_TO_MINECRAFT.toString();
         Map<String, BaseComponent[]> replaceMap = new HashMap<>();
-        if (peerLink)
-            replaceMap.put("{vk}", getInviteLink());
+        if (peerLink!=null)
+            replaceMap.put("{vk}", getInviteLink(peerLink));
         else
             replaceMap.put("{vk}", new BaseComponent[]{new TextComponent()});
         replaceMap.put("{user}", new BaseComponent[]{getUserComponent(fromId)});

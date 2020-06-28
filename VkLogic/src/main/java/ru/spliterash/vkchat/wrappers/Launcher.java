@@ -13,6 +13,8 @@ public interface Launcher {
 
     AbstractConfig getVkConfig();
 
+    AbstractConfig wrapConfig(File file);
+
     void runAsync(Runnable runnable);
 
     void unload();

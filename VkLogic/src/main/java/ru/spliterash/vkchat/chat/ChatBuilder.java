@@ -1,5 +1,12 @@
 package ru.spliterash.vkchat.chat;
 
+import com.vk.api.sdk.callback.longpoll.CallbackApiLongPoll;
+import com.vk.api.sdk.client.VkApiClient;
+import com.vk.api.sdk.client.actors.GroupActor;
+import com.vk.api.sdk.exceptions.ApiException;
+import com.vk.api.sdk.exceptions.ClientException;
+import com.vk.api.sdk.httpclient.HttpTransportClient;
+import com.vk.api.sdk.objects.messages.Message;
 import lombok.experimental.UtilityClass;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -55,5 +62,17 @@ public class ChatBuilder {
             builder.append(TextComponent.fromLegacyText(text.substring(endIndex)));
         }
         return builder.create();
+    }
+
+    public static void main(String[] args) throws ClientException, ApiException {
+        VkApiClient client = new VkApiClient(HttpTransportClient.getInstance());
+        GroupActor actor = new GroupActor(178913071, "dec2e636cf2c22c757377b7c7e7c8ff11bed525a1fdad0fc12f1b808cb3c2430a5776d3e6518288f6d00d");
+        CallbackApiLongPoll longPoll = new CallbackApiLongPoll(client, actor) {
+            @Override
+            public void messageNew(Integer groupId, Message message) {
+                System.out.println(message.toPrettyString());
+            }
+        };
+        longPoll.run();
     }
 }

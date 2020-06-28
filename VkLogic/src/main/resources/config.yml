@@ -6,3 +6,5 @@ wait: 5000
 conversation_mode: true
 # Conservation invite link
 invite_link: 'https://vk.me/join/AJQ1dzBN8hfFA48mn7pGj6b7'
+# ru|en or you custom, file create auto
+lang: en

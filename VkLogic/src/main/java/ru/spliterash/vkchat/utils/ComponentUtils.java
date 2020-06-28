@@ -6,7 +6,7 @@ import lombok.experimental.UtilityClass;
 public class ComponentUtils {
     public <T> T[] putAll(T[] components, T[] add, int to) {
         int newSize = components.length + add.length;
-        //noinspection unchecked
+        @SuppressWarnings("unchecked")
         T[] array = (T[]) new Object[newSize];
         int k = 0;
         for (int i = 0; i < components.length; i++) {

@@ -4,12 +4,15 @@ package ru.spliterash.vkchat;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.TextComponent;
+import ru.spliterash.vkchat.wrappers.AbstractConfig;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-//TODO Написать этот класс
+
 public enum Lang {
     CONVERSATION_INVITE("User {inviter} invite {invited}", "Пользователь {inviter} пригласил {invited}"),
     UNKNOWN("unknown", "неизвестно"),
@@ -41,7 +44,6 @@ public enum Lang {
      * 1 индекс - русский
      */
     private final Object[] original = new Object[2];
-    private final boolean isString;
     private Object selected;
 
     /**
@@ -51,7 +53,6 @@ public enum Lang {
      * @param ru На русском
      */
     Lang(String en, String ru) {
-        isString = true;
         original[0] = en;
         original[1] = ru;
     }
@@ -63,7 +64,6 @@ public enum Lang {
      * @param ru На русском
      */
     Lang(List<String> en, List<String> ru) {
-        isString = false;
         original[0] = en;
         original[1] = ru;
     }
@@ -76,9 +76,40 @@ public enum Lang {
         this(en, en);
     }
 
+    public static void reload(File folder, String lang) {
+        File langFile = new File(folder, lang + ".yml");
+        int index;
+        if (lang.equals("ru"))
+            index = 1;
+        else
+            index = 0;
+        fill(langFile, index);
+    }
+
+    private static void fill(File langFile, int index) {
+        AbstractConfig conf = VkChat.getInstance().getLauncher().wrapConfig(langFile);
+        boolean saveNeed = false;
+        for (Lang value : values()) {
+            Object obj = conf.get(value.name());
+            if (obj == null) {
+                obj = value.original[index];
+                conf.set(value.name(), obj);
+                saveNeed = true;
+            }
+            value.selected = obj;
+        }
+        if (saveNeed) {
+            try {
+                conf.save();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     @Override
     public String toString() {
-        if (isString) {
+        if (isString()) {
             return selected.toString();
         } else {
             //noinspection unchecked
@@ -87,8 +118,12 @@ public enum Lang {
         }
     }
 
+    private boolean isString() {
+        return original[0] instanceof String;
+    }
+
     public List<String> toList() {
-        if (isString) {
+        if (isString()) {
             return Collections.singletonList(selected.toString());
         } else {
             //noinspection unchecked
@@ -97,7 +132,7 @@ public enum Lang {
     }
 
     public BaseComponent[] toComponent() {
-        if (isString)
+        if (isString())
             return TextComponent.fromLegacyText(toString());
         else {
             ComponentBuilder builder = new ComponentBuilder("");

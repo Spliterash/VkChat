@@ -17,6 +17,7 @@ import ru.spliterash.vkchat.vk.CallbackApiLongPoll;
 import ru.spliterash.vkchat.wrappers.AbstractConfig;
 import ru.spliterash.vkchat.wrappers.Launcher;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,10 +28,8 @@ public class VkChat {
     private final Launcher launcher;
     private final VkApiClient executor = new VkApiClient(HttpTransportClient.getInstance());
     private final GroupActor actor;
-    private final String peerId;
     private boolean enable = true;
     private final boolean conversationMode;
-    private String peerUrl;
     @Getter(AccessLevel.NONE)
     private final Map<Integer, UserFull> savedUsers = new HashMap<>();
 
@@ -41,8 +40,13 @@ public class VkChat {
     private VkChat(Launcher launcher) {
         this.launcher = launcher;
         AbstractConfig config = launcher.getVkConfig();
-        String token = config.get("token");
-        peerUrl = config.get("invite_link");
+        File langFolder = new File(launcher.getDataFolder(), "lang");
+        if (!langFolder.isDirectory()) {
+            langFolder.mkdir();
+        }
+        String lang = config.getString("lang","en");
+        Lang.reload(langFolder,lang );
+        String token = config.getString("token");
         if (token == null) {
             launcher.getLogger().warning("Set config");
             launcher.unload();
@@ -56,9 +60,10 @@ public class VkChat {
             throw new RuntimeException(exception);
         }
         actor = new GroupActor(id, token);
-        peerId = config.get("peer");
-        int wait = Integer.parseInt(config.get("wait", "5000"));
-        conversationMode = Boolean.parseBoolean(config.get("conversation_mode", "true"));
+        int wait = Integer.parseInt(config.getString("wait", "5000"));
+        conversationMode = Boolean.parseBoolean(config.getString("conversation_mode", "true"));
+
+
         try {
             startLongPoll(wait);
         } catch (ClientException | ApiException e) {
@@ -111,11 +116,6 @@ public class VkChat {
      */
     private void processMessages(Message message) {
         //Если отослано в беседу, то отсылаем всем, иначе по другому делаем
-        if (message.getPeerId().toString().equals(peerId)) {
-            launcher.sendAll();
-        } else {
-
-        }
 
     }
 
