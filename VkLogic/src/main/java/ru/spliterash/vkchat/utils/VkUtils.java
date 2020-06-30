@@ -50,6 +50,7 @@ public class VkUtils {
             throw new RuntimeException("Token is not group token\n" + result.toString());
     }
 
+
     public TextComponent getUserComponent(UserFull user) {
         if (user == null) {
             TextComponent component = new TextComponent(ChatColor.RED + "ERROR");

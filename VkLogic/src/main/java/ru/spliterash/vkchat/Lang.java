@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 
+@SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
 public enum Lang {
     CONVERSATION_INVITE("User {inviter} invite {invited}", "Пользователь {inviter} пригласил {invited}"),
     UNKNOWN("unknown", "неизвестно"),
@@ -35,10 +36,18 @@ public enum Lang {
     VK_TO_MINECRAFT("&9{vk}&a{user}&e:&f{text}"),
     MALE("Male", "Мужской"),
     FEMALE("Female", "Женский"),
-    USER_VK_HELP(Arrays.asList(
-            "&b/vk link &6- Link minecraft to vk",
-            "&b"
-    )),
+    USER_VK_HELP(
+            Arrays.asList(
+                    "&b/vk link [domain] &6- Link minecraft to vk",
+                    "&b/vk [message] &6- send message to personal conversation and online players in this conversation",
+                    "&b/vk setup &6- Setup or create new private conversation"
+            ),
+            Arrays.asList(
+                    "&bvk link [domain] &6- Привязать аккаунт майнкрафта к вк",
+                    "&bvk [сообщение] &6- Отправить сообщение в приватную беседу и онлайн игрокам в этой беседе",
+                    "&bvk setup &6- Настроить или создать новую приватную беседу"
+            )
+    ),
     OPEN_URL_HOVER("&6Click me to open a &bvk.com&6 conversation", "&6Нажми на меня чтобы открыть беседу &bvk.com"),
     ALREADY_LINK("&6You are already link your account to {user}", "&6Вы уже привязали свой аккаунт к {user}"),
     NOT_LINK(
@@ -46,7 +55,9 @@ public enum Lang {
             "&6Ваш аккаунт не привязан, вы можете привязать его с помощью команды &b/vk link [domain]&6, где &bdomain&6 это ваш домен"
     ),
     OK("&aOperation completed", "&aОперация выполнена"),
-    WRONG_USER("&6User does not exists", "&6Пользователя не существует");
+    WRONG_USER("&6User does not exists", "&6Пользователя не существует"),
+    SETUP_START("&6The conversation setup is started, please write down any message in the conversation where there is a bot and it has read rights",
+            "&6Настройка беседы начата, пожалуйста запишите любое сообщение в беседу где есть бот и ему выданы права чтения");
 
 
     /**

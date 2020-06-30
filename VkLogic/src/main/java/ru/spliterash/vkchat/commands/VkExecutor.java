@@ -1,7 +1,9 @@
-package ru.spliterash.vkchat;
+package ru.spliterash.vkchat.commands;
 
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
+import ru.spliterash.vkchat.Lang;
+import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.chat.ChatBuilder;
 import ru.spliterash.vkchat.db.Database;
 import ru.spliterash.vkchat.db.dao.PlayerDao;
@@ -27,6 +29,10 @@ public class VkExecutor implements AbstractCommandExecutor {
                 break;
             case "unlink":
                 processUnLink(sender);
+                break;
+            case "setup":
+
+                break;
 
         }
     }

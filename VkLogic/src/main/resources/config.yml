@@ -2,9 +2,14 @@
 token: ""
 # LongPoll wait time, DO NOT SET 0
 wait: 5000
-# Conservation mode (If disable, Only commands and personal messages)
-conversation_mode: true
 # Conservation invite link
 invite_link: 'https://vk.me/join/AJQ1dzBN8hfFA48mn7pGj6b7'
 # ru|en or you custom, file create auto
 lang: en
+# Commands starts with:
+command_prefix: "/"
+# Do not touch
+global_peer: null
+# Id or domains
+admins:
+  - spliterash

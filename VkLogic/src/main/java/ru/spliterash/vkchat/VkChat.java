@@ -12,10 +12,11 @@ import com.vk.api.sdk.objects.users.UserFull;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
 import lombok.AccessLevel;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
+import ru.spliterash.vkchat.commands.VkExecutor;
 import ru.spliterash.vkchat.utils.VkUtils;
 import ru.spliterash.vkchat.vk.CallbackApiLongPoll;
 import ru.spliterash.vkchat.wrappers.AbstractConfig;
-import ru.spliterash.vkchat.wrappers.AbstractListener;
 import ru.spliterash.vkchat.wrappers.Launcher;
 
 import java.io.File;
@@ -29,16 +30,25 @@ public class VkChat {
     private final Launcher launcher;
     private final VkApiClient executor = new VkApiClient(HttpTransportClient.getInstance());
     private final GroupActor actor;
+    private final String commandPrefix;
     private boolean enable = true;
-    private final boolean conversationMode;
     @Getter(AccessLevel.NONE)
     private final Map<Integer, UserFull> savedUsers = new HashMap<>();
+    private final Set<String> admins = new HashSet<>();
+    private String globalPeer;
 
     public static VkApiClient getExecutor() {
         return getInstance().executor;
     }
 
-    private VkChat(Launcher launcher) {
+    /**
+     * Создаёт новый инстанц плагина
+     * Вызывать ТОЛЬКО В ДРУГОМ ПОТОКЕ
+     *
+     * @param launcher Лаунчер, который запускает собсна, может быть спигот, банжа или Sponge
+     *                 Можете вообще свой написать, если есть на что
+     */
+    private VkChat(@NotNull Launcher launcher) {
         this.launcher = launcher;
         AbstractConfig config = launcher.getVkConfig();
         File langFolder = new File(launcher.getDataFolder(), "lang");
@@ -60,9 +70,11 @@ public class VkChat {
             launcher.unload();
             throw new RuntimeException(exception);
         }
+        admins.addAll(config.getStringList("admins"));
         actor = new GroupActor(id, token);
+        globalPeer = config.getString("global_peer");
+        commandPrefix = config.getString("command_prefix", "/");
         int wait = Integer.parseInt(config.getString("wait", "5000"));
-        conversationMode = Boolean.parseBoolean(config.getString("conversation_mode", "true"));
         launcher.registerCommand("vk", new VkExecutor());
         launcher.registerListener(new VkListener());
         try {
@@ -71,6 +83,12 @@ public class VkChat {
             e.printStackTrace();
             launcher.unload();
         }
+    }
+
+    public boolean isAdmin(UserFull id) {
+        return getAdmins()
+                .stream()
+                .anyMatch(s -> id.getId().toString().equals(s) || id.getDomain().equals(s));
     }
 
     private void startLongPoll(int wait) throws ClientException, ApiException {
@@ -116,8 +134,7 @@ public class VkChat {
      * Обрабатываем сообщение, не зная какие есть ещё TODO
      */
     private void processMessages(Message message) {
-        //Если отослано в беседу, то отсылаем всем, иначе по другому делаем
-
+        String text;
     }
 
     private void loadUsers(String... forceLoad) throws ClientException, ApiException {
