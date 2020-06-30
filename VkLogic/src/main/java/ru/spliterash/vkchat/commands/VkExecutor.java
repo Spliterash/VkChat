@@ -15,8 +15,30 @@ import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 import ru.spliterash.vkchat.wrappers.AbstractSender;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class VkExecutor implements AbstractCommandExecutor {
+    @Override
+    public List<String> onTabComplete(AbstractSender sender, String... args) {
+        if (args.length <= 1) {
+            List<String> variants = new ArrayList<>();
+            if (sender.hasPermission("vk.setup")) {
+                variants.add("setup");
+            }
+            if (sender.hasPermission("vk.admin")) {
+                variants.add("main");
+            }
+            if (sender.hasPermission("vk.use")) {
+                variants.add("link");
+                variants.add("unlink");
+            }
+            return variants;
+        } else
+            return Collections.emptyList();
+    }
+
     @Override
     public void onCommand(AbstractSender sender, String... args) {
         if (args.length == 0) {
@@ -30,14 +52,35 @@ public class VkExecutor implements AbstractCommandExecutor {
             case "unlink":
                 processUnLink(sender);
                 break;
-            case "setup":
-
+            case "main":
+                setupMain(sender);
                 break;
+            case "setup":
+                setup(sender);
 
         }
     }
 
+    private void setup(AbstractSender sender) {
+        if(!sender.hasPermission("vk.setup")){
+            sender.sendMessage(Lang.NO_PEX.toComponent());
+            return;
+        }
+
+    }
+
+    private void setupMain(AbstractSender sender) {
+        if (!sender.hasPermission("vk.admin")) {
+            sender.sendMessage(Lang.NO_PEX.toComponent());
+            return;
+        }
+    }
+
     private void processUnLink(AbstractSender sender) {
+        if (!sender.hasPermission("vk.use")) {
+            sender.sendMessage(Lang.NO_PEX.toComponent());
+            return;
+        }
         if (isConsole(sender))
             return;
         AbstractPlayer player = (AbstractPlayer) sender;
@@ -58,6 +101,10 @@ public class VkExecutor implements AbstractCommandExecutor {
     }
 
     private void processLink(AbstractSender sender, String... args) {
+        if (!sender.hasPermission("vk.use")) {
+            sender.sendMessage(Lang.NO_PEX.toComponent());
+            return;
+        }
         if (isConsole(sender))
             return;
         AbstractPlayer player = (AbstractPlayer) sender;
@@ -107,7 +154,13 @@ public class VkExecutor implements AbstractCommandExecutor {
     }
 
     private void sendInfo(AbstractSender sender) {
-        sender.sendMessage(Lang.USER_VK_HELP.toComponent());
+        if (!sender.hasPermission("vk.use"))
+            sender.sendMessage(Lang.NO_PEX.toComponent());
+        else {
+            sender.sendMessage(Lang.USER_VK_HELP.toComponent());
+            if (sender.hasPermission("vk.admin"))
+                sender.sendMessage(Lang.ADMIN_VK_HELP.toComponent());
+        }
     }
 
 

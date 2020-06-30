@@ -4,6 +4,7 @@ package ru.spliterash.vkchat;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.TextComponent;
+import ru.spliterash.vkchat.utils.StringUtils;
 import ru.spliterash.vkchat.wrappers.AbstractConfig;
 
 import java.io.File;
@@ -48,6 +49,14 @@ public enum Lang {
                     "&bvk setup &6- Настроить или создать новую приватную беседу"
             )
     ),
+    ADMIN_VK_HELP(
+            Arrays.asList(
+                    "&b/vk main &6- Setup MAIN conversation, all messages include"
+            ),
+            Arrays.asList(
+                    "&b/vk main &6- Установить главную беседу, в неё приходят все сообщения"
+            )
+    ),
     OPEN_URL_HOVER("&6Click me to open a &bvk.com&6 conversation", "&6Нажми на меня чтобы открыть беседу &bvk.com"),
     ALREADY_LINK("&6You are already link your account to {user}", "&6Вы уже привязали свой аккаунт к {user}"),
     NOT_LINK(
@@ -57,7 +66,8 @@ public enum Lang {
     OK("&aOperation completed", "&aОперация выполнена"),
     WRONG_USER("&6User does not exists", "&6Пользователя не существует"),
     SETUP_START("&6The conversation setup is started, please write down any message in the conversation where there is a bot and it has read rights",
-            "&6Настройка беседы начата, пожалуйста запишите любое сообщение в беседу где есть бот и ему выданы права чтения");
+            "&6Настройка беседы начата, пожалуйста запишите любое сообщение в беседу где есть бот и ему выданы права чтения"),
+    NO_PEX("&cNo perms, sry", "&cУвы, но у тебя недостаточно прав");
 
 
     /**
@@ -118,7 +128,13 @@ public enum Lang {
                 conf.set(value.name(), obj);
                 saveNeed = true;
             }
-            value.selected = obj;
+            if (obj instanceof String) {
+                value.selected = StringUtils.t(obj.toString());
+            } else {
+                //noinspection unchecked
+                List<String> list = (List<String>) obj;
+                value.selected = StringUtils.t(list);
+            }
         }
         if (saveNeed) {
             try {
@@ -141,7 +157,7 @@ public enum Lang {
     }
 
     private boolean isString() {
-        return original[0] instanceof String;
+        return selected instanceof String;
     }
 
     public List<String> toList() {
@@ -162,6 +178,7 @@ public enum Lang {
             List<String> source = (List<String>) selected;
             for (String s : source) {
                 builder.append(TextComponent.fromLegacyText(s));
+                builder.append("\n", ComponentBuilder.FormatRetention.NONE);
             }
             return builder.create();
         }
