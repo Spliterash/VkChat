@@ -47,4 +47,9 @@ public interface Launcher {
 
     boolean isPrimaryThread();
 
+    void registerListener(AbstractListener listener);
+
+    void unregisterListener(AbstractListener listener);
+
+    void unregisterListeners();
 }

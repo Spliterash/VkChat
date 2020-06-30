@@ -4,12 +4,11 @@ import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import ru.spliterash.vkchat.VkChat;
-import ru.spliterash.vkchat.wrappers.AbstractCommandExecutor;
-import ru.spliterash.vkchat.wrappers.AbstractConfig;
-import ru.spliterash.vkchat.wrappers.AbstractPlayer;
-import ru.spliterash.vkchat.wrappers.Launcher;
+import ru.spliterash.vkchat.wrappers.*;
 
 import java.io.File;
 import java.util.Collection;
@@ -92,6 +91,24 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
     @Override
     public boolean isPrimaryThread() {
         return getServer().isPrimaryThread();
+    }
+
+    @Override
+    public void registerListener(AbstractListener listener) {
+        Bukkit.getPluginManager().registerEvents(new BukkitListener(listener), this);
+    }
+
+    @Override
+    public void unregisterListener(AbstractListener listener) {
+        if (listener instanceof BukkitListener) {
+            BukkitListener bukkit = (BukkitListener) listener;
+            HandlerList.unregisterAll(bukkit);
+        }
+    }
+
+    @Override
+    public void unregisterListeners() {
+        HandlerList.unregisterAll(this);
     }
 
 }

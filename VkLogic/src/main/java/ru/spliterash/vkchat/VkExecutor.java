@@ -78,6 +78,7 @@ public class VkExecutor implements AbstractCommandExecutor {
                     newLink.setVk(u.getId());
                     try {
                         Database.getInstance().getDao(PlayerModel.class).create(newLink);
+                        player.sendMessage(Lang.OK.toComponent());
                     } catch (SQLException throwables) {
                         player.sendMessage(ChatColor.RED + "OOOOOPS, Another server exception :(");
                         throw new RuntimeException(throwables);

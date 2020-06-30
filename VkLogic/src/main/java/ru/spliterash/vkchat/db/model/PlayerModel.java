@@ -17,6 +17,6 @@ public class PlayerModel {
     private UUID uuid;
     @DatabaseField
     private String nickname;
-    @DatabaseField(canBeNull = false)
+    @DatabaseField(canBeNull = false, unique = true)
     private int vk;
 }

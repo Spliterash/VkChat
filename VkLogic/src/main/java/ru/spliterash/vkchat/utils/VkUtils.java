@@ -9,13 +9,19 @@ import com.vk.api.sdk.objects.users.UserFull;
 import lombok.experimental.UtilityClass;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.*;
+import org.jetbrains.annotations.Nullable;
 import ru.spliterash.vkchat.Lang;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.chat.ChatBuilder;
+import ru.spliterash.vkchat.db.Database;
+import ru.spliterash.vkchat.db.dao.PlayerDao;
+import ru.spliterash.vkchat.db.model.PlayerModel;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @UtilityClass
 public class VkUtils {
@@ -50,9 +56,19 @@ public class VkUtils {
             component.setHoverEvent(
                     new HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
-                            TextComponent.fromLegacyText(ChatColor.RED + "User not found, sry")
+                            TextComponent.fromLegacyText(
+                                    ChatColor.RED + "User not found, sry\nStacktrace here: \n" +
+                                            Arrays
+                                                    .stream(Thread.currentThread().getStackTrace())
+                                                    .map(s -> s.getClassName() + " in method " + s.getMethodName() + " on line " + s.getLineNumber())
+                                                    .collect(Collectors.joining("\n"))
+                            )
                     ));
             return component;
+        }
+        TextComponent linked = getLinkedUserComponent(user.getId());
+        if (linked != null) {
+            return linked;
         }
         String title = Lang.USER_FORMAT.toString()
                 .replace("{first_name}", user.getFirstName())
@@ -122,8 +138,18 @@ public class VkUtils {
         return ChatBuilder.compile(messageStructure, replaceMap);
     }
 
-    private TextComponent getUserComponent(Integer user) {
+    public TextComponent getUserComponent(Integer user) {
         return getUserComponent(VkChat.getInstance().getCachedUserById(user));
+    }
+
+    @Nullable
+    public TextComponent getLinkedUserComponent(int id) {
+        PlayerDao dao = Database.getInstance().getDao(PlayerModel.class);
+        PlayerModel link = dao.queryForVk(id);
+        if (link == null)
+            return null;
+        else
+            return new TextComponent(link.getNickname());
     }
 
     public void scanMessageIds(Set<Integer> ids, ForeignMessage message) {

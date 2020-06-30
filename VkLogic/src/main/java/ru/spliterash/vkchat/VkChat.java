@@ -15,6 +15,7 @@ import lombok.Getter;
 import ru.spliterash.vkchat.utils.VkUtils;
 import ru.spliterash.vkchat.vk.CallbackApiLongPoll;
 import ru.spliterash.vkchat.wrappers.AbstractConfig;
+import ru.spliterash.vkchat.wrappers.AbstractListener;
 import ru.spliterash.vkchat.wrappers.Launcher;
 
 import java.io.File;
@@ -63,7 +64,7 @@ public class VkChat {
         int wait = Integer.parseInt(config.getString("wait", "5000"));
         conversationMode = Boolean.parseBoolean(config.getString("conversation_mode", "true"));
         launcher.registerCommand("vk", new VkExecutor());
-
+        launcher.registerListener(new VkListener());
         try {
             startLongPoll(wait);
         } catch (ClientException | ApiException e) {
@@ -151,6 +152,7 @@ public class VkChat {
     }
 
     private void disable() {
+        getLauncher().unregisterListeners();
         enable = false;
     }
 

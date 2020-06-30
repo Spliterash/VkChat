@@ -9,6 +9,17 @@ import java.util.UUID;
 
 public class PlayerDao extends BaseDaoImpl<PlayerModel, UUID> {
     protected PlayerDao(JdbcPooledConnectionSource connectionSource) throws SQLException {
-        super(connectionSource,PlayerModel.class);
+        super(connectionSource, PlayerModel.class);
+    }
+
+    public PlayerModel queryForVk(int id) {
+        try {
+            return queryBuilder()
+                    .where()
+                    .eq("vk", id)
+                    .queryForFirst();
+        } catch (SQLException throwables) {
+            throw new RuntimeException(throwables);
+        }
     }
 }
