@@ -1,11 +1,15 @@
 package ru.spliterash.vkchat.utils;
 
 import com.google.gson.JsonObject;
+import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
+import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.messages.ForeignMessage;
 import com.vk.api.sdk.objects.users.UserFull;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.UtilityClass;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.*;
@@ -17,10 +21,7 @@ import ru.spliterash.vkchat.db.Database;
 import ru.spliterash.vkchat.db.dao.PlayerDao;
 import ru.spliterash.vkchat.db.model.PlayerModel;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @UtilityClass
@@ -50,6 +51,33 @@ public class VkUtils {
             throw new RuntimeException("Token is not group token\n" + result.toString());
     }
 
+    /**
+     * Создаёт новую беседу
+     *
+     * @return URL на беседу если ок, если ошибка вылетит exception
+     */
+    public ConversationCreateResponse createNewConversation() throws ClientException, ApiException {
+        VkChat vk = VkChat.getInstance();
+        VkApiClient executor = VkChat.getExecutor();
+        //Костыль, потому что в SDK нет груп актора, уже сообщил в вк, а пока что так
+        int id = executor
+                .messages()
+                .createChat(new UserActor(null, vk.getActor().getAccessToken()))
+                .execute();
+        String link = executor
+                .messages()
+                .getInviteLink(vk.getActor(), id)
+                .execute()
+                .getLink();
+        return new ConversationCreateResponse(id,link);
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    public class ConversationCreateResponse {
+        private final int id;
+        private final String url;
+    }
 
     public TextComponent getUserComponent(UserFull user) {
         if (user == null) {
@@ -71,45 +99,50 @@ public class VkUtils {
         if (linked != null) {
             return linked;
         }
-        String title = Lang.USER_FORMAT.toString()
-                .replace("{first_name}", user.getFirstName())
-                .replace("{last_name}", user.getLastName());
+        String title = Lang.USER_FORMAT.toString(
+                "{first_name}", user.getFirstName(),
+                "{last_name}", user.getLastName()
+        );
         ComponentBuilder hoverBuilder = new ComponentBuilder("");
-        Lang.USER_HOVER.toList()
-                .stream()
-                .map(s -> {
-                    String sex, city, status, birthday;
-                    switch (user.getSex()) {
-                        case MALE:
-                            sex = Lang.MALE.toString();
-                            break;
-                        case FEMALE:
-                            sex = Lang.FEMALE.toString();
-                            break;
-                        default:
-                            sex = Lang.UNKNOWN.toString();
-                            break;
-                    }
-                    if (user.getCity() != null)
-                        city = user.getCity().getTitle();
-                    else
-                        city = Lang.UNKNOWN.toString();
-                    if (user.getStatus() != null)
-                        status = user.getStatus();
-                    else
-                        status = Lang.UNKNOWN.toString();
-                    if (user.getBdate() != null)
-                        birthday = user.getBdate();
-                    else
-                        birthday = Lang.UNKNOWN.toString();
-                    return s
-                            .replace("{sex}", sex)
-                            .replace("{city}", city)
-                            .replace("{status}", status)
-                            .replace("{birthday}", birthday) + "\n";
-
-                })
-                .forEach(s -> hoverBuilder.append(TextComponent.fromLegacyText(s)));
+        {
+            String sex, city, status, birthday;
+            switch (user.getSex()) {
+                case MALE:
+                    sex = Lang.MALE.toString();
+                    break;
+                case FEMALE:
+                    sex = Lang.FEMALE.toString();
+                    break;
+                default:
+                    sex = Lang.UNKNOWN.toString();
+                    break;
+            }
+            if (user.getCity() != null)
+                city = user.getCity().getTitle();
+            else
+                city = Lang.UNKNOWN.toString();
+            if (user.getStatus() != null)
+                status = user.getStatus();
+            else
+                status = Lang.UNKNOWN.toString();
+            if (user.getBdate() != null)
+                birthday = user.getBdate();
+            else
+                birthday = Lang.UNKNOWN.toString();
+            List<String> list = Lang.USER_HOVER.toList(
+                    "{sex}", sex,
+                    "{city}", city,
+                    "{status}", status,
+                    "{birthday}", birthday
+            );
+            for (int i = 0; i < list.size(); i++) {
+                String current = list.get(i);
+                hoverBuilder.append(TextComponent.fromLegacyText(current), ComponentBuilder.FormatRetention.NONE);
+                if (i < list.size() - 1) {
+                    hoverBuilder.append("\n");
+                }
+            }
+        }
         TextComponent component = new TextComponent(TextComponent.fromLegacyText(title));
         component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverBuilder.create()));
         return component;

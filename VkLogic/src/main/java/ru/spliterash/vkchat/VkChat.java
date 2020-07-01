@@ -14,6 +14,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import ru.spliterash.vkchat.commands.VkExecutor;
+import ru.spliterash.vkchat.utils.PeekList;
 import ru.spliterash.vkchat.utils.VkUtils;
 import ru.spliterash.vkchat.vk.CallbackApiLongPoll;
 import ru.spliterash.vkchat.wrappers.AbstractConfig;
@@ -22,6 +23,7 @@ import ru.spliterash.vkchat.wrappers.Launcher;
 import java.io.File;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Getter
 public class VkChat {
@@ -29,12 +31,12 @@ public class VkChat {
     private static VkChat instance;
     private final Launcher launcher;
     private final VkApiClient executor = new VkApiClient(HttpTransportClient.getInstance());
-    private final GroupActor actor;
+    @Getter(AccessLevel.NONE)
+    private final PeekList<GroupActor> actors;
     private final String commandPrefix;
     private boolean enable = true;
     @Getter(AccessLevel.NONE)
     private final Map<Integer, UserFull> savedUsers = new HashMap<>();
-    private final Set<String> admins = new HashSet<>();
     private String globalPeer;
 
     public static VkApiClient getExecutor() {
@@ -57,21 +59,25 @@ public class VkChat {
         }
         String lang = config.getString("lang", "en");
         Lang.reload(langFolder, lang);
-        String token = config.getString("token");
-        if (token == null) {
+        List<String> tokens = config.getStringList("token");
+        if (tokens.size() == 0) {
             launcher.getLogger().warning("Set config");
             launcher.unload();
             throw new RuntimeException("Token is null");
         }
         int id;
         try {
-            id = VkUtils.getMyId(token);
+            id = VkUtils.getMyId(tokens.get(0));
         } catch (Exception exception) {
             launcher.unload();
             throw new RuntimeException(exception);
         }
-        admins.addAll(config.getStringList("admins"));
-        actor = new GroupActor(id, token);
+        actors = new PeekList<>(
+                tokens
+                        .stream()
+                        .map(t -> new GroupActor(id, t))
+                        .collect(Collectors.toList())
+        );
         globalPeer = config.getString("global_peer");
         commandPrefix = config.getString("command_prefix", "/");
         int wait = Integer.parseInt(config.getString("wait", "5000"));
@@ -85,13 +91,22 @@ public class VkChat {
         }
     }
 
+    public GroupActor getActor() {
+        return actors.peek();
+    }
+
     public boolean isAdmin(UserFull id) {
         return getAdmins()
                 .stream()
                 .anyMatch(s -> id.getId().toString().equals(s) || id.getDomain().equals(s));
     }
 
+    private List<String> getAdmins() {
+        return launcher.getVkConfig().getStringList("admins");
+    }
+
     private void startLongPoll(int wait) throws ClientException, ApiException {
+        GroupActor actor = getActor();
         executor
                 .groups()
                 .setLongPollSettings(actor, actor.getGroupId())
@@ -140,7 +155,7 @@ public class VkChat {
     private void loadUsers(String... forceLoad) throws ClientException, ApiException {
         for (UserXtrCounters user : executor
                 .users()
-                .get(actor)
+                .get(getActor())
                 .userIds(forceLoad)
                 .fields(Fields.CITY, Fields.SEX, Fields.STATUS)
                 .execute()) {
@@ -158,7 +173,7 @@ public class VkChat {
 
 
     public static void onEnable(Launcher launcher) {
-        launcher.runAsync(() -> instance = new VkChat(launcher));
+        launcher.runTaskAsync(() -> instance = new VkChat(launcher));
     }
 
     public static void onDisable() {
@@ -198,7 +213,7 @@ public class VkChat {
             user = getCachedUserByDomain(id);
         }
         if (user == null) {
-            getLauncher().runAsync(() -> {
+            getLauncher().runTaskAsync(() -> {
                 try {
                     loadUsers(id);
                 } catch (ClientException | ApiException e) {
@@ -206,7 +221,7 @@ public class VkChat {
                 }
                 UserFull serverUser = getCachedUserByDomain(id);
                 if (onlySync)
-                    getLauncher().runSync(() -> consumer.accept(serverUser));
+                    getLauncher().runTask(() -> consumer.accept(serverUser));
                 else
                     consumer.accept(serverUser);
             });
@@ -214,7 +229,7 @@ public class VkChat {
             consumer.accept(user);
         } else {
             UserFull finalUser = user;
-            getLauncher().runSync(() -> consumer.accept(finalUser));
+            getLauncher().runTask(() -> consumer.accept(finalUser));
         }
     }
 }

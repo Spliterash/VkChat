@@ -5,8 +5,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.wrappers.*;
 
@@ -39,7 +39,7 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
     }
 
     @Override
-    public void runAsync(Runnable runnable) {
+    public void runTaskAsync(Runnable runnable) {
         Bukkit.getScheduler().runTaskAsynchronously(this, runnable);
     }
 
@@ -84,7 +84,19 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
     }
 
     @Override
-    public void runSync(Runnable runnable) {
+    public AbstractTask runTaskLater(Runnable runnable, int ticks) {
+        BukkitTask task = getServer().getScheduler().runTaskLater(this, runnable, ticks);
+        return new BukkitTaskImpl(task);
+    }
+
+    @Override
+    public AbstractTask runTaskLaterAsync(Runnable runnable, int ticks) {
+        BukkitTask task = getServer().getScheduler().runTaskLaterAsynchronously(this, runnable, ticks);
+        return new BukkitTaskImpl(task);
+    }
+
+    @Override
+    public void runTask(Runnable runnable) {
         getServer().getScheduler().runTask(this, runnable);
     }
 

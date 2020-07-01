@@ -9,9 +9,11 @@ import ru.spliterash.vkchat.wrappers.AbstractConfig;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
@@ -60,14 +62,37 @@ public enum Lang {
     OPEN_URL_HOVER("&6Click me to open a &bvk.com&6 conversation", "&6Нажми на меня чтобы открыть беседу &bvk.com"),
     ALREADY_LINK("&6You are already link your account to {user}", "&6Вы уже привязали свой аккаунт к {user}"),
     NOT_LINK(
-            "&6For this action your account need be linked, you can link use &b/vk link [domain]",
-            "&6Ваш аккаунт не привязан, вы можете привязать его с помощью команды &b/vk link [domain]&6, где &bdomain&6 это ваш домен"
+            "&6For this action your account need be linked, you can link use &b/vk link",
+            "&6Ваш аккаунт не привязан, вы можете привязать его с помощью команды &b/vk link"
     ),
     OK("&aOperation completed", "&aОперация выполнена"),
     WRONG_USER("&6User does not exists", "&6Пользователя не существует"),
-    SETUP_START("&6The conversation setup is started, please write down any message in the conversation where there is a bot and it has read rights",
-            "&6Настройка беседы начата, пожалуйста запишите любое сообщение в беседу где есть бот и ему выданы права чтения"),
-    NO_PEX("&cNo perms, sry", "&cУвы, но у тебя недостаточно прав");
+    SETUP_START("To install the conversation, invite the bot to the existing conversation " +
+            "and give it read permissions, and then enter &b{code}&a(clickable)&6. " +
+            "If you are too lazy, click &b&n{new}&6 and the conversation will be created automatically",
+            "Для установки беседы пригласите в существующую беседу бота и выдайте " +
+                    "ему права на чтение, а после этого введите &b&n{code}&a(кликабельно)&6. " +
+                    "Если вам лень, нажмите &b{new}&6 и беседа будет создана автоматически"),
+    NO_PEX("&cNo perms, sry", "&cУвы, но у тебя недостаточно прав"),
+    VERIFY_CODE_HOVER(
+            "&6Click and press CTRL + A, after CTRL + C to copy code",
+            "&6Кликните, а затем нажмите CTRL + A, а затем CTRL + C чтобы скопировать код"
+    ),
+    CREATE_NEW_CONVERSATION_HOVER(
+            "&6Click here to create new conversation",
+            "&6Нажмите сюда для автоматического создания новой беседы"
+    ),
+    CREATE_NEW_CONVERSATION("(Create new conversation)", "(Создать новую беседу)"),
+    SETUP_NOT_IN_PROGRESS(
+            "Conversation setup not in progress, you can run it with &b/vk setup",
+            "&6Настройка беседы не была запущена, вы можете запустить её командой &b/vk setup"
+    ),
+    SETUP_AUTODESTROY(
+            "&6Conversation setup will be autoremoved, because you dont setup conversation",
+            "&6Установка беседы была отменена поскольку вы ничего не сделали"),
+    LINK("[URL]", "[Ссылка]"),
+    CONVERSATION_CREATED("&6Conversation created, to open click: &b{link}", "&6Беседа успешно создана, чтобы открыть нажмите: &6{link}"),
+    CONVERSATION_OPEN_HOVER("&6Press me to open conversation", "&6Нажми на меня, чтобы попасть в эту беседу");
 
 
     /**
@@ -160,28 +185,37 @@ public enum Lang {
         return selected instanceof String;
     }
 
-    public List<String> toList() {
+    public List<String> toList(String... replace) {
         if (isString()) {
-            return Collections.singletonList(selected.toString());
-        } else {
+            return Collections.singletonList(StringUtils.replace(selected.toString(), replace));
+        } else if (replace.length > 0) {
             //noinspection unchecked
-            return (List<String>) selected;
-        }
+            return ((List<String>) selected)
+                    .stream()
+                    .map(s -> StringUtils.replace(s, replace))
+                    .collect(Collectors.toList());
+        } else
+            //noinspection unchecked
+            return new ArrayList<>(((List<String>) selected));
     }
 
-    public BaseComponent[] toComponent() {
+    public BaseComponent[] toComponent(String... replace) {
         if (isString())
-            return TextComponent.fromLegacyText(toString());
+            return TextComponent.fromLegacyText(toString(replace));
         else {
             ComponentBuilder builder = new ComponentBuilder("");
             //noinspection unchecked
             List<String> source = (List<String>) selected;
             for (String s : source) {
-                builder.append(TextComponent.fromLegacyText(s));
+                builder.append(TextComponent.fromLegacyText(StringUtils.replace(s, replace)));
                 builder.append("\n", ComponentBuilder.FormatRetention.NONE);
             }
             return builder.create();
         }
+    }
+
+    public String toString(String... replace) {
+        return StringUtils.replace(toString(), replace);
     }
 
     public String[] toArray() {

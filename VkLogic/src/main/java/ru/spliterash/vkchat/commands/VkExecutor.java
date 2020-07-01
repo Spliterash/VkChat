@@ -1,12 +1,19 @@
 package ru.spliterash.vkchat.commands;
 
+import com.vk.api.sdk.exceptions.ApiException;
+import com.vk.api.sdk.exceptions.ClientException;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import ru.spliterash.vkchat.Lang;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.chat.ChatBuilder;
+import ru.spliterash.vkchat.chat.ConversationSetup;
 import ru.spliterash.vkchat.db.Database;
 import ru.spliterash.vkchat.db.dao.PlayerDao;
+import ru.spliterash.vkchat.db.model.ConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
 import ru.spliterash.vkchat.utils.ArrayUtils;
 import ru.spliterash.vkchat.utils.VkUtils;
@@ -52,28 +59,72 @@ public class VkExecutor implements AbstractCommandExecutor {
             case "unlink":
                 processUnLink(sender);
                 break;
-            case "main":
-                setupMain(sender);
-                break;
             case "setup":
                 setup(sender);
+                break;
+            case "createNewConversation":
+                createNewConversation(sender);
+                break;
 
         }
+    }
+
+    private void createNewConversation(AbstractSender sender) {
+        if (isConsole(sender))
+            return;
+        AbstractPlayer player = (AbstractPlayer) sender;
+        ConversationSetup setup = ConversationSetup.getSetup(player);
+        if (setup == null) {
+            player.sendMessage(Lang.SETUP_NOT_IN_PROGRESS.toComponent());
+            return;
+        }
+        PlayerModel link;
+        PlayerDao dao = Database.getDao(PlayerModel.class);
+        try {
+            link = dao.queryForId(player.getUUID());
+        } catch (SQLException throwables) {
+            throw new RuntimeException(throwables);
+        }
+        if (link == null) {
+            player.sendMessage(Lang.NOT_LINK.toComponent());
+            return;
+        }
+        setup.destroy();
+        VkChat vk = VkChat.getInstance();
+        vk.getLauncher().runTaskAsync(() -> {
+            try {
+                VkUtils.ConversationCreateResponse response = VkUtils.createNewConversation();
+                TextComponent component = new TextComponent(TextComponent.fromLegacyText(Lang.LINK.toString()));
+                component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, response.getUrl()));
+                component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Lang.CONVERSATION_OPEN_HOVER.toComponent()));
+                player.sendMessage(
+                        ChatBuilder.compile(
+                                Lang.CONVERSATION_CREATED.toString(),
+                                ArrayUtils.createMap("{link}", new BaseComponent[]{component})
+                        )
+                );
+                ConversationModel model = new ConversationModel(
+                        response.getId(),
+                        link.getVk(),
+                        response.getUrl());
+                Database.getDao(ConversationModel.class).create(model);
+            } catch (ClientException | ApiException | SQLException e) {
+                player.sendMessage(e.getLocalizedMessage());
+            }
+
+        });
     }
 
     private void setup(AbstractSender sender) {
-        if(!sender.hasPermission("vk.setup")){
+        if (!sender.hasPermission("vk.setup")) {
             sender.sendMessage(Lang.NO_PEX.toComponent());
             return;
         }
-
-    }
-
-    private void setupMain(AbstractSender sender) {
-        if (!sender.hasPermission("vk.admin")) {
-            sender.sendMessage(Lang.NO_PEX.toComponent());
+        if (isConsole(sender))
             return;
-        }
+        AbstractPlayer player = (AbstractPlayer) sender;
+        ConversationSetup.start(player);
+
     }
 
     private void processUnLink(AbstractSender sender) {
@@ -84,7 +135,7 @@ public class VkExecutor implements AbstractCommandExecutor {
         if (isConsole(sender))
             return;
         AbstractPlayer player = (AbstractPlayer) sender;
-        PlayerDao dao = Database.getInstance().getDao(PlayerModel.class);
+        PlayerDao dao = Database.getDao(PlayerModel.class);
         PlayerModel model;
         try {
             model = dao.queryForId(player.getUUID());
@@ -108,7 +159,7 @@ public class VkExecutor implements AbstractCommandExecutor {
         if (isConsole(sender))
             return;
         AbstractPlayer player = (AbstractPlayer) sender;
-        PlayerDao dao = Database.getInstance().getDao(PlayerModel.class);
+        PlayerDao dao = Database.getDao(PlayerModel.class);
         try {
             PlayerModel link = dao.queryForId(player.getUUID());
             if (link != null) {
@@ -130,7 +181,7 @@ public class VkExecutor implements AbstractCommandExecutor {
                     newLink.setNickname(player.getName());
                     newLink.setVk(u.getId());
                     try {
-                        Database.getInstance().getDao(PlayerModel.class).create(newLink);
+                        Database.getDao(PlayerModel.class).create(newLink);
                         player.sendMessage(Lang.OK.toComponent());
                     } catch (SQLException throwables) {
                         player.sendMessage(ChatColor.RED + "OOOOOPS, Another server exception :(");

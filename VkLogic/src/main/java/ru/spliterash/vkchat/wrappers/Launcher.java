@@ -15,7 +15,7 @@ public interface Launcher {
 
     AbstractConfig wrapConfig(File file);
 
-    void runAsync(Runnable runnable);
+    void runTaskAsync(Runnable runnable);
 
     void unload();
 
@@ -37,13 +37,17 @@ public interface Launcher {
         }
     }
 
+    AbstractTask runTaskLater(Runnable runnable, int ticks);
+
+    AbstractTask runTaskLaterAsync(Runnable runnable, int ticks);
+
     default void sendAll(BaseComponent... components) {
         for (AbstractPlayer player : getOnlinePlayers()) {
             player.sendMessage(components);
         }
     }
 
-    void runSync(Runnable runnable);
+    void runTask(Runnable runnable);
 
     boolean isPrimaryThread();
 

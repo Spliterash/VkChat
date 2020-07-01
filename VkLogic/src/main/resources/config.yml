@@ -1,13 +1,35 @@
-# VK GROUP TOKEN
-token: ""
-# LongPoll wait time, DO NOT SET 0
+# =====================RU=====================
+# VK токены группы
+# Если вы получаете ошибку слишком много запросов в секунду, просто сгенерируйте токены и добавьте их сюда
+# Пожалуйста не пишите токены от разных групп, а то плагину *****
+# =====================EN=====================
+# VK GROUP TOKENS
+# If you get exception too many requests per second, add another tokens here, if you dont get use one token
+# Please DO NOT write tokens from different groups
+token:
+  - "group token here"
+# =====================RU=====================
+# Время ожидания лонгпулла, ни в коем случае не ставить меньше 1000
+# =====================EN=====================
+# LongPoll wait time, DO NOT SET LOWER 1000
 wait: 5000
-# Conservation invite link
-invite_link: 'https://vk.me/join/AJQ1dzBN8hfFA48mn7pGj6b7'
+# =====================RU=====================
+# Доступен расейский, просто пиши ru, уже переведённый, да Я РУССКИЙ
+# =====================EN=====================
 # ru|en or you custom, file create auto
 lang: en
+# =====================RU=====================
+# Префикс с которого начинаются команды
+# =====================EN=====================
 # Commands starts with:
 command_prefix: "/"
 # Id or domains
+# =====================RU=====================
+# Список админов
+# Они могут писать команды на сервер
+# Вкшные ID или домены (то чо после vk.com/ идёт на странице юзера(id писать без id))
+# =====================EN=====================
+# Admin list
+# They can execute commands on server
 admins:
   - spliterash
