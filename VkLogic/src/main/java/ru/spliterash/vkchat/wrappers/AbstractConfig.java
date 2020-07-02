@@ -45,4 +45,15 @@ public interface AbstractConfig {
 
     void save() throws IOException;
 
+    default int getInt(String key) {
+        Object raw = get(key);
+        if (raw instanceof Number)
+            return (int) raw;
+        else
+            try {
+                return Integer.parseInt(raw.toString());
+            } catch (Exception exception) {
+                return -1;
+            }
+    }
 }

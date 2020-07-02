@@ -10,6 +10,7 @@ import com.vk.api.sdk.objects.messages.ForeignMessage;
 import com.vk.api.sdk.objects.users.UserFull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.*;
@@ -20,6 +21,7 @@ import ru.spliterash.vkchat.chat.ChatBuilder;
 import ru.spliterash.vkchat.db.Database;
 import ru.spliterash.vkchat.db.dao.PlayerDao;
 import ru.spliterash.vkchat.db.model.PlayerModel;
+import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -54,29 +56,27 @@ public class VkUtils {
     /**
      * Создаёт новую беседу
      *
-     * @return URL на беседу если ок, если ошибка вылетит exception
+     * @return ID новой беседы если ок, если ошибка вылетит exception
      */
-    public ConversationCreateResponse createNewConversation() throws ClientException, ApiException {
+    public int createNewConversation() throws ClientException, ApiException {
         VkChat vk = VkChat.getInstance();
         VkApiClient executor = VkChat.getExecutor();
         //Костыль, потому что в SDK нет груп актора, уже сообщил в вк, а пока что так
-        int id = executor
+        return executor
                 .messages()
                 .createChat(new UserActor(null, vk.getActor().getAccessToken()))
                 .execute();
-        String link = executor
+
+    }
+
+    public String getInviteLink(int id) throws ClientException, ApiException {
+        VkChat vk = VkChat.getInstance();
+        VkApiClient executor = VkChat.getExecutor();
+        return executor
                 .messages()
                 .getInviteLink(vk.getActor(), id)
                 .execute()
                 .getLink();
-        return new ConversationCreateResponse(id,link);
-    }
-
-    @Getter
-    @RequiredArgsConstructor
-    public class ConversationCreateResponse {
-        private final int id;
-        private final String url;
     }
 
     public TextComponent getUserComponent(UserFull user) {
@@ -178,7 +178,7 @@ public class VkUtils {
 
     @Nullable
     public TextComponent getLinkedUserComponent(int id) {
-        PlayerDao dao = Database.getInstance().getDao(PlayerModel.class);
+        PlayerDao dao = Database.getDao(PlayerModel.class);
         PlayerModel link = dao.queryForVk(id);
         if (link == null)
             return null;
@@ -191,5 +191,17 @@ public class VkUtils {
         for (ForeignMessage fwdMessage : message.getFwdMessages()) {
             scanMessageIds(ids, fwdMessage);
         }
+    }
+
+    @SneakyThrows
+    public String getPlayerToVk(AbstractPlayer sender) {
+        PlayerDao dao = Database.getDao(PlayerModel.class);
+        PlayerModel link = dao.queryForId(sender.getUUID());
+        if (link != null) {
+            return "[" + sender.getName() + "|id" + link.getVk() + "]";
+        } else {
+            return sender.getName();
+        }
+
     }
 }

@@ -3,11 +3,9 @@ package ru.spliterash.vkchat.db;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
-import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 import lombok.Getter;
 import ru.spliterash.vkchat.VkChat;
-import ru.spliterash.vkchat.db.dao.PlayerDao;
 import ru.spliterash.vkchat.db.model.PlayerModel;
 
 import java.io.File;
@@ -15,9 +13,9 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 @Getter
-public class Database {
+public class Database{
     @Getter
-    private static Database instance = new Database();
+    private static Database instance;
     private final JdbcPooledConnectionSource connectionSource;
 
     private Database() {

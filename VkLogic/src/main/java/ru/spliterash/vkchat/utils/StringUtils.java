@@ -1,7 +1,14 @@
 package ru.spliterash.vkchat.utils;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import lombok.experimental.UtilityClass;
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.BaseComponentSerializer;
+import net.md_5.bungee.chat.ComponentSerializer;
+import net.md_5.bungee.chat.TextComponentSerializer;
 
 import java.util.List;
 import java.util.Random;
@@ -28,6 +35,10 @@ public class StringUtils {
         for (int i = 0; i < length; i++)
             sb.append(AB.charAt(rnd.nextInt(AB.length())));
         return sb.toString();
+    }
+
+    public String ComponentToJson(BaseComponent... components) {
+       return ComponentSerializer.toString(components);
     }
 
     public String replace(String source, String... replace) {

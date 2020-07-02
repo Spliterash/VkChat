@@ -37,6 +37,7 @@ public enum Lang {
     USER_FORMAT("{first_name} {last_name}"),
     PEER_COMPONENT("[VK]"),
     VK_TO_MINECRAFT("&9{vk}&a{user}&e:&f{text}"),
+    MINECRAFT_TO_VK("{user}: {message}"),
     MALE("Male", "Мужской"),
     FEMALE("Female", "Женский"),
     USER_VK_HELP(

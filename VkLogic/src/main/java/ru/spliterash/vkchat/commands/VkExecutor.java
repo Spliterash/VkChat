@@ -78,14 +78,14 @@ public class VkExecutor implements AbstractCommandExecutor {
             player.sendMessage(Lang.SETUP_NOT_IN_PROGRESS.toComponent());
             return;
         }
-        PlayerModel link;
+        PlayerModel playerModel;
         PlayerDao dao = Database.getDao(PlayerModel.class);
         try {
-            link = dao.queryForId(player.getUUID());
+            playerModel = dao.queryForId(player.getUUID());
         } catch (SQLException throwables) {
             throw new RuntimeException(throwables);
         }
-        if (link == null) {
+        if (playerModel == null) {
             player.sendMessage(Lang.NOT_LINK.toComponent());
             return;
         }
@@ -93,9 +93,10 @@ public class VkExecutor implements AbstractCommandExecutor {
         VkChat vk = VkChat.getInstance();
         vk.getLauncher().runTaskAsync(() -> {
             try {
-                VkUtils.ConversationCreateResponse response = VkUtils.createNewConversation();
+                int peer = VkUtils.createNewConversation();
+                String link = VkUtils.getInviteLink(peer);
                 TextComponent component = new TextComponent(TextComponent.fromLegacyText(Lang.LINK.toString()));
-                component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, response.getUrl()));
+                component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, link));
                 component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Lang.CONVERSATION_OPEN_HOVER.toComponent()));
                 player.sendMessage(
                         ChatBuilder.compile(
@@ -104,9 +105,9 @@ public class VkExecutor implements AbstractCommandExecutor {
                         )
                 );
                 ConversationModel model = new ConversationModel(
-                        response.getId(),
-                        link.getVk(),
-                        response.getUrl());
+                        peer,
+                        playerModel,
+                        link);
                 Database.getDao(ConversationModel.class).create(model);
             } catch (ClientException | ApiException | SQLException e) {
                 player.sendMessage(e.getLocalizedMessage());

@@ -1,5 +1,6 @@
 package ru.spliterash.vkchat;
 
+import com.j256.ormlite.dao.Dao;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.exceptions.ApiException;
@@ -14,6 +15,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import ru.spliterash.vkchat.commands.VkExecutor;
+import ru.spliterash.vkchat.db.Database;
+import ru.spliterash.vkchat.db.dao.ConversationDao;
+import ru.spliterash.vkchat.db.model.ConversationModel;
 import ru.spliterash.vkchat.utils.PeekList;
 import ru.spliterash.vkchat.utils.VkUtils;
 import ru.spliterash.vkchat.vk.CallbackApiLongPoll;
@@ -21,6 +25,7 @@ import ru.spliterash.vkchat.wrappers.AbstractConfig;
 import ru.spliterash.vkchat.wrappers.Launcher;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -37,7 +42,9 @@ public class VkChat {
     private boolean enable = true;
     @Getter(AccessLevel.NONE)
     private final Map<Integer, UserFull> savedUsers = new HashMap<>();
-    private String globalPeer;
+    @SuppressWarnings("FieldMayBeFinal")
+    private int globalPeer;
+    private String globalPeerUrl;
 
     public static VkApiClient getExecutor() {
         return getInstance().executor;
@@ -52,6 +59,7 @@ public class VkChat {
      */
     private VkChat(@NotNull Launcher launcher) {
         this.launcher = launcher;
+        Database.reload();
         AbstractConfig config = launcher.getVkConfig();
         File langFolder = new File(launcher.getDataFolder(), "lang");
         if (!langFolder.isDirectory()) {
@@ -78,17 +86,36 @@ public class VkChat {
                         .map(t -> new GroupActor(id, t))
                         .collect(Collectors.toList())
         );
-        globalPeer = config.getString("global_peer");
+        setGlobalPeer(config.getInt("global_peer"));
         commandPrefix = config.getString("command_prefix", "/");
         int wait = Integer.parseInt(config.getString("wait", "5000"));
         launcher.registerCommand("vk", new VkExecutor());
-        launcher.registerListener(new VkListener());
+        if (VkUtils.isConversation(globalPeer))
+            launcher.registerListener(new VkListener());
         try {
             startLongPoll(wait);
         } catch (ClientException | ApiException e) {
             e.printStackTrace();
             launcher.unload();
         }
+    }
+
+    private void setGlobalPeer(int id) {
+        globalPeer = id;
+        if (VkUtils.isConversation(id)) {
+            ConversationDao dao = Database.getDao(ConversationModel.class);
+            ConversationModel conversation;
+            try {
+                conversation = dao.queryForId(id);
+            } catch (SQLException throwables) {
+                throw new RuntimeException(throwables);
+            }
+            if (conversation != null) {
+                globalPeerUrl = conversation.getInviteLink();
+            } else
+                globalPeerUrl = null;
+        } else
+            globalPeerUrl = null;
     }
 
     public GroupActor getActor() {
@@ -231,5 +258,22 @@ public class VkChat {
             UserFull finalUser = user;
             getLauncher().runTask(() -> consumer.accept(finalUser));
         }
+    }
+
+    public void sendMessage(int peer, String message) {
+        try {
+            executor
+                    .messages()
+                    .send(getActor())
+                    .peerId(peer)
+                    .message(message)
+                    .execute();
+        } catch (ApiException | ClientException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean globalEnable() {
+        return VkUtils.isConversation(globalPeer);
     }
 }
