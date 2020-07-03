@@ -7,7 +7,7 @@ import ru.spliterash.vkchat.db.model.ConversationModel;
 import java.sql.SQLException;
 
 public class ConversationDao extends BaseDaoImpl<ConversationModel, Integer> {
-    protected ConversationDao(ConnectionSource source) throws SQLException {
-        super(source,ConversationModel.class);
+    public ConversationDao(ConnectionSource connectionSource, Class<ConversationModel> dataClass) throws SQLException {
+        super(connectionSource, dataClass);
     }
 }

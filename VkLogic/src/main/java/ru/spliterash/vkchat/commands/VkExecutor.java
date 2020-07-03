@@ -108,7 +108,7 @@ public class VkExecutor implements AbstractCommandExecutor {
                         peer,
                         playerModel,
                         link);
-                Database.getDao(ConversationModel.class).create(model);
+                model.saveOrUpdate();
             } catch (ClientException | ApiException | SQLException e) {
                 player.sendMessage(e.getLocalizedMessage());
             }

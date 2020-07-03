@@ -6,6 +6,7 @@ import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 import lombok.Getter;
 import ru.spliterash.vkchat.VkChat;
+import ru.spliterash.vkchat.db.model.ConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
 
 import java.io.File;
@@ -13,7 +14,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 @Getter
-public class Database{
+public class Database {
     @Getter
     private static Database instance;
     private final JdbcPooledConnectionSource connectionSource;
@@ -23,6 +24,7 @@ public class Database{
         try {
             connectionSource = new JdbcPooledConnectionSource("jdbc:sqlite:" + dbFile);
             TableUtils.createTableIfNotExists(connectionSource, PlayerModel.class);
+            TableUtils.createTableIfNotExists(connectionSource, ConversationModel.class);
         } catch (SQLException throwables) {
             throw new RuntimeException(throwables);
         }

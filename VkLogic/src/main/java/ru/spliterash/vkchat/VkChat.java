@@ -17,11 +17,15 @@ import org.jetbrains.annotations.NotNull;
 import ru.spliterash.vkchat.commands.VkExecutor;
 import ru.spliterash.vkchat.db.Database;
 import ru.spliterash.vkchat.db.dao.ConversationDao;
+import ru.spliterash.vkchat.db.dao.PlayerConversationDao;
 import ru.spliterash.vkchat.db.model.ConversationModel;
+import ru.spliterash.vkchat.db.model.PlayerConversationModel;
+import ru.spliterash.vkchat.db.model.PlayerModel;
 import ru.spliterash.vkchat.utils.PeekList;
 import ru.spliterash.vkchat.utils.VkUtils;
 import ru.spliterash.vkchat.vk.CallbackApiLongPoll;
 import ru.spliterash.vkchat.wrappers.AbstractConfig;
+import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 import ru.spliterash.vkchat.wrappers.Launcher;
 
 import java.io.File;
@@ -260,6 +264,10 @@ public class VkChat {
         }
     }
 
+
+    /**
+     * Не вызывайте в основном потоке, а то зависнет
+     */
     public void sendMessage(int peer, String message) {
         try {
             executor

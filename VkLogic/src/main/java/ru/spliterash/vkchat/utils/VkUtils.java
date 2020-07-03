@@ -19,10 +19,14 @@ import ru.spliterash.vkchat.Lang;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.chat.ChatBuilder;
 import ru.spliterash.vkchat.db.Database;
+import ru.spliterash.vkchat.db.dao.PlayerConversationDao;
 import ru.spliterash.vkchat.db.dao.PlayerDao;
+import ru.spliterash.vkchat.db.model.ConversationModel;
+import ru.spliterash.vkchat.db.model.PlayerConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -184,6 +188,18 @@ public class VkUtils {
             return null;
         else
             return new TextComponent(link.getNickname());
+    }
+
+    /**
+     * Только в асинхронном
+     */
+    public void sendPlayerPeerMessage(PlayerModel pModel, String message) throws SQLException {
+        VkChat vk = VkChat.getInstance();
+        PlayerConversationDao pcd = Database.getDao(PlayerConversationModel.class);
+        for (ConversationModel model : pcd.queryForPlayer(pModel)) {
+            int peerId = model.getId();
+            VkChat.getInstance().sendMessage(peerId, message);
+        }
     }
 
     public void scanMessageIds(Set<Integer> ids, ForeignMessage message) {

@@ -93,7 +93,10 @@ public enum Lang {
             "&6Установка беседы была отменена поскольку вы ничего не сделали"),
     LINK("[URL]", "[Ссылка]"),
     CONVERSATION_CREATED("&6Conversation created, to open click: &b{link}", "&6Беседа успешно создана, чтобы открыть нажмите: &6{link}"),
-    CONVERSATION_OPEN_HOVER("&6Press me to open conversation", "&6Нажми на меня, чтобы попасть в эту беседу");
+    CONVERSATION_OPEN_HOVER("&6Press me to open conversation", "&6Нажми на меня, чтобы попасть в эту беседу"),
+    PLAYER_JOIN("Player {player} join to server", "Игрок {player} зашёл на сервер"),
+    PLAYER_JOIN_FIRST("Player {player} join to server first time", "Игрок {player} зашёл на сервер в первый раз"),
+    PLAYER_EXIT("Player {player} exit", "Игрок {player} вышел с сервера");
 
 
     /**

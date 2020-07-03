@@ -1,7 +1,6 @@
 package ru.spliterash.vkchat.db.model;
 
 import com.j256.ormlite.dao.ForeignCollection;
-import com.j256.ormlite.dao.LazyForeignCollection;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -14,20 +13,20 @@ import ru.spliterash.vkchat.db.dao.ConversationDao;
 import ru.spliterash.vkchat.utils.VkUtils;
 
 import java.sql.SQLException;
-import java.util.Collection;
 
 @NoArgsConstructor
 @Getter
 @DatabaseTable(tableName = "conversations", daoClass = ConversationDao.class)
 public class ConversationModel {
-    @DatabaseField(id = true)
+    public static final String ID_NAME = "id";
+    @DatabaseField(id = true, columnName = ID_NAME)
     private int id;
     @DatabaseField(foreign = true)
     private PlayerModel owner;
     @DatabaseField(columnName = "invite_link")
     private String inviteLink;
-    @ForeignCollectionField
-    private ForeignCollection<PlayerModel> members;
+    @ForeignCollectionField()
+    private ForeignCollection<PlayerConversationModel> links;
 
     public ConversationModel(int id, PlayerModel owner, String inviteLink) {
         this.id = id;
@@ -37,12 +36,6 @@ public class ConversationModel {
 
     public void updateLink() throws ClientException, ApiException, SQLException {
         inviteLink = VkUtils.getInviteLink(id);
-        saveOrUpdate();
-    }
-
-    public void updateMembers(Collection<PlayerModel> list) throws SQLException {
-        members.clear();
-        members.addAll(list);
         saveOrUpdate();
     }
 

@@ -7,16 +7,34 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.spliterash.vkchat.db.dao.PlayerDao;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Getter
 @Setter
 @DatabaseTable(tableName = "players", daoClass = PlayerDao.class)
 public class PlayerModel {
-    @DatabaseField(id = true, index = true, canBeNull = false, unique = true, dataType = DataType.UUID_NATIVE)
+    public static final String UUID_NAME = "uuid";
+
+    @DatabaseField(columnName = UUID_NAME, id = true, index = true, canBeNull = false, unique = true)
     private UUID uuid;
     @DatabaseField
     private String nickname;
     @DatabaseField(canBeNull = false, unique = true)
     private int vk;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PlayerModel model = (PlayerModel) o;
+        return vk == model.vk &&
+                Objects.equals(uuid, model.uuid) &&
+                Objects.equals(nickname, model.nickname);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uuid, nickname, vk);
+    }
 }
