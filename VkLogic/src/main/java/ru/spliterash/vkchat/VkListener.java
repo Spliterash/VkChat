@@ -17,7 +17,7 @@ public class VkListener implements AbstractListener {
         if (noHasPerms(sender))
             return;
         if (VkChat.getInstance().getGlobalPeerUrl() != null)
-            sendGlobal(Lang.USER_FORMAT
+            sendGlobal(Lang.MINECRAFT_TO_VK
                     .toString(
                             "{user}", VkUtils.getPlayerToVk(sender),
                             "{message}", playerMessage

@@ -21,12 +21,12 @@ public class PlayerConversationDao extends BaseDaoImpl<PlayerConversationModel, 
         super(connectionSource, dataClass);
     }
 
-    public List<PlayerModel> queryForConversation(ConversationModel model) throws SQLException {
+    public List<PlayerModel> queryForConversation(int id) throws SQLException {
         QueryBuilder<PlayerConversationModel, Void> playersUUUIDs = queryBuilder();
         playersUUUIDs
                 .selectColumns(PlayerConversationModel.USER_UUID_FIELD_NAME)
                 .where()
-                .eq(PlayerConversationModel.CONVERSATION_ID_FIELD_NAME, model.getId());
+                .eq(PlayerConversationModel.CONVERSATION_ID_FIELD_NAME, id);
         PlayerDao dao = getDao(PlayerModel.class);
         return dao
                 .queryBuilder()

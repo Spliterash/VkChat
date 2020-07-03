@@ -1,9 +1,12 @@
 package ru.spliterash.vkchat.utils;
 
 import lombok.experimental.UtilityClass;
+import ru.spliterash.vkchat.db.model.PlayerModel;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @UtilityClass
 public class ArrayUtils {
@@ -31,5 +34,17 @@ public class ArrayUtils {
         Map<K, V> map = new HashMap<>();
         map.put(key, value);
         return map;
+    }
+
+    public int[] mergeTwoIntCollections(Collection<Integer> a1, Collection<Integer> a2) {
+        int[] array = new int[a1.size() + a2.size()];
+        int k = 0;
+        for (int t : a1) {
+            array[k++] = t;
+        }
+        for (int t : a2) {
+            array[k++] = t;
+        }
+        return array;
     }
 }

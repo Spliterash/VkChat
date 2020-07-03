@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class BukkitPlugin extends JavaPlugin implements Launcher {
 
@@ -121,6 +122,12 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
     @Override
     public void unregisterListeners() {
         HandlerList.unregisterAll(this);
+    }
+
+    @Override
+    public void executeCommand(String sender, String command, Consumer<String[]> response) {
+        BukkitCommandSender commandSender = new BukkitCommandSender(sender, response);
+        Bukkit.dispatchCommand(commandSender, command);
     }
 
 }

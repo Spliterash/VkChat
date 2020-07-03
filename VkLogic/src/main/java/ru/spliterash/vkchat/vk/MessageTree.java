@@ -17,9 +17,9 @@ import java.util.List;
 public class MessageTree {
     private final List<BaseComponent[]> print;
 
-    public MessageTree(Message message, String url) {
+    public MessageTree(Message message, BaseComponent... prefix) {
         print = new ArrayList<>(message.getFwdMessages().size() + 1);
-        print.add(VkUtils.buildMessage(message.getFromId(), message.getText(), url));
+        print.add(VkUtils.buildMessage(message.getFromId(), message.getText(), prefix));
         if (message.getFwdMessages().size() > 0)
             walk(message.getFwdMessages(), "");
         else if (message.getReplyMessage() != null) {

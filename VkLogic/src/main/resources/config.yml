@@ -23,12 +23,6 @@ lang: en
 # =====================EN=====================
 # Commands starts with:
 command_prefix: "/"
-# =====================RU=====================
-# Включает или выключает сообщения о входе/выходе или о смертях
-# =====================EN=====================
-# Enable or disable message about enter/exit or deaths
-join_message: true
-die_message: true
 # Id or domains
 # =====================RU=====================
 # Список админов

@@ -1,6 +1,5 @@
 package ru.spliterash.vkchat;
 
-import com.j256.ormlite.dao.Dao;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.exceptions.ApiException;
@@ -8,22 +7,29 @@ import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.messages.ForeignMessage;
 import com.vk.api.sdk.objects.messages.Message;
+import com.vk.api.sdk.objects.messages.MessageAction;
 import com.vk.api.sdk.objects.users.Fields;
 import com.vk.api.sdk.objects.users.UserFull;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
 import lombok.AccessLevel;
 import lombok.Getter;
+import net.md_5.bungee.api.chat.BaseComponent;
 import org.jetbrains.annotations.NotNull;
+import ru.spliterash.vkchat.chat.ConversationSetup;
 import ru.spliterash.vkchat.commands.VkExecutor;
 import ru.spliterash.vkchat.db.Database;
 import ru.spliterash.vkchat.db.dao.ConversationDao;
 import ru.spliterash.vkchat.db.dao.PlayerConversationDao;
+import ru.spliterash.vkchat.db.dao.PlayerDao;
 import ru.spliterash.vkchat.db.model.ConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
+import ru.spliterash.vkchat.utils.ArrayUtils;
+import ru.spliterash.vkchat.utils.ConversationInfo;
 import ru.spliterash.vkchat.utils.PeekList;
 import ru.spliterash.vkchat.utils.VkUtils;
 import ru.spliterash.vkchat.vk.CallbackApiLongPoll;
+import ru.spliterash.vkchat.vk.MessageTree;
 import ru.spliterash.vkchat.wrappers.AbstractConfig;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 import ru.spliterash.vkchat.wrappers.Launcher;
@@ -32,6 +38,7 @@ import java.io.File;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Getter
@@ -49,6 +56,7 @@ public class VkChat {
     @SuppressWarnings("FieldMayBeFinal")
     private int globalPeer;
     private String globalPeerUrl;
+    private String globalPeerTitle;
 
     public static VkApiClient getExecutor() {
         return getInstance().executor;
@@ -61,7 +69,7 @@ public class VkChat {
      * @param launcher Лаунчер, который запускает собсна, может быть спигот, банжа или Sponge
      *                 Можете вообще свой написать, если есть на что
      */
-    private VkChat(@NotNull Launcher launcher) {
+    private VkChat(@NotNull Launcher launcher) throws ClientException, ApiException, SQLException {
         this.launcher = launcher;
         Database.reload();
         AbstractConfig config = launcher.getVkConfig();
@@ -104,20 +112,13 @@ public class VkChat {
         }
     }
 
-    private void setGlobalPeer(int id) {
+    private void setGlobalPeer(int id) throws ClientException, ApiException, SQLException {
         globalPeer = id;
         if (VkUtils.isConversation(id)) {
-            ConversationDao dao = Database.getDao(ConversationModel.class);
-            ConversationModel conversation;
-            try {
-                conversation = dao.queryForId(id);
-            } catch (SQLException throwables) {
-                throw new RuntimeException(throwables);
-            }
-            if (conversation != null) {
-                globalPeerUrl = conversation.getInviteLink();
-            } else
-                globalPeerUrl = null;
+            ConversationModel conversation = refreshConversationUsers(id);
+            globalPeerUrl = conversation.getInviteLink();
+            globalPeerTitle = conversation.getTitle();
+
         } else
             globalPeerUrl = null;
     }
@@ -177,13 +178,184 @@ public class VkChat {
     }
 
     /**
-     * Обрабатываем сообщение, не зная какие есть ещё TODO
+     * Обрабатываем сообщение
      */
     private void processMessages(Message message) {
-        String text;
+        String text = message.getText();
+        final UserFull sender;
+        if (message.getFromId() != null)
+            sender = getCachedUserById(message.getFromId());
+        else
+            sender = null;
+        //Сообщение с картинками, кидаем в процесс и забиваем
+        try {
+            if (message.getAction() != null) {
+                MessageAction action = message.getAction();
+                processAction(message, action);
+            } else if (sender == null) {
+                throw new Exception("Null sender, how");
+            } else if (text == null) {
+                //FIXME Если будет зависать, надо будет обернуть в асинхрон
+                // launcher.runTaskAsync(()->{})
+                if (VkUtils.isConversation(message.getPeerId()))
+                    sendUserTextMessage(message);
+            } else if (text.startsWith(commandPrefix)) {
+                if (!isAdmin(sender)) {
+                    sendMessage(message.getPeerId(), Lang.NO_PEX.toPlainText());
+                    return;
+                }
+                String command = text.substring(commandPrefix.length());
+                launcher.runTask(() -> launcher.executeCommand("vkSender(id" + sender.getId() + ")", command, s -> {
+                    String commandReply;
+                    if (s == null || s.length == 0)
+                        commandReply = Lang.CONSOLE_COMMAND.toString();
+                    else
+                        commandReply = String.join("\n", s);
+                    launcher.runTaskAsync(() -> sendMessage(message.getPeerId(), commandReply));
+                }));
+            } else if (text.startsWith("verify ")) {
+                String code = text.substring(7);
+                verifyPeer(code, sender, message.getPeerId());
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            sendMessage(message.getPeerId(), ex.getLocalizedMessage());
+        }
     }
 
-    private void loadUsers(String... forceLoad) throws ClientException, ApiException {
+    private void processAction(Message message, MessageAction action) throws ClientException, ApiException {
+        switch (action.getType()) {
+            case CHAT_INVITE_USER:
+                sendActionMessage(message.getPeerId(), Lang.CONVERSATION_INVITE.toString(
+                        "{inviter}", VkUtils.getPlayerToVk(message.getFromId()),
+                        "{invited}", VkUtils.getPlayerToVk(action.getMemberId())
+                ));
+                break;
+            case CHAT_INVITE_USER_BY_LINK:
+                sendActionMessage(
+                        message.getPeerId(),
+                        Lang.CONVERSATION_INVITE_BY_URL.toString("{user}",
+                                VkUtils.getPlayerToVk(action.getMemberId()))
+                );
+                break;
+            case CHAT_KICK_USER:
+                sendActionMessage(
+                        message.getPeerId(),
+                        Lang.CONVERSATION_KICK.toString(
+                                "{user_1}", VkUtils.getPlayerToVk(message.getFromId()),
+                                "{user_2}", VkUtils.getPlayerToVk(action.getMemberId())
+                        )
+                );
+                break;
+        }
+    }
+
+    private void sendActionMessage(Integer peerId, String message) {
+
+    }
+
+    private void verifyPeer(String code, UserFull sender, Integer peerId) throws SQLException, ClientException, ApiException {
+        ConversationSetup setup = ConversationSetup.getSetup(code);
+        if (setup == null) {
+            sendMessage(peerId, Lang.WRONG_CODE.toString());
+            return;
+        }
+        setup.destroy();
+        PlayerDao pDao = Database.getDao(PlayerModel.class);
+        PlayerModel link = pDao.queryForVk(sender.getId());
+        if (link == null) {
+            sendMessage(peerId, Lang.NOT_LINK.toPlainText());
+            return;
+        }
+        ConversationDao cDao = Database.getDao(ConversationModel.class);
+        ConversationModel conversation = cDao.queryForId(peerId);
+        if (conversation != null) {
+            sendMessage(peerId, Lang.CONVERSATION_ALREADY_LINK.toString("{user}", VkUtils.getPlayerToVk(conversation.getOwner())));
+            return;
+        }
+        if (!setup.getPlayer().getUUID().equals(link.getUuid())) {
+            sendMessage(peerId, Lang.YOU_NOT_INITIALIZE_LINK.toString());
+            return;
+        }
+        ConversationModel model = new ConversationModel(peerId, link, VkUtils.getInviteLink(peerId));
+        cDao.create(model);
+        sendMessage(peerId, Lang.CONVERSATION_LINK_SUCCESS.toString());
+
+    }
+
+    public void sendMessageToPlayers(int peerId, Function<ConversationModel, BaseComponent[]> getter) throws ClientException, ApiException, SQLException {
+        if (peerId == globalPeer) {
+            for (AbstractPlayer player : launcher.getOnlinePlayers()) {
+                if (player.hasPermission("vk.use")) {
+                    player.sendMessage(getter.apply(null));
+                }
+            }
+        } else {
+            ConversationModel conversation = refreshConversationUsers(peerId);
+            if (conversation != null) {
+                PlayerConversationDao pcDao = Database.getDao(PlayerConversationModel.class);
+                List<PlayerModel> list = pcDao.queryForConversation(peerId);
+                BaseComponent[] msg = getter.apply(conversation);
+                for (PlayerModel model : list) {
+                    AbstractPlayer player = model.getOnlinePlayer();
+                    if (player != null && player.hasPermission("vk.use"))
+                        player.sendMessage(msg);
+                }
+            }
+
+        }
+    }
+
+    private void sendUserTextMessage(Message message) throws ClientException, ApiException, SQLException {
+        int peer = message.getPeerId();
+        sendMessageToPlayers(
+                peer,
+                conversationModel -> new MessageTree(message, VkUtils.getInviteLink(conversationModel.getInviteLink(), conversationModel.getTitle())).getAll());
+
+    }
+
+
+    public ConversationModel refreshConversationUsers(int conversationId) throws ClientException, ApiException, SQLException {
+        ConversationDao cDao = Database.getDao(ConversationModel.class);
+        PlayerDao pDao = Database.getDao(PlayerModel.class);
+        ConversationModel currentConversation = cDao.queryForId(conversationId);
+
+        if (currentConversation == null) {
+            sendMessage(conversationId, Lang.NOT_LINK_CONVERSATION.toString());
+            return null;
+        }
+        PlayerConversationDao pcDao = Database.getDao(PlayerConversationModel.class);
+        List<PlayerConversationModel> storeLinks = pcDao.findByConversation(conversationId);
+        ConversationInfo info = ConversationInfo.getInfo(conversationId);
+        Set<Integer> conversationMembers = info.getMembers();
+        Set<Integer> storeLinksIds = storeLinks.stream().map(a -> a.getPlayer().getVk()).collect(Collectors.toSet());
+        int[] array = ArrayUtils.mergeTwoIntCollections(conversationMembers, storeLinksIds);
+        List<PlayerModel> models = pDao.queryForVkMultiply(array);
+        for (Integer conversationMember : conversationMembers) {
+            PlayerModel currentPlayer = models
+                    .stream()
+                    .filter(m -> m.getVk() == conversationId)
+                    .findFirst()
+                    .orElse(null);
+            if (currentPlayer == null)
+                continue;
+            //Если пользователь не сохранён на сервере как участник беседы, то добавляем его
+            if (storeLinks.stream().noneMatch(storeUser -> storeUser.getPlayer().getVk() == conversationMember)) {
+                PlayerConversationModel newModel = new PlayerConversationModel(currentPlayer, currentConversation);
+                pcDao.createIfNotExists(newModel);
+            }
+        }
+        for (PlayerConversationModel storeLink : storeLinks) {
+            if (conversationMembers.stream().noneMatch(m -> m == storeLink.getPlayer().getVk())) {
+                pcDao.delete(storeLink);
+            }
+        }
+        currentConversation.setTitle(info.getTitle());
+        cDao.update(currentConversation);
+        return currentConversation;
+    }
+
+    public void loadUsers(String... forceLoad) throws ClientException, ApiException {
         for (UserXtrCounters user : executor
                 .users()
                 .get(getActor())
@@ -204,7 +376,14 @@ public class VkChat {
 
 
     public static void onEnable(Launcher launcher) {
-        launcher.runTaskAsync(() -> instance = new VkChat(launcher));
+        launcher.runTaskAsync(() -> {
+            try {
+                instance = new VkChat(launcher);
+            } catch (ClientException | ApiException | SQLException e) {
+                e.printStackTrace();
+                launcher.unload();
+            }
+        });
     }
 
     public static void onDisable() {
@@ -219,8 +398,22 @@ public class VkChat {
         enable = false;
     }
 
+    public UserFull getCachedUserById(int userId, boolean getIfNot) throws ClientException, ApiException {
+        UserFull user = savedUsers.get(userId);
+        if (user == null && getIfNot) {
+            loadUsers(String.valueOf(userId));
+            user = savedUsers.get(userId);
+        }
+        return user;
+
+    }
+
     public UserFull getCachedUserById(int user) {
-        return savedUsers.get(user);
+        try {
+            return getCachedUserById(user, false);
+        } catch (ClientException | ApiException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public UserFull getCachedUserByDomain(String domain) {
@@ -237,7 +430,7 @@ public class VkChat {
     }
 
     public void userAction(String id, Consumer<UserFull> consumer, boolean onlySync) {
-        UserFull user = null;
+        UserFull user;
         try {
             user = getCachedUserById(Integer.parseInt(id));
         } catch (Exception ex) {
@@ -281,7 +474,4 @@ public class VkChat {
         }
     }
 
-    public boolean globalEnable() {
-        return VkUtils.isConversation(globalPeer);
-    }
 }

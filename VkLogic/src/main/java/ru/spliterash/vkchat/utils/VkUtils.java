@@ -8,8 +8,6 @@ import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.messages.ForeignMessage;
 import com.vk.api.sdk.objects.users.UserFull;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import net.md_5.bungee.api.ChatColor;
@@ -32,23 +30,24 @@ import java.util.stream.Collectors;
 
 @UtilityClass
 public class VkUtils {
+    private final String EXECUTE_ID_CODE = "var l = API.photos.getMessagesUploadServer().upload_url;\n" +
+            "var i = l.indexOf(\"gid\");\n" +
+            "if (l.indexOf(\"gid=0\") == -1)\n" +
+            "{\n" +
+            "    return {\"type\":\"group\",\n" +
+            "            \"id\":parseInt(l.substr(i + 4, l.length - i + 4).split(\"&\")[0])};\n" +
+            "} else {\n" +
+            "    i = l.indexOf(\"mid\");\n" +
+            "    return {\"type\":\"user\",\n" +
+            "            \"id\":parseInt(l.substr(i + 4, l.length - i + 4).split(\"&\")[0])};\n" +
+            "}";
+
     public int getMyId(String token) throws ClientException, ApiException {
         GroupActor anonActor = new GroupActor(null, token);
         JsonObject result = VkChat
                 .getExecutor()
                 .execute()
-                .code(anonActor,
-                        "var l = API.photos.getMessagesUploadServer().upload_url;\n" +
-                                "var i = l.indexOf(\"gid\");\n" +
-                                "if (l.indexOf(\"gid=0\") == -1)\n" +
-                                "{\n" +
-                                "    return {\"type\":\"group\",\n" +
-                                "            \"id\":parseInt(l.substr(i + 4, l.length - i + 4).split(\"&\")[0])};\n" +
-                                "} else {\n" +
-                                "    i = l.indexOf(\"mid\");\n" +
-                                "    return {\"type\":\"user\",\n" +
-                                "            \"id\":parseInt(l.substr(i + 4, l.length - i + 4).split(\"&\")[0])};\n" +
-                                "}")
+                .code(anonActor, EXECUTE_ID_CODE)
                 .execute()
                 .getAsJsonObject();
         if (result.get("type").getAsString().equals("group")) {
@@ -73,12 +72,14 @@ public class VkUtils {
 
     }
 
-    public String getInviteLink(int id) throws ClientException, ApiException {
+    public String getInviteLink(int peerId) throws ClientException, ApiException {
+        if (!isConversation(peerId))
+            throw new RuntimeException("It not conversation");
         VkChat vk = VkChat.getInstance();
         VkApiClient executor = VkChat.getExecutor();
         return executor
                 .messages()
-                .getInviteLink(vk.getActor(), id)
+                .getInviteLink(vk.getActor(), peerId)
                 .execute()
                 .getLink();
     }
@@ -103,10 +104,7 @@ public class VkUtils {
         if (linked != null) {
             return linked;
         }
-        String title = Lang.USER_FORMAT.toString(
-                "{first_name}", user.getFirstName(),
-                "{last_name}", user.getLastName()
-        );
+        String title = VkUtils.getPlayerToVk(user);
         ComponentBuilder hoverBuilder = new ComponentBuilder("");
         {
             String sex, city, status, birthday;
@@ -152,9 +150,19 @@ public class VkUtils {
         return component;
     }
 
+
     public BaseComponent[] getInviteLink(String url) {
+        return getInviteLink(url, null);
+    }
+
+    public BaseComponent[] getInviteLink(String url, String name) {
         ComponentBuilder builder = new ComponentBuilder("");
-        builder.append(TextComponent.fromLegacyText(Lang.PEER_COMPONENT.toString()));
+        String componentText;
+        if (name == null)
+            componentText = Lang.CONVERSATION_COMPONENT.toString();
+        else
+            componentText = name;
+        builder.append(TextComponent.fromLegacyText(componentText));
         builder.event(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
         builder.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(Lang.OPEN_URL_HOVER.toString())));
         return builder.create();
@@ -164,11 +172,11 @@ public class VkUtils {
         return peerId >= 2000000000;
     }
 
-    public BaseComponent[] buildMessage(int fromId, String text, String peerLink) {
+    public BaseComponent[] buildMessage(int fromId, String text, BaseComponent... prefixComponents) {
         String messageStructure = Lang.VK_TO_MINECRAFT.toString();
         Map<String, BaseComponent[]> replaceMap = new HashMap<>();
-        if (peerLink != null)
-            replaceMap.put("{vk}", getInviteLink(peerLink));
+        if (prefixComponents != null && prefixComponents.length > 0)
+            replaceMap.put("{vk}", prefixComponents);
         else
             replaceMap.put("{vk}", new BaseComponent[]{new TextComponent()});
         replaceMap.put("{user}", new BaseComponent[]{getUserComponent(fromId)});
@@ -190,11 +198,16 @@ public class VkUtils {
             return new TextComponent(link.getNickname());
     }
 
+    public void sendToPlayers(int peerId,BaseComponent... components) {
+        if(VkChat.getInstance().getGlobalPeer()==peerId){
+
+        }
+    }
+
     /**
      * Только в асинхронном
      */
     public void sendPlayerPeerMessage(PlayerModel pModel, String message) throws SQLException {
-        VkChat vk = VkChat.getInstance();
         PlayerConversationDao pcd = Database.getDao(PlayerConversationModel.class);
         for (ConversationModel model : pcd.queryForPlayer(pModel)) {
             int peerId = model.getId();
@@ -214,10 +227,30 @@ public class VkUtils {
         PlayerDao dao = Database.getDao(PlayerModel.class);
         PlayerModel link = dao.queryForId(sender.getUUID());
         if (link != null) {
-            return "[" + sender.getName() + "|id" + link.getVk() + "]";
+            return getPlayerToVk(link);
         } else {
             return sender.getName();
         }
 
+    }
+
+    public String getPlayerToVk(PlayerModel model) {
+        return "[" + model.getNickname() + "|id" + model.getVk() + "]";
+    }
+
+    public String getPlayerToVk(int userId) throws ClientException, ApiException {
+        UserFull cached = VkChat.getInstance().getCachedUserById(userId, true);
+        return getPlayerToVk(cached);
+    }
+
+    private String getPlayerToVk(UserFull user) {
+        PlayerDao pDao = Database.getDao(PlayerModel.class);
+        PlayerModel link = pDao.queryForVk(user.getId());
+        if (link != null) {
+            return getPlayerToVk(link);
+        } else {
+            String format = Lang.USER_FORMAT.toString("{first_name}", user.getFirstName(), "{last_name}", user.getLastName());
+            return "[" + format + "|id" + user.getId() + "]";
+        }
     }
 }

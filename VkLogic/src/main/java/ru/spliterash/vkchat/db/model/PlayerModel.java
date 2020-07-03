@@ -5,7 +5,9 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import lombok.Getter;
 import lombok.Setter;
+import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.db.dao.PlayerDao;
+import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -36,5 +38,9 @@ public class PlayerModel {
     @Override
     public int hashCode() {
         return Objects.hash(uuid, nickname, vk);
+    }
+
+    public AbstractPlayer getOnlinePlayer() {
+        return VkChat.getInstance().getLauncher().getPlayer(getUuid());
     }
 }

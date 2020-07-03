@@ -1,6 +1,7 @@
 package ru.spliterash.vkchat;
 
 
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -35,7 +36,7 @@ public enum Lang {
             )
     ),
     USER_FORMAT("{first_name} {last_name}"),
-    PEER_COMPONENT("[VK]"),
+    CONVERSATION_COMPONENT("[VK]"),
     VK_TO_MINECRAFT("&9{vk}&a{user}&e:&f{text}"),
     MINECRAFT_TO_VK("{user}: {message}"),
     MALE("Male", "Мужской"),
@@ -96,7 +97,21 @@ public enum Lang {
     CONVERSATION_OPEN_HOVER("&6Press me to open conversation", "&6Нажми на меня, чтобы попасть в эту беседу"),
     PLAYER_JOIN("Player {player} join to server", "Игрок {player} зашёл на сервер"),
     PLAYER_JOIN_FIRST("Player {player} join to server first time", "Игрок {player} зашёл на сервер в первый раз"),
-    PLAYER_EXIT("Player {player} exit", "Игрок {player} вышел с сервера");
+    PLAYER_EXIT("Player {player} exit", "Игрок {player} вышел с сервера"),
+    NOT_LINK_CONVERSATION(
+            "This conversation does not link, please remove bot",
+            "Эта беседа не связана с сервером, пожалуйста, выгоните меня, чтобы не нагружать базу"
+    ),
+    CONSOLE_COMMAND(
+            "This command can be input only from console, so none output",
+            "Данная команда может быть выполнена только в консоли, поэтому невозможно прислать результат сюда"
+    ),
+    WRONG_CODE("Wrong verification code", "Неправильный код верификации"),
+    CONVERSATION_ALREADY_LINK("This conversation already linked by {user}", "Эта беседа уже связана {user}"),
+    YOU_NOT_INITIALIZE_LINK("It not your code, please go away", "Это не твой код верификации"),
+    CONVERSATION_LINK_SUCCESS("You link this conversation to your account", "Успешно, вы связали эту беседу со своим аккаунтом"),
+    CONVERSATION_INVITE_BY_URL("&6User &b{user}&6 join with url", "&b{user}&6 присоединился к беседе по ссылке"),
+    CONVERSATION_KICK("User {user_1} kick {user_2}", "Пользователь {user_1} кикнул {user_2}");
 
 
     /**
@@ -224,5 +239,9 @@ public enum Lang {
 
     public String[] toArray() {
         return toList().toArray(new String[0]);
+    }
+
+    public String toPlainText() {
+        return ChatColor.stripColor(toString());
     }
 }

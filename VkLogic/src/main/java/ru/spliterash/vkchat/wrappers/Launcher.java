@@ -5,6 +5,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import java.io.File;
 import java.util.Collection;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 public interface Launcher {
@@ -56,4 +57,6 @@ public interface Launcher {
     void unregisterListener(AbstractListener listener);
 
     void unregisterListeners();
+
+    void executeCommand(String sender, String command, Consumer<String[]> response);
 }
