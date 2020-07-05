@@ -54,7 +54,6 @@ public class VkChat {
     @SuppressWarnings("FieldMayBeFinal")
     private int globalPeer;
     private String globalPeerUrl;
-    private String globalPeerTitle;
     private ConversationModel globalConversation;
 
     public static VkApiClient getExecutor() {
@@ -97,9 +96,11 @@ public class VkChat {
                         .map(t -> new GroupActor(id, t))
                         .collect(Collectors.toList())
         );
-        setGlobalPeer(config.getInt("global_peer"));
+        Integer gId = config.getInt("global_peer");
+        if (gId != null)
+            setGlobalPeer(gId);
         commandPrefix = config.getString("command_prefix", "/");
-        int wait = Integer.parseInt(config.getString("wait", "5000"));
+        int wait = config.getInt("wait");
         launcher.registerCommand("vk", new VkExecutor());
         if (VkUtils.isConversation(globalPeer))
             launcher.registerListener(new VkListener());

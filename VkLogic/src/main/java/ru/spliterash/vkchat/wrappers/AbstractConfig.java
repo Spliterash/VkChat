@@ -45,7 +45,7 @@ public interface AbstractConfig {
 
     void save() throws IOException;
 
-    default int getInt(String key) {
+    default Integer getInt(String key,Integer def) {
         Object raw = get(key);
         if (raw instanceof Number)
             return (int) raw;
@@ -53,7 +53,11 @@ public interface AbstractConfig {
             try {
                 return Integer.parseInt(raw.toString());
             } catch (Exception exception) {
-                return -1;
+                return def;
             }
+    }
+
+    default Integer getInt(String key) {
+        return getInt(key,null);
     }
 }
