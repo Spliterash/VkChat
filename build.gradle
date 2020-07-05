@@ -1,0 +1,46 @@
+// Настройки для всех проектов
+allprojects {
+    apply plugin: 'idea'
+    apply plugin: 'java'
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+    dependencies {
+        compileOnly 'org.projectlombok:lombok:1.18.12'
+        annotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+        testCompileOnly 'org.projectlombok:lombok:1.18.12'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+        compileOnly 'org.jetbrains:annotations:16.0.2'
+        compileOnly 'log4j:log4j:1.2.17'
+        compileOnly 'org.apache.logging.log4j:log4j-api:2.13.3'
+    }
+
+    group = 'ru.spliterash'
+    version = '3.0'
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    jar {
+        manifest{
+            attributes "Main-Class" : "ru.spliterash.vkchat.VkChat"
+        }
+        dependsOn {
+            subprojects.collect {
+                it.getTasksByName('build', false)
+            }
+        }
+        from {
+            def projectClasses = configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+            def subProject = subprojects.collect { p ->
+                p.jar.outputs.files.getFiles().collect {
+                    it.isDirectory() ? it : zipTree(it)
+                }
+            }
+            return projectClasses + subProject;
+        }.exclude('META-INF', 'META-INF/**')
+    }
+}

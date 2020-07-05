@@ -1,14 +1,9 @@
 package ru.spliterash.vkchat.utils;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import lombok.experimental.UtilityClass;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.chat.BaseComponentSerializer;
-import net.md_5.bungee.chat.ComponentSerializer;
-import net.md_5.bungee.chat.TextComponentSerializer;
+import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
+import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
+import ru.spliterash.vkchat.md_5_chat.chat.ComponentSerializer;
 
 import java.util.List;
 import java.util.Random;
@@ -38,7 +33,7 @@ public class StringUtils {
     }
 
     public String ComponentToJson(BaseComponent... components) {
-       return ComponentSerializer.toString(components);
+        return ComponentSerializer.toString(components);
     }
 
     public String replace(String source, String... replace) {
@@ -55,5 +50,9 @@ public class StringUtils {
             return source;
         }
 
+    }
+
+    public boolean isNotEmpty(String value) {
+        return value != null && value.isEmpty();
     }
 }

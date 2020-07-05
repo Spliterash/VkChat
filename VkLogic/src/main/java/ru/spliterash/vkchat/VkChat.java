@@ -13,9 +13,10 @@ import com.vk.api.sdk.objects.users.UserFull;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
 import lombok.AccessLevel;
 import lombok.Getter;
-import net.md_5.bungee.api.chat.BaseComponent;
+import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
 import org.jetbrains.annotations.NotNull;
-import ru.spliterash.vkchat.chat.ConversationSetup;
+import ru.spliterash.vkchat.chat.ChatBuilder;
+import ru.spliterash.vkchat.chat.LinkHelper;
 import ru.spliterash.vkchat.commands.VkExecutor;
 import ru.spliterash.vkchat.db.Database;
 import ru.spliterash.vkchat.db.dao.ConversationDao;
@@ -24,10 +25,7 @@ import ru.spliterash.vkchat.db.dao.PlayerDao;
 import ru.spliterash.vkchat.db.model.ConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
-import ru.spliterash.vkchat.utils.ArrayUtils;
-import ru.spliterash.vkchat.utils.ConversationInfo;
-import ru.spliterash.vkchat.utils.PeekList;
-import ru.spliterash.vkchat.utils.VkUtils;
+import ru.spliterash.vkchat.utils.*;
 import ru.spliterash.vkchat.vk.CallbackApiLongPoll;
 import ru.spliterash.vkchat.vk.MessageTree;
 import ru.spliterash.vkchat.wrappers.AbstractConfig;
@@ -57,6 +55,7 @@ public class VkChat {
     private int globalPeer;
     private String globalPeerUrl;
     private String globalPeerTitle;
+    private ConversationModel globalConversation;
 
     public static VkApiClient getExecutor() {
         return getInstance().executor;
@@ -115,9 +114,7 @@ public class VkChat {
     private void setGlobalPeer(int id) throws ClientException, ApiException, SQLException {
         globalPeer = id;
         if (VkUtils.isConversation(id)) {
-            ConversationModel conversation = refreshConversationUsers(id);
-            globalPeerUrl = conversation.getInviteLink();
-            globalPeerTitle = conversation.getTitle();
+            globalConversation = refreshConversationUsers(id);
 
         } else
             globalPeerUrl = null;
@@ -187,7 +184,6 @@ public class VkChat {
             sender = getCachedUserById(message.getFromId());
         else
             sender = null;
-        //Сообщение с картинками, кидаем в процесс и забиваем
         try {
             if (message.getAction() != null) {
                 MessageAction action = message.getAction();
@@ -216,6 +212,9 @@ public class VkChat {
             } else if (text.startsWith("verify ")) {
                 String code = text.substring(7);
                 verifyPeer(code, sender, message.getPeerId());
+            } else if (text.startsWith("link ")) {
+                String code = text.substring(5);
+                linkUser(code, sender, message.getPeerId());
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -223,46 +222,90 @@ public class VkChat {
         }
     }
 
-    private void processAction(Message message, MessageAction action) throws ClientException, ApiException {
+
+    private void processAction(Message message, MessageAction action) throws ClientException, ApiException, SQLException {
         switch (action.getType()) {
             case CHAT_INVITE_USER:
-                sendActionMessage(message.getPeerId(), Lang.CONVERSATION_INVITE.toString(
-                        "{inviter}", VkUtils.getPlayerToVk(message.getFromId()),
-                        "{invited}", VkUtils.getPlayerToVk(action.getMemberId())
-                ));
+                sendActionMessage(
+                        message.getPeerId(),
+                        Lang.CONVERSATION_INVITE.toString(),
+                        new SimpleMapBuilder<String, BaseComponent[]>()
+                                .add("{inviter}", new BaseComponent[]{VkUtils.getUserComponent(message.getFromId())})
+                                .add("{invited}", new BaseComponent[]{VkUtils.getUserComponent(action.getMemberId())})
+                                .getMap()
+
+
+                );
                 break;
             case CHAT_INVITE_USER_BY_LINK:
                 sendActionMessage(
                         message.getPeerId(),
-                        Lang.CONVERSATION_INVITE_BY_URL.toString("{user}",
-                                VkUtils.getPlayerToVk(action.getMemberId()))
-                );
+                        Lang.CONVERSATION_INVITE_BY_URL.toString(),
+                        new SimpleMapBuilder<String, BaseComponent[]>()
+                                .add("{user}", new BaseComponent[]{VkUtils.getUserComponent(message.getFromId())})
+                                .getMap());
                 break;
             case CHAT_KICK_USER:
                 sendActionMessage(
                         message.getPeerId(),
-                        Lang.CONVERSATION_KICK.toString(
-                                "{user_1}", VkUtils.getPlayerToVk(message.getFromId()),
-                                "{user_2}", VkUtils.getPlayerToVk(action.getMemberId())
-                        )
-                );
+                        Lang.CONVERSATION_KICK.toString(),
+                        new SimpleMapBuilder<String, BaseComponent[]>()
+                                .add("{user_1}", new BaseComponent[]{VkUtils.getUserComponent(message.getFromId())})
+                                .add("{user_2}", new BaseComponent[]{VkUtils.getUserComponent(action.getMemberId())})
+                                .getMap());
                 break;
         }
     }
 
-    private void sendActionMessage(Integer peerId, String message) {
+    private void sendActionMessage(Integer peerId, String messageStr, Map<String, BaseComponent[]> map) throws ClientException, ApiException, SQLException {
+        String format = Lang.VK_TO_MINECRAFT_INFO_FORMAT.toString();
+        sendMessageToPlayers(peerId, conversationModel -> {
+            BaseComponent[] vk = VkUtils.getInviteLink(conversationModel.getInviteLink(), conversationModel.getTitle());
+            BaseComponent[] message = ChatBuilder.compile(messageStr, map);
+            Map<String, BaseComponent[]> formatMap = new HashMap<>();
+            formatMap.put("{vk}", vk);
+            formatMap.put("{message}", message);
+            return ChatBuilder.compile(format, formatMap);
+        });
+    }
 
+
+    private void linkUser(String code, UserFull sender, int peerId) throws SQLException {
+        LinkHelper setup = checkLink(code, peerId);
+        if (setup == null)
+            return;
+        PlayerModel link = setup.getPlayerModel();
+        if (link != null) {
+            sendMessage(peerId, Lang.ALREADY_LINK.toPlainText("{user}", VkUtils.getPlayerToVk(link)));
+            return;
+        }
+        AbstractPlayer p = setup.getPlayer();
+        PlayerDao dao = Database.getDao(PlayerModel.class);
+        PlayerModel anotherLink = dao.queryForVk(sender.getId());
+        if (anotherLink != null) {
+            sendMessage(peerId, Lang.VK_LINKED.toString("{minecraft}", VkUtils.getPlayerToVk(anotherLink)));
+            return;
+        }
+        link = new PlayerModel(p.getUUID(), p.getName(), sender.getId());
+        dao.create(link);
+        sendMessage(peerId, Lang.USER_LINK_SUCCESS.toString());
+    }
+
+    private LinkHelper checkLink(String code, int peerId) {
+        LinkHelper setup = LinkHelper.getSetup(code);
+        if (setup == null) {
+            sendMessage(peerId, Lang.WRONG_CODE.toString());
+            return null;
+        }
+        setup.destroy();
+        return setup;
     }
 
     private void verifyPeer(String code, UserFull sender, Integer peerId) throws SQLException, ClientException, ApiException {
-        ConversationSetup setup = ConversationSetup.getSetup(code);
-        if (setup == null) {
-            sendMessage(peerId, Lang.WRONG_CODE.toString());
+        LinkHelper setup = checkLink(code, sender.getId());
+        if (setup == null)
             return;
-        }
-        setup.destroy();
-        PlayerDao pDao = Database.getDao(PlayerModel.class);
-        PlayerModel link = pDao.queryForVk(sender.getId());
+        PlayerModel link = setup.getPlayerModel();
         if (link == null) {
             sendMessage(peerId, Lang.NOT_LINK.toPlainText());
             return;
@@ -287,7 +330,7 @@ public class VkChat {
         if (peerId == globalPeer) {
             for (AbstractPlayer player : launcher.getOnlinePlayers()) {
                 if (player.hasPermission("vk.use")) {
-                    player.sendMessage(getter.apply(null));
+                    player.sendMessage(getter.apply(globalConversation));
                 }
             }
         } else {

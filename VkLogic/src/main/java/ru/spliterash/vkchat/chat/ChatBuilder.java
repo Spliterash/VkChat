@@ -8,9 +8,9 @@ import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.messages.Message;
 import lombok.experimental.UtilityClass;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.TextComponent;
+import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
+import ru.spliterash.vkchat.md_5_chat.api.chat.ComponentBuilder;
+import ru.spliterash.vkchat.md_5_chat.api.chat.TextComponent;
 
 import java.util.*;
 import java.util.regex.Matcher;

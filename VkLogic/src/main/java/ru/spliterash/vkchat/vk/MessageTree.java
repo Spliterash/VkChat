@@ -2,10 +2,10 @@ package ru.spliterash.vkchat.vk;
 
 import com.vk.api.sdk.objects.messages.ForeignMessage;
 import com.vk.api.sdk.objects.messages.Message;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.TextComponent;
+import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
+import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
+import ru.spliterash.vkchat.md_5_chat.api.chat.ComponentBuilder;
+import ru.spliterash.vkchat.md_5_chat.api.chat.TextComponent;
 import ru.spliterash.vkchat.utils.ArrayUtils;
 import ru.spliterash.vkchat.utils.VkUtils;
 

@@ -2,6 +2,7 @@ package ru.spliterash.vkchat.launchers.bukkit;
 
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandException;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -127,7 +128,12 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
     @Override
     public void executeCommand(String sender, String command, Consumer<String[]> response) {
         BukkitCommandSender commandSender = new BukkitCommandSender(sender, response);
-        Bukkit.dispatchCommand(commandSender, command);
+        try {
+            Bukkit.dispatchCommand(commandSender, command);
+        } catch (CommandException ex) {
+            response.accept(null);
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+        }
     }
 
 }

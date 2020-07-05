@@ -10,8 +10,7 @@ import com.vk.api.sdk.objects.messages.ForeignMessage;
 import com.vk.api.sdk.objects.users.UserFull;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.*;
+import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
 import org.jetbrains.annotations.Nullable;
 import ru.spliterash.vkchat.Lang;
 import ru.spliterash.vkchat.VkChat;
@@ -22,6 +21,7 @@ import ru.spliterash.vkchat.db.dao.PlayerDao;
 import ru.spliterash.vkchat.db.model.ConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
+import ru.spliterash.vkchat.md_5_chat.api.chat.*;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 
 import java.sql.SQLException;
@@ -172,8 +172,8 @@ public class VkUtils {
         return peerId >= 2000000000;
     }
 
-    public BaseComponent[] buildMessage(int fromId, String text, BaseComponent... prefixComponents) {
-        String messageStructure = Lang.VK_TO_MINECRAFT.toString();
+    public BaseComponent[] buildMessage(int fromId, String text, BaseComponent[] prefixComponents) {
+        String messageStructure = Lang.VK_TO_MINECRAFT_CHAT_FORMAT.toString();
         Map<String, BaseComponent[]> replaceMap = new HashMap<>();
         if (prefixComponents != null && prefixComponents.length > 0)
             replaceMap.put("{vk}", prefixComponents);

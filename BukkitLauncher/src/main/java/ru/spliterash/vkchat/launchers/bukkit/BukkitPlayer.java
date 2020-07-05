@@ -13,7 +13,7 @@ public class BukkitPlayer extends BukkitSender implements AbstractPlayer {
     }
 
     public Player getPlayer() {
-        return (Player) getExecutor();
+        return (Player) getSender();
     }
 
     public boolean isOnline() {
@@ -24,5 +24,4 @@ public class BukkitPlayer extends BukkitSender implements AbstractPlayer {
     public UUID getUUID() {
         return getPlayer().getUniqueId();
     }
-
 }

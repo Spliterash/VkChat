@@ -1,10 +1,10 @@
 package ru.spliterash.vkchat;
 
 
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.TextComponent;
+import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
+import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
+import ru.spliterash.vkchat.md_5_chat.api.chat.ComponentBuilder;
+import ru.spliterash.vkchat.md_5_chat.api.chat.TextComponent;
 import ru.spliterash.vkchat.utils.StringUtils;
 import ru.spliterash.vkchat.wrappers.AbstractConfig;
 
@@ -37,18 +37,19 @@ public enum Lang {
     ),
     USER_FORMAT("{first_name} {last_name}"),
     CONVERSATION_COMPONENT("[VK]"),
-    VK_TO_MINECRAFT("&9{vk}&a{user}&e:&f{text}"),
-    MINECRAFT_TO_VK("{user}: {message}"),
+    VK_TO_MINECRAFT_CHAT_FORMAT("&9{vk}&a{user}&e:&f{text}"),
+    VK_TO_MINECRAFT_INFO_FORMAT("&9{vk}&a{message}"),
+    MINECRAFT_TO_VK_FORMAT("{user}: {message}"),
     MALE("Male", "Мужской"),
     FEMALE("Female", "Женский"),
     USER_VK_HELP(
             Arrays.asList(
-                    "&b/vk link [domain] &6- Link minecraft to vk",
+                    "&b/vk link &6- Link minecraft to vk",
                     "&b/vk [message] &6- send message to personal conversation and online players in this conversation",
                     "&b/vk setup &6- Setup or create new private conversation"
             ),
             Arrays.asList(
-                    "&bvk link [domain] &6- Привязать аккаунт майнкрафта к вк",
+                    "&bvk link &6- Привязать аккаунт майнкрафта к вк",
                     "&bvk [сообщение] &6- Отправить сообщение в приватную беседу и онлайн игрокам в этой беседе",
                     "&bvk setup &6- Настроить или создать новую приватную беседу"
             )
@@ -110,8 +111,18 @@ public enum Lang {
     CONVERSATION_ALREADY_LINK("This conversation already linked by {user}", "Эта беседа уже связана {user}"),
     YOU_NOT_INITIALIZE_LINK("It not your code, please go away", "Это не твой код верификации"),
     CONVERSATION_LINK_SUCCESS("You link this conversation to your account", "Успешно, вы связали эту беседу со своим аккаунтом"),
-    CONVERSATION_INVITE_BY_URL("&6User &b{user}&6 join with url", "&b{user}&6 присоединился к беседе по ссылке"),
-    CONVERSATION_KICK("User {user_1} kick {user_2}", "Пользователь {user_1} кикнул {user_2}");
+    CONVERSATION_INVITE_BY_URL("&aUser &b{user}&a join with url", "&b{user}&a присоединился к беседе по ссылке"),
+    CONVERSATION_KICK("&aUser &b{user_1}&a kick &b{user_2}", "&aПользователь &b{user_1}&a кикнул &b{user_2}"),
+    LINK_START(
+            "In order to link your minecraft account with VK, you need to send this code &b({code})&6 to the group messages",
+            "Для того чтобы связать свой майнкрафт аккаунт с вк, вам необходимо отправить этот код &b({code})&6 в сообщения группы"
+    ),
+
+    VK_LINKED("This vk account already linked to {minecraft}", "Этот аккаунт уже привязан на {minecraft}"),
+    USER_LINK_SUCCESS(
+            "You success link user to minecraft",
+            "Вы успешно связали свой аккаунт с майнкрафтом, теперь ваш ник будет видно в сообщениях"
+    );
 
 
     /**
@@ -241,7 +252,7 @@ public enum Lang {
         return toList().toArray(new String[0]);
     }
 
-    public String toPlainText() {
-        return ChatColor.stripColor(toString());
+    public String toPlainText(String... replace) {
+        return ChatColor.stripColor(toString(replace));
     }
 }

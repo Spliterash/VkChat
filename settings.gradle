@@ -1,0 +1,13 @@
+rootProject.name = 'VkChat'
+for (File folder : rootProject.getProjectDir().listFiles(new FileFilter() {
+    @Override
+    boolean accept(File pathname) {
+        return pathname.isDirectory();
+    }
+})) {
+    File gradleFile = new File(folder, "build.gradle")
+    if (gradleFile.isFile()) {
+        include(folder.getName())
+    }
+}
+

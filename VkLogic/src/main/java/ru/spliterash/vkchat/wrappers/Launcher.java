@@ -1,6 +1,6 @@
 package ru.spliterash.vkchat.wrappers;
 
-import net.md_5.bungee.api.chat.BaseComponent;
+import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
 
 import java.io.File;
 import java.util.Collection;

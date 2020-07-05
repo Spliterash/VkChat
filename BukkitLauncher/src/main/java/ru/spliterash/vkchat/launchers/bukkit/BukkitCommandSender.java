@@ -9,11 +9,9 @@ import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class BukkitCommandSender implements CommandSender {
     private final Consumer<String[]> onReply;
@@ -49,12 +47,16 @@ public class BukkitCommandSender implements CommandSender {
         return new Spigot() {
             @Override
             public void sendMessage(BaseComponent component) {
-                BukkitCommandSender.this.sendMessage(component.toPlainText());
+                onReply.accept(new String[]{component.toPlainText()});
             }
 
             @Override
             public void sendMessage(BaseComponent... components) {
-                BukkitCommandSender.this.sendMessage(Arrays.stream(components).map(BaseComponent::toPlainText).collect(Collectors.joining()));
+                StringBuilder builder = new StringBuilder();
+                for (BaseComponent component : components) {
+                    builder.append(component.toPlainText());
+                }
+                onReply.accept(new String[]{builder.toString()});
             }
         };
     }
