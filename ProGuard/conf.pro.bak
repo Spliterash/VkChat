@@ -5,14 +5,12 @@
 -libraryjars '..\libs'
 -printmapping 'VkChat.map'
 -keepattributes *Annotation*,SourceFile, LineNumberTable
-#-dontnote
+-dontnote
 -dontwarn org.slf4j.**
 -dontwarn javax.**
 -dontwarn org.apache.**
 # Для тестов
--dontobfuscate
-
--whyareyoukeeping class com.vk.api.sdk.objects.widgets.**
+#-dontobfuscate
 
 
 # OrmLite

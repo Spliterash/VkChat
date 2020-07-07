@@ -20,17 +20,7 @@ allprojects {
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
-
-
     jar {
-        manifest {
-            attributes "Main-Class": "ru.spliterash.vkchat.VkChat"
-        }
-        dependsOn {
-            subprojects.collect {
-                it.getTasksByName('build', false)
-            }
-        }
         from {
             def projectClasses = configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
             def subProject = subprojects.collect { p ->
@@ -38,10 +28,23 @@ allprojects {
                     it.isDirectory() ? it : zipTree(it)
                 }
             }
-            return projectClasses + subProject;
+            return projectClasses + subProject
         }.exclude('META-INF', 'META-INF/**')
     }
+}
+subprojects {
+    dependencies {
+        compileOnly parent
+    }
+}
 
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile 'com.j256.ormlite:ormlite-jdbc:5.1'
+    compileOnly 'com.google.code.gson:gson:2.8.6'
+    compile 'org.apache.httpcomponents:httpmime:4.5.8'
+    compileOnly 'log4j:log4j:1.2.17'
+    compileOnly 'org.apache.logging.log4j:log4j-api:2.13.3'
 }
 /**
  * Копия либ для ProGuard

@@ -1,8 +1,0 @@
-dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile 'com.j256.ormlite:ormlite-jdbc:5.1'
-    compileOnly 'com.google.code.gson:gson:2.8.6'
-    compile 'org.apache.httpcomponents:httpmime:4.5.8'
-    compileOnly 'log4j:log4j:1.2.17'
-    compileOnly 'org.apache.logging.log4j:log4j-api:2.13.3'
-}
