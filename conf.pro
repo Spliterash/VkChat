@@ -1,11 +1,7 @@
--injars '..\build\libs\VkChat-3.0.jar'
--outjars 'VkChat-3.0.jar'
-
 -libraryjars '<java.home>\lib\rt.jar'
--libraryjars '..\libs'
 -printmapping 'VkChat.map'
 -keepattributes *Annotation*,SourceFile, LineNumberTable
-#-dontnote
+-dontnote
 -dontwarn org.slf4j.**
 -dontwarn javax.**
 -dontwarn org.apache.**

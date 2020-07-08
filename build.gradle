@@ -1,3 +1,5 @@
+import proguard.gradle.ProGuardTask
+
 // Настройки для всех проектов
 allprojects {
     apply plugin: 'idea'
@@ -31,7 +33,10 @@ allprojects {
             return projectClasses + subProject
         }.exclude('META-INF', 'META-INF/**')
     }
+
+
 }
+//Для сабпроектов, чтоб видели этот
 subprojects {
     dependencies {
         compileOnly parent
@@ -41,19 +46,69 @@ subprojects {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile 'com.j256.ormlite:ormlite-jdbc:5.1'
-    compileOnly 'com.google.code.gson:gson:2.8.6'
+    compileOnly 'com.google.code.gson:gson:2.8.0'
     compile 'org.apache.httpcomponents:httpmime:4.5.8'
     compileOnly 'log4j:log4j:1.2.17'
     compileOnly 'org.apache.logging.log4j:log4j-api:2.13.3'
 }
+//Зона proguard
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+        google()
+    }
+    dependencies {
+        classpath 'com.guardsquare:proguard-gradle:7.0.0'
+    }
+    configurations.all {
+        resolutionStrategy {
+            dependencySubstitution {
+                substitute module('net.sf.proguard:proguard-gradle') with module('com.guardsquare:proguard-gradle:7.0.0')
+            }
+        }
+    }
+}
 /**
  * Копия либ для ProGuard
  */
-task copyDependencies(type: Copy) {
+List<File> getProGuardDependencies() {
     File libFolder = new File(rootProject.getProjectDir(), "libs")
     delete libFolder
-    subprojects.each {
-        from(it.configurations.compileOnly)
-        into libFolder
+    Set<ResolvedArtifact> compileOnly = new HashSet<>()
+    Set<ResolvedArtifact> runTime = new HashSet<>()
+    allprojects.each { pro ->
+        pro.configurations.compileOnly.resolvedConfiguration.resolvedArtifacts.each {
+            compileOnly.add(it)
+        }
+        pro.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each {
+            runTime.add(it)
+        }
     }
+    compileOnly.removeIf({ a ->
+        if (a.id.componentIdentifier.displayName.contains("project :")) {
+            return true
+        } else {
+            return runTime
+                    .stream()
+                    .anyMatch({ rA ->
+                        a.name == rA.name
+                    })
+        }
+    })
+    return compileOnly.collect { a ->
+        a.getFile()
+    }
+
+}
+
+
+task proguard(type: ProGuardTask) {
+    def libs = getProGuardDependencies()
+    println(libs)
+    configuration("conf.pro")
+    libraryjars libs
+    injars configurations.archives.allArtifacts.first().file
+    outjars 'VkChat_minifed.jar'
+
 }
