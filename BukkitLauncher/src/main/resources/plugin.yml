@@ -1,7 +1,7 @@
 name: VkChat
 main: ru.spliterash.vkchat.launchers.bukkit.BukkitPlugin
 author: Spliterash
-version: ${revision}
+version: @version@
 api-version: 1.13
 commands:
   vk:
