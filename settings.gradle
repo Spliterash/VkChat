@@ -8,14 +8,14 @@ void includeFolder(File mainFolder) {
     for (File folder : mainFolder.listFiles(new FileFilter() {
         @Override
         boolean accept(File pathname) {
-            return pathname.isDirectory();
+            return pathname.isDirectory()
         }
     })) {
         File gradleFile = new File(folder, "build.gradle")
         if (gradleFile.isFile()) {
             include(folder.getName())
         }
-        if (!blacklist.contains(folder.getName()))
+        if (!folder.getName().startsWith(".") && !blacklist.contains(folder.getName()))
             includeFolder(folder)
 
     }
