@@ -32,8 +32,8 @@ public class ChatBuilder {
         while (m.find()) {
             //Текст до плейсхолдера
             String pre = text.substring(oldEnd, m.start());
-            //Сразу же его добавляем
-            builder.append(TextComponent.fromLegacyText(pre), ComponentBuilder.FormatRetention.FORMATTING);
+            //Сразу же его добавляем/
+            builder.append(TextComponent.fromLegacyText(pre), ComponentBuilder.FormatRetention.NONE);
             //Плейсхолдер
             String placeholder = m.group();
             BaseComponent[] components = bindMap.get(placeholder);
@@ -52,7 +52,7 @@ public class ChatBuilder {
         }
         //Иначе просто добавляем недостающее(если есть)
         else if (endIndex < text.length()) {
-            builder.append(TextComponent.fromLegacyText(text.substring(endIndex)));
+            builder.append(TextComponent.fromLegacyText(text.substring(endIndex)), ComponentBuilder.FormatRetention.NONE);
         }
         return builder.create();
     }

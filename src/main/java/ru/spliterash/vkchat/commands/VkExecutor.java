@@ -112,7 +112,6 @@ public class VkExecutor implements AbstractCommandExecutor {
             } catch (ClientException | ApiException | SQLException e) {
                 player.sendMessage(e.getLocalizedMessage());
             }
-
         });
     }
 
@@ -124,6 +123,16 @@ public class VkExecutor implements AbstractCommandExecutor {
         if (isConsole(sender))
             return;
         AbstractPlayer player = (AbstractPlayer) sender;
+        PlayerDao dao = Database.getDao(PlayerModel.class);
+        try {
+            PlayerModel link = dao.queryForId(player.getUUID());
+            if (link == null) {
+                player.sendMessage(Lang.NOT_LINK.toComponent());
+                return;
+            }
+        } catch (SQLException throwables) {
+            throw new RuntimeException(throwables);
+        }
         LinkHelper.start(player, LinkHelper.SetupType.CONVERSATION);
 
     }

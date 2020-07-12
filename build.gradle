@@ -1,5 +1,7 @@
 // Настройки для всех проектов
+import org.apache.tools.ant.filters.ReplaceTokens
 allprojects {
+
     apply plugin: 'java'
     repositories {
         mavenCentral()
@@ -19,7 +21,15 @@ allprojects {
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
+
+    processResources {
+        from(sourceSets.main.resources.srcDirs) {
+            filter ReplaceTokens, tokens: [version: version]
+        }
+    }
+
 }
+
 subprojects {
     dependencies {
         compileOnly parent
@@ -36,6 +46,7 @@ subprojects {
         }.exclude('META-INF', 'META-INF/**')
     }
 }
+
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile 'com.j256.ormlite:ormlite-jdbc:5.1'
@@ -45,11 +56,8 @@ dependencies {
     compileOnly 'org.apache.logging.log4j:log4j-api:2.13.3'
 }
 
-gradle.buildFinished {
-    println "Как тут таск вызвать сука"
-}
-
 task createFatJar(type: Jar) {
+    dependsOn allprojects.build
     archiveBaseName.set 'VkChatFat'
     from {
         def projectClasses = configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }

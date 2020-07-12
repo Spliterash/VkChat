@@ -19,7 +19,7 @@ public class StringUtils {
     }
 
     public String t(String str) {
-        return ChatColor.stripColor(str);
+        return ChatColor.translateAlternateColorCodes('&',str);
     }
 
     private final String AB = "0123456789";

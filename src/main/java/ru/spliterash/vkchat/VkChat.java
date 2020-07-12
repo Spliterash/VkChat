@@ -1,5 +1,6 @@
 package ru.spliterash.vkchat;
 
+import com.vk.api.sdk.client.Utils;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.exceptions.ApiException;
@@ -46,8 +47,8 @@ public class VkChat {
     private final Launcher launcher;
     private final VkApiClient executor = new VkApiClient(HttpTransportClient.getInstance());
     @Getter(AccessLevel.NONE)
-    private final PeekList<GroupActor> actors;
-    private final String commandPrefix;
+    private PeekList<GroupActor> actors;
+    private String commandPrefix;
     private boolean enable = true;
     @Getter(AccessLevel.NONE)
     private final Map<Integer, UserFull> savedUsers = new HashMap<>();
@@ -67,8 +68,11 @@ public class VkChat {
      * @param launcher Лаунчер, который запускает собсна, может быть спигот, банжа или Sponge
      *                 Можете вообще свой написать, если есть на что
      */
-    private VkChat(@NotNull Launcher launcher) throws ClientException, ApiException, SQLException {
+    private VkChat(@NotNull Launcher launcher) {
         this.launcher = launcher;
+    }
+
+    private void start() throws ClientException, ApiException, SQLException {
         Database.reload();
         AbstractConfig config = launcher.getVkConfig();
         File langFolder = new File(launcher.getDataFolder(), "lang");
@@ -100,12 +104,12 @@ public class VkChat {
         if (gId != null)
             setGlobalPeer(gId);
         commandPrefix = config.getString("command_prefix", "/");
-        int wait = config.getInt("wait");
+
         launcher.registerCommand("vk", new VkExecutor());
         if (VkUtils.isConversation(globalPeer))
             launcher.registerListener(new VkListener());
         try {
-            startLongPoll(wait);
+            startLongPoll();
         } catch (ClientException | ApiException e) {
             e.printStackTrace();
             launcher.unload();
@@ -135,7 +139,7 @@ public class VkChat {
         return launcher.getVkConfig().getStringList("admins");
     }
 
-    private void startLongPoll(int wait) throws ClientException, ApiException {
+    private void startLongPoll() throws ClientException, ApiException {
         GroupActor actor = getActor();
         executor
                 .groups()
@@ -143,7 +147,7 @@ public class VkChat {
                 .apiVersion(executor.getVersion())
                 .messageNew(true)
                 .execute();
-        CallbackApiLongPoll poll = new CallbackApiLongPoll(executor, actor, wait) {
+        CallbackApiLongPoll poll = new CallbackApiLongPoll(executor, actor, 25) {
 
             @Override
             protected void processMessages(List<Message> messages) {
@@ -218,7 +222,7 @@ public class VkChat {
                 linkUser(code, sender, message.getPeerId());
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+//            ex.printStackTrace();
             sendMessage(message.getPeerId(), ex.getLocalizedMessage());
         }
     }
@@ -311,6 +315,10 @@ public class VkChat {
             sendMessage(peerId, Lang.NOT_LINK.toPlainText());
             return;
         }
+        if (!VkUtils.isConversation(peerId)) {
+            sendMessage(peerId, Lang.NOT_CONVERSATION.toString());
+            return;
+        }
         ConversationDao cDao = Database.getDao(ConversationModel.class);
         ConversationModel conversation = cDao.queryForId(peerId);
         if (conversation != null) {
@@ -321,7 +329,16 @@ public class VkChat {
             sendMessage(peerId, Lang.YOU_NOT_INITIALIZE_LINK.toString());
             return;
         }
-        ConversationModel model = new ConversationModel(peerId, link, VkUtils.getInviteLink(peerId));
+        String inviteLink = null;
+        try {
+            inviteLink = VkUtils.getInviteLink(peerId);
+        } catch (ApiException ex) {
+            if (ex.getCode() == 919 || ex.getCode() == 931) {
+               sendMessage(peerId,Lang.LINK_FAIL.toString());
+               return;
+            }
+        }
+        ConversationModel model = new ConversationModel(peerId, link, inviteLink);
         cDao.create(model);
         sendMessage(peerId, Lang.CONVERSATION_LINK_SUCCESS.toString());
 
@@ -404,7 +421,7 @@ public class VkChat {
                 .users()
                 .get(getActor())
                 .userIds(forceLoad)
-                .fields(Fields.CITY, Fields.SEX, Fields.STATUS)
+                .fields(Fields.CITY, Fields.SEX, Fields.DOMAIN, Fields.STATUS)
                 .execute()) {
             savedUsers.put(user.getId(), user);
         }
@@ -414,7 +431,12 @@ public class VkChat {
         //Удаляем тех кто загружен
         needLoad.removeAll(savedUsers.keySet());
         if (needLoad.size() > 0) {
-            loadUsers(needLoad.stream().map(Object::toString).toArray(value -> new String[0]));
+            loadUsers(
+                    needLoad
+                            .stream()
+                            .map(Object::toString)
+                            .toArray(String[]::new)
+            );
         }
     }
 
@@ -423,6 +445,7 @@ public class VkChat {
         launcher.runTaskAsync(() -> {
             try {
                 instance = new VkChat(launcher);
+                instance.start();
             } catch (ClientException | ApiException | SQLException e) {
                 e.printStackTrace();
                 launcher.unload();
@@ -464,7 +487,7 @@ public class VkChat {
         return savedUsers
                 .values()
                 .stream()
-                .filter(u -> domain.toLowerCase().equals(u.getDomain()))
+                .filter(u -> domain.toLowerCase().equals(u.getDomain()) || u.getId().toString().equals(domain))
                 .findFirst()
                 .orElse(null);
     }
@@ -505,12 +528,15 @@ public class VkChat {
     /**
      * Не вызывайте в основном потоке, а то зависнет
      */
+    private static final Random random = new Random();
+
     public void sendMessage(int peer, String message) {
         try {
             executor
                     .messages()
                     .send(getActor())
                     .peerId(peer)
+                    .randomId(random.nextInt())
                     .message(message)
                     .execute();
         } catch (ApiException | ClientException e) {

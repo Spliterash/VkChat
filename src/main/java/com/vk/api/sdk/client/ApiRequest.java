@@ -62,7 +62,6 @@ public abstract class ApiRequest<T> {
             try {
                 return executeWithoutRetry();
             } catch (ApiServerException e) {
-                LOG.warn("API Server error", e);
                 exception = e;
             }
         }

@@ -6,6 +6,8 @@ import org.bukkit.command.CommandSender;
 import ru.spliterash.vkchat.md_5_chat.chat.ComponentSerializer;
 import ru.spliterash.vkchat.wrappers.AbstractSender;
 
+import java.util.Objects;
+
 public class BukkitSender implements AbstractSender {
     @Getter
     private final CommandSender sender;
@@ -34,5 +36,16 @@ public class BukkitSender implements AbstractSender {
         sender.spigot().sendMessage(bukkitComponents);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BukkitSender that = (BukkitSender) o;
+        return Objects.equals(sender, that.sender);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(sender);
+    }
 }

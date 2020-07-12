@@ -100,11 +100,7 @@ public class VkUtils {
                     ));
             return component;
         }
-        TextComponent linked = getLinkedUserComponent(user.getId());
-        if (linked != null) {
-            return linked;
-        }
-        String title = VkUtils.getPlayerToVk(user);
+        String title = formatUser(user);
         ComponentBuilder hoverBuilder = new ComponentBuilder("");
         {
             String sex, city, status, birthday;
@@ -188,18 +184,8 @@ public class VkUtils {
         return getUserComponent(VkChat.getInstance().getCachedUserById(user));
     }
 
-    @Nullable
-    public TextComponent getLinkedUserComponent(int id) {
-        PlayerDao dao = Database.getDao(PlayerModel.class);
-        PlayerModel link = dao.queryForVk(id);
-        if (link == null)
-            return null;
-        else
-            return new TextComponent(link.getNickname());
-    }
-
-    public void sendToPlayers(int peerId,BaseComponent... components) {
-        if(VkChat.getInstance().getGlobalPeer()==peerId){
+    public void sendToPlayers(int peerId, BaseComponent... components) {
+        if (VkChat.getInstance().getGlobalPeer() == peerId) {
 
         }
     }
@@ -243,13 +229,17 @@ public class VkUtils {
         return getPlayerToVk(cached);
     }
 
+    public String formatUser(UserFull user) {
+        return Lang.USER_FORMAT.toString("{first_name}", user.getFirstName(), "{last_name}", user.getLastName());
+    }
+
     private String getPlayerToVk(UserFull user) {
         PlayerDao pDao = Database.getDao(PlayerModel.class);
         PlayerModel link = pDao.queryForVk(user.getId());
         if (link != null) {
             return getPlayerToVk(link);
         } else {
-            String format = Lang.USER_FORMAT.toString("{first_name}", user.getFirstName(), "{last_name}", user.getLastName());
+            String format = formatUser(user);
             return "[" + format + "|id" + user.getId() + "]";
         }
     }

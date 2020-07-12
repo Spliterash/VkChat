@@ -23,16 +23,16 @@ public enum Lang {
     UNKNOWN("unknown", "неизвестно"),
     USER_HOVER(
             Arrays.asList(
-                    "Gender: {gender}",
-                    "City: {city}",
-                    "Статус: {status}",
-                    "Birthday: {birthday}"
+                    "&7Gender: &6{gender}",
+                    "&7City: &6{city}",
+                    "&7Статус: &6{status}",
+                    "&7Birthday: &6{birthday}"
             ),
             Arrays.asList(
-                    "Пол: {gender}",
-                    "Город: {city}",
-                    "Статус: {status}",
-                    "День рождение: {birthday}"
+                    "&7Пол: {gender}",
+                    "&7Город: {city}",
+                    "&7Статус: {status}",
+                    "&7День рождение: {birthday}"
             )
     ),
     USER_FORMAT("{first_name} {last_name}"),
@@ -63,19 +63,19 @@ public enum Lang {
             )
     ),
     OPEN_URL_HOVER("&6Click me to open a &bvk.com&6 conversation", "&6Нажми на меня чтобы открыть беседу &bvk.com"),
-    ALREADY_LINK("&6You are already link your account to {user}", "&6Вы уже привязали свой аккаунт к {user}"),
+    ALREADY_LINK("&6You are already link your account to &a{user}", "&6Вы уже привязали свой аккаунт к &a{user}"),
     NOT_LINK(
             "&6For this action your account need be linked, you can link use &b/vk link",
             "&6Ваш аккаунт не привязан, вы можете привязать его с помощью команды &b/vk link"
     ),
     OK("&aOperation completed", "&aОперация выполнена"),
     WRONG_USER("&6User does not exists", "&6Пользователя не существует"),
-    SETUP_START("To install the conversation, invite the bot to the existing conversation " +
-            "and give it read permissions, and then enter &b{code}&a(clickable)&6. " +
-            "If you are too lazy, click &b&n{new}&6 and the conversation will be created automatically",
-            "Для установки беседы пригласите в существующую беседу бота и выдайте " +
-                    "ему права на чтение, а после этого введите &b&n{code}&a(кликабельно)&6. " +
-                    "Если вам лень, нажмите &b{new}&6 и беседа будет создана автоматически"),
+    SETUP_START("&6To install the conversation, invite the bot to the existing conversation " +
+            "and give it read permissions, and then enter &b{code}&r&a(clickable)&6. " +
+            "If you are too lazy, click &b&n{new}&r&6 and the conversation will be created automatically",
+            "&6Для установки беседы пригласите в существующую беседу бота и выдайте " +
+                    "ему права на чтение, а после этого введите &b&n{code}&r&a(кликабельно)&6. " +
+                    "Если вам лень, нажмите &b&n{new}&r&6 и беседа будет создана автоматически"),
     NO_PEX("&cNo perms, sry", "&cУвы, но у тебя недостаточно прав"),
     VERIFY_CODE_HOVER(
             "&6Click and press CTRL + A, after CTRL + C to copy code",
@@ -114,15 +114,21 @@ public enum Lang {
     CONVERSATION_INVITE_BY_URL("&aUser &b{user}&a join with url", "&b{user}&a присоединился к беседе по ссылке"),
     CONVERSATION_KICK("&aUser &b{user_1}&a kick &b{user_2}", "&aПользователь &b{user_1}&a кикнул &b{user_2}"),
     LINK_START(
-            "In order to link your minecraft account with VK, you need to send this code &b({code})&6 to the group messages",
-            "Для того чтобы связать свой майнкрафт аккаунт с вк, вам необходимо отправить этот код &b({code})&6 в сообщения группы"
+            "&6In order to link your minecraft account with VK, you need to send this code &b({code})&6 to the group messages",
+            "&6Для того чтобы связать свой майнкрафт аккаунт с вк, вам необходимо отправить этот код &b&n({code})&r&6 в сообщения группы"
     ),
 
     VK_LINKED("This vk account already linked to {minecraft}", "Этот аккаунт уже привязан на {minecraft}"),
     USER_LINK_SUCCESS(
             "You success link user to minecraft",
             "Вы успешно связали свой аккаунт с майнкрафтом, теперь ваш ник будет видно в сообщениях"
-    );
+    ),
+    NOT_CONVERSATION("It now conversation", "Это не беседа"),
+    LINK_FAIL(
+            "An error occurred while getting the link. Make sure the bot has admin rights." +
+                    "as well as in the conversation settings allowed to receive links",
+            "При получении ссылки произошла ошибка. Убедитесь что сообщество имеет права администратора, " +
+                    "а так же в настройках беседы разрешено получение ссылок");
 
 
     /**

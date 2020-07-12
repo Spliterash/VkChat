@@ -21,8 +21,6 @@ import java.util.List;
 
 public abstract class CallbackApiLongPoll {
 
-    private static final Logger LOG = LogManager.getLogger(com.vk.api.sdk.callback.longpoll.CallbackApiLongPoll.class);
-
     private int lastTimeStamp;
     private LongPollServer longPollServer;
     private static final Type messageNew = new TypeToken<CallbackMessage<Message>>() {
