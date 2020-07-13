@@ -1,6 +1,5 @@
 package ru.spliterash.vkchat;
 
-import com.vk.api.sdk.client.Utils;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.exceptions.ApiException;
@@ -14,6 +13,7 @@ import com.vk.api.sdk.objects.users.UserFull;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
 import lombok.AccessLevel;
 import lombok.Getter;
+import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
 import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
 import org.jetbrains.annotations.NotNull;
 import ru.spliterash.vkchat.chat.ChatBuilder;
@@ -34,6 +34,8 @@ import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 import ru.spliterash.vkchat.wrappers.Launcher;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Consumer;
@@ -211,7 +213,7 @@ public class VkChat {
                     if (s == null || s.length == 0)
                         commandReply = Lang.CONSOLE_COMMAND.toString();
                     else
-                        commandReply = String.join("\n", s);
+                        commandReply = ChatColor.stripColor(String.join("\n", s));
                     launcher.runTaskAsync(() -> sendMessage(message.getPeerId(), commandReply));
                 }));
             } else if (text.startsWith("verify ")) {
@@ -220,10 +222,14 @@ public class VkChat {
             } else if (text.startsWith("link ")) {
                 String code = text.substring(5);
                 linkUser(code, sender, message.getPeerId());
+            } else if (VkUtils.isConversation(message.getPeerId())) {
+                sendUserTextMessage(message);
             }
         } catch (Exception ex) {
-//            ex.printStackTrace();
-            sendMessage(message.getPeerId(), ex.getLocalizedMessage());
+            StringWriter strWriter = new StringWriter();
+            PrintWriter writer = new PrintWriter(strWriter);
+            ex.printStackTrace(writer);
+            sendMessage(message.getPeerId(), strWriter.toString());
         }
     }
 
@@ -334,8 +340,8 @@ public class VkChat {
             inviteLink = VkUtils.getInviteLink(peerId);
         } catch (ApiException ex) {
             if (ex.getCode() == 919 || ex.getCode() == 931) {
-               sendMessage(peerId,Lang.LINK_FAIL.toString());
-               return;
+                sendMessage(peerId, Lang.LINK_FAIL.toString());
+                return;
             }
         }
         ConversationModel model = new ConversationModel(peerId, link, inviteLink);
@@ -395,7 +401,7 @@ public class VkChat {
         for (Integer conversationMember : conversationMembers) {
             PlayerModel currentPlayer = models
                     .stream()
-                    .filter(m -> m.getVk() == conversationId)
+                    .filter(m -> m.getVk() == conversationMember)
                     .findFirst()
                     .orElse(null);
             if (currentPlayer == null)
@@ -403,11 +409,17 @@ public class VkChat {
             //Если пользователь не сохранён на сервере как участник беседы, то добавляем его
             if (storeLinks.stream().noneMatch(storeUser -> storeUser.getPlayer().getVk() == conversationMember)) {
                 PlayerConversationModel newModel = new PlayerConversationModel(currentPlayer, currentConversation);
-                pcDao.createIfNotExists(newModel);
+                pcDao.create(newModel);
             }
         }
         for (PlayerConversationModel storeLink : storeLinks) {
             if (conversationMembers.stream().noneMatch(m -> m == storeLink.getPlayer().getVk())) {
+                ConversationModel conv = storeLink.getConversation();
+                PlayerModel playerLink = storeLink.getPlayer();
+                if (playerLink.getSelectedConversation() != null && playerLink.getSelectedConversation().getId() == conv.getId()) {
+                    playerLink.setSelectedConversation(null);
+                    pDao.update(playerLink);
+                }
                 pcDao.delete(storeLink);
             }
         }

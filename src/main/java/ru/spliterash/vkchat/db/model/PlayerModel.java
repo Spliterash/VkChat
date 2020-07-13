@@ -1,12 +1,8 @@
 package ru.spliterash.vkchat.db.model;
 
-import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.db.dao.PlayerDao;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
@@ -17,7 +13,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 @DatabaseTable(tableName = "players", daoClass = PlayerDao.class)
 public class PlayerModel {
     public static final String UUID_NAME = "uuid";
@@ -28,6 +23,14 @@ public class PlayerModel {
     private String nickname;
     @DatabaseField(canBeNull = false, unique = true)
     private int vk;
+    @DatabaseField(foreign = true, columnName = "selected_conversation")
+    private ConversationModel selectedConversation;
+
+    public PlayerModel(UUID uuid, String nickname, int vk) {
+        this.uuid = uuid;
+        this.nickname = nickname;
+        this.vk = vk;
+    }
 
     @Override
     public boolean equals(Object o) {

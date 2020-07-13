@@ -31,7 +31,7 @@ public class MessageTree {
         ComponentBuilder builder = new ComponentBuilder("");
         for (int i = 0; i < print.size(); i++) {
             BaseComponent[] component = print.get(i);
-            if (i < print.size() - 1)
+            if (i > 0 && i <= print.size() - 1)
                 builder.append("\n", ComponentBuilder.FormatRetention.NONE);
             builder.append(component, ComponentBuilder.FormatRetention.NONE);
         }
@@ -49,13 +49,15 @@ public class MessageTree {
             ForeignMessage message = iter.next();
             BaseComponent[] messageComponents = VkUtils.buildMessage(message.getFromId(), message.getText(), null);
             if (i - 1 == messageList.size() - 1) {
-                print.add(ArrayUtils.putAll(messageComponents, TextComponent.fromLegacyText(prefix + color + "└── "), 0));
-                if (message.getFwdMessages().size() > 0) {
+                BaseComponent[] prefixComponent = TextComponent.fromLegacyText(prefix + color + "└── ");
+                BaseComponent[] array = ArrayUtils.putAll(BaseComponent.class, messageComponents, prefixComponent, 0);
+                print.add(array);
+                if (message.getFwdMessages() != null && message.getFwdMessages().size() > 0) {
                     walk(message.getFwdMessages(), prefix + "     ");
                 }
             } else {
-                print.add(ArrayUtils.putAll(messageComponents, TextComponent.fromLegacyText(prefix + color + "├── "), 0));
-                if (message.getFwdMessages().size() > 0) {
+                print.add(ArrayUtils.putAll(BaseComponent.class, messageComponents, TextComponent.fromLegacyText(prefix + color + "├── "), 0));
+                if (message.getFwdMessages() != null && message.getFwdMessages().size() > 0) {
                     walk(message.getFwdMessages(), prefix + color + "│    ");
                 }
             }

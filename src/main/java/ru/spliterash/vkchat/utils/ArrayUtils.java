@@ -1,32 +1,30 @@
 package ru.spliterash.vkchat.utils;
 
 import lombok.experimental.UtilityClass;
-import ru.spliterash.vkchat.db.model.PlayerModel;
 
+import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 @UtilityClass
 public class ArrayUtils {
-    public <T> T[] putAll(T[] components, T[] add, int to) {
-        int newSize = components.length + add.length;
+    public <T> T[] putAll(Class<T> clazz, T[] a1, T[] a2, int to) {
+        int newSize = a1.length + a2.length;
         @SuppressWarnings("unchecked")
-        T[] array = (T[]) new Object[newSize];
+        T[] array = (T[]) Array.newInstance(clazz, newSize);
         int k = 0;
-        for (int i = 0; i < components.length; i++) {
+        for (int i = 0; i < a1.length; i++) {
             if (i == to) {
-                for (T t : add) {
+                for (T t : a2) {
                     array[k] = t;
                     k++;
                 }
-            } else {
-                array[k] = components[i];
-                k++;
             }
-
+            array[k] = a1[i];
+            k++;
         }
+
         return array;
     }
 

@@ -3,6 +3,7 @@ package ru.spliterash.vkchat.launchers.bukkit;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandException;
+import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -12,16 +13,18 @@ import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.wrappers.*;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class BukkitPlugin extends JavaPlugin implements Launcher {
+    private final Map<CommandSender, BukkitSender> wrappers = new WeakHashMap<>();
+    @Getter
+    private static BukkitPlugin instance;
 
     @Override
     public void onEnable() {
+        instance = this;
         saveDefaultConfig();
         vkConfig = new BukkitConfig(new File(getDataFolder(), "config.yml"));
         VkChat.onEnable(this);
@@ -33,6 +36,17 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
     @Override
     public void onDisable() {
         VkChat.onDisable();
+    }
+
+
+    public static AbstractSender wrapSender(CommandSender commandSender) {
+        return getInstance().wrappers.computeIfAbsent(commandSender, sender -> {
+            if (sender instanceof Player)
+                return new BukkitPlayer((Player) sender);
+            else
+                return new BukkitSender(sender);
+        });
+
     }
 
     @Override
@@ -54,7 +68,7 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
     public Collection<? extends AbstractPlayer> getOnlinePlayers() {
         Set<BukkitPlayer> players = new HashSet<>();
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-            players.add(new BukkitPlayer(onlinePlayer));
+            players.add((BukkitPlayer) wrapSender(onlinePlayer));
         }
         return players;
     }
@@ -63,7 +77,7 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
     public AbstractPlayer getPlayer(UUID uuid) {
         Player p = Bukkit.getPlayer(uuid);
         if (p != null)
-            return new BukkitPlayer(p);
+            return (AbstractPlayer) wrapSender(p);
         else
             return null;
     }
@@ -72,7 +86,7 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
     public AbstractPlayer getPlayer(String nickname) {
         Player p = Bukkit.getPlayer(nickname);
         if (p != null)
-            return new BukkitPlayer(p);
+            return (AbstractPlayer) wrapSender(p);
         else
             return null;
     }

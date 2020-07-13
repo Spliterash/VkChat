@@ -2,9 +2,7 @@ package ru.spliterash.vkchat.db.dao;
 
 import com.j256.ormlite.dao.BaseDaoImpl;
 import com.j256.ormlite.stmt.QueryBuilder;
-import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.support.ConnectionSource;
-import ru.spliterash.vkchat.db.Database;
 import ru.spliterash.vkchat.db.model.ConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
@@ -15,14 +13,14 @@ import java.util.UUID;
 
 import static ru.spliterash.vkchat.db.Database.getDao;
 
-public class PlayerConversationDao extends BaseDaoImpl<PlayerConversationModel, Void> {
+public class PlayerConversationDao extends BaseDaoImpl<PlayerConversationModel, Long> {
 
     public PlayerConversationDao(ConnectionSource connectionSource, Class<PlayerConversationModel> dataClass) throws SQLException {
         super(connectionSource, dataClass);
     }
 
     public List<PlayerModel> queryForConversation(int id) throws SQLException {
-        QueryBuilder<PlayerConversationModel, Void> playersUUUIDs = queryBuilder();
+        QueryBuilder<PlayerConversationModel, Long> playersUUUIDs = queryBuilder();
         playersUUUIDs
                 .selectColumns(PlayerConversationModel.USER_UUID_FIELD_NAME)
                 .where()
@@ -45,12 +43,12 @@ public class PlayerConversationDao extends BaseDaoImpl<PlayerConversationModel, 
     public List<PlayerConversationModel> findByConversation(long id) throws SQLException {
         return queryBuilder()
                 .where()
-                .eq(PlayerConversationModel.CONVERSATION_ID_FIELD_NAME,id)
+                .eq(PlayerConversationModel.CONVERSATION_ID_FIELD_NAME, id)
                 .query();
     }
 
     public List<ConversationModel> queryForPlayer(PlayerModel model) throws SQLException {
-        QueryBuilder<PlayerConversationModel, Void> conversationIds = queryBuilder();
+        QueryBuilder<PlayerConversationModel, Long> conversationIds = queryBuilder();
         conversationIds
                 .selectColumns(PlayerConversationModel.CONVERSATION_ID_FIELD_NAME)
                 .where()

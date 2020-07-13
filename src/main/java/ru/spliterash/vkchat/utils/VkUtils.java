@@ -11,7 +11,6 @@ import com.vk.api.sdk.objects.users.UserFull;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
-import org.jetbrains.annotations.Nullable;
 import ru.spliterash.vkchat.Lang;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.chat.ChatBuilder;
@@ -23,6 +22,7 @@ import ru.spliterash.vkchat.db.model.PlayerConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
 import ru.spliterash.vkchat.md_5_chat.api.chat.*;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
+import ru.spliterash.vkchat.wrappers.AbstractSender;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -203,9 +203,10 @@ public class VkUtils {
 
     public void scanMessageIds(Set<Integer> ids, ForeignMessage message) {
         ids.add(message.getFromId());
-        for (ForeignMessage fwdMessage : message.getFwdMessages()) {
-            scanMessageIds(ids, fwdMessage);
-        }
+        if (message.getFwdMessages() != null)
+            for (ForeignMessage fwdMessage : message.getFwdMessages()) {
+                scanMessageIds(ids, fwdMessage);
+            }
     }
 
     @SneakyThrows
@@ -242,5 +243,13 @@ public class VkUtils {
             String format = formatUser(user);
             return "[" + format + "|id" + user.getId() + "]";
         }
+    }
+
+    public String prepareMessage(AbstractPlayer sender, String playerMessage) {
+        return Lang.MINECRAFT_TO_VK_FORMAT
+                .toString(
+                        "{user}", VkUtils.getPlayerToVk(sender),
+                        "{message}", playerMessage
+                );
     }
 }

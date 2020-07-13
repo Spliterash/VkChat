@@ -50,6 +50,7 @@ public abstract class CallbackApiLongPoll {
                             lastTimeStamp)
                     .waitTime(waitTime)
                     .execute();
+            lastTimeStamp = eventsResponse.getTs();
             List<Message> messages = new ArrayList<>(eventsResponse.getUpdates().size());
             for (JsonObject json : eventsResponse.getUpdates()) {
                 String type = json.get("type").getAsString();
@@ -61,7 +62,6 @@ public abstract class CallbackApiLongPoll {
             }
             if (messages.size() > 0)
                 processMessages(messages);
-            lastTimeStamp = eventsResponse.getTs();
         } catch (LongPollServerKeyExpiredException e) {
             longPollServer = getLongPollServer();
         } catch (Exception ex) {

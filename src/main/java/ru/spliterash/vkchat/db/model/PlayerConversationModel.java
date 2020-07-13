@@ -8,15 +8,20 @@ import lombok.NoArgsConstructor;
 import ru.spliterash.vkchat.db.dao.PlayerConversationDao;
 
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
 @DatabaseTable(tableName = "player_conversation", daoClass = PlayerConversationDao.class)
 public class PlayerConversationModel {
     public final static String USER_UUID_FIELD_NAME = "player_uuid";
     public final static String CONVERSATION_ID_FIELD_NAME = "conversation_id";
-
+    @DatabaseField(generatedId = true)
+    private long id;
     @DatabaseField(foreign = true, columnName = USER_UUID_FIELD_NAME)
     private PlayerModel player;
     @DatabaseField(foreign = true, columnName = CONVERSATION_ID_FIELD_NAME)
     private ConversationModel conversation;
+
+    public PlayerConversationModel(PlayerModel player, ConversationModel conversation) {
+        this.player = player;
+        this.conversation = conversation;
+    }
 }

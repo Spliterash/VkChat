@@ -37,8 +37,8 @@ public enum Lang {
     ),
     USER_FORMAT("{first_name} {last_name}"),
     CONVERSATION_COMPONENT("[VK]"),
-    VK_TO_MINECRAFT_CHAT_FORMAT("&9{vk}&a{user}&e:&f{text}"),
-    VK_TO_MINECRAFT_INFO_FORMAT("&9{vk}&a{message}"),
+    VK_TO_MINECRAFT_CHAT_FORMAT("&7[&9{vk}&7]&a{user}&e: &f{text}"),
+    VK_TO_MINECRAFT_INFO_FORMAT("&[&9{vk}&7] &a{message}"),
     MINECRAFT_TO_VK_FORMAT("{user}: {message}"),
     MALE("Male", "Мужской"),
     FEMALE("Female", "Женский"),
@@ -50,6 +50,7 @@ public enum Lang {
             ),
             Arrays.asList(
                     "&bvk link &6- Привязать аккаунт майнкрафта к вк",
+                    "&bvk select &6- Выбрать приватную беседу для чата",
                     "&bvk [сообщение] &6- Отправить сообщение в приватную беседу и онлайн игрокам в этой беседе",
                     "&bvk setup &6- Настроить или создать новую приватную беседу"
             )
@@ -115,7 +116,7 @@ public enum Lang {
     CONVERSATION_KICK("&aUser &b{user_1}&a kick &b{user_2}", "&aПользователь &b{user_1}&a кикнул &b{user_2}"),
     LINK_START(
             "&6In order to link your minecraft account with VK, you need to send this code &b({code})&6 to the group messages",
-            "&6Для того чтобы связать свой майнкрафт аккаунт с вк, вам необходимо отправить этот код &b&n({code})&r&6 в сообщения группы"
+            "&6Для того чтобы связать свой майнкрафт аккаунт с вк, вам необходимо отправить этот код &b&n{code}&r&6 в сообщения группы"
     ),
 
     VK_LINKED("This vk account already linked to {minecraft}", "Этот аккаунт уже привязан на {minecraft}"),
@@ -128,7 +129,13 @@ public enum Lang {
             "An error occurred while getting the link. Make sure the bot has admin rights." +
                     "as well as in the conversation settings allowed to receive links",
             "При получении ссылки произошла ошибка. Убедитесь что сообщество имеет права администратора, " +
-                    "а так же в настройках беседы разрешено получение ссылок");
+                    "а так же в настройках беседы разрешено получение ссылок"),
+    CONVERSATION_SELECT_TITLE("&6Select conversation before write to private", "&6Выбери в какую приватную беседу писать"),
+    CONVERSATION_SELECT_BUTTON_TITLE("[SELECT]", "[ВЫБРАТЬ]"),
+    CONVERSATION_SELECT_BUTTON_HOVER("&7Click me to select this conversation", "&7Нажми на меня, чтобы выбрать эту беседу"),
+    CONVERSATION_SELECT_ROW("&9{vk}&7 - &n&a{select}"),
+    NO_ANY_CONVERSATION("&6You are does not have any conversation", "&6Вы не состоите ни в одной беседе"),
+    CONVERSATION_SELECTED("&6You select conversation", "&6Вы выбрали беседу");
 
 
     /**
