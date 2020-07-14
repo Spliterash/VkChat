@@ -135,7 +135,11 @@ public enum Lang {
     CONVERSATION_SELECT_BUTTON_HOVER("&7Click me to select this conversation", "&7Нажми на меня, чтобы выбрать эту беседу"),
     CONVERSATION_SELECT_ROW("&9{vk}&7 - &n&a{select}"),
     NO_ANY_CONVERSATION("&6You are does not have any conversation", "&6Вы не состоите ни в одной беседе"),
-    CONVERSATION_SELECTED("&6You select conversation", "&6Вы выбрали беседу");
+    CONVERSATION_SELECTED("&6You select conversation", "&6Вы выбрали беседу"),
+    MESSAGE_SEND(
+            "&aYour message send to selected conversation &9{conversation}",
+            "&aВаше сообщение было отправлено в выбранную вами беседу &9{conversation}"
+    );
 
 
     /**

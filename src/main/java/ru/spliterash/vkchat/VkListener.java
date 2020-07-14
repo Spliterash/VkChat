@@ -23,8 +23,7 @@ public class VkListener implements AbstractListener {
     private void processMessage(AbstractPlayer player, String message) throws SQLException {
         PlayerDao playerDao = Database.getDao(PlayerModel.class);
         String vkName = VkUtils.getPlayerToVk(player);
-        sendGlobal(message
-                .replace("{player}", vkName));
+        sendGlobal(message.replace("{player}", vkName));
         PlayerModel pModel = playerDao.queryForId(player.getUUID());
         if (pModel != null) {
             VkUtils.sendPlayerPeerMessage(pModel, message);

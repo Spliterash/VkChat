@@ -108,8 +108,8 @@ public class VkChat {
         commandPrefix = config.getString("command_prefix", "/");
 
         launcher.registerCommand("vk", new VkExecutor());
-        if (VkUtils.isConversation(globalPeer))
-            launcher.registerListener(new VkListener());
+
+        launcher.registerListener(new VkListener());
         try {
             startLongPoll();
         } catch (ClientException | ApiException e) {

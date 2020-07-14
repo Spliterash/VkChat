@@ -163,7 +163,11 @@ public class VkExecutor implements AbstractCommandExecutor {
         }
         String msg = String.join(" ", args);
         VkChat.getInstance().sendMessage(selected.getId(), VkUtils.prepareMessage(player, msg));
-
+        player.sendMessage(
+                ChatBuilder.compile(Lang.MESSAGE_SEND.toString(),
+                        new SimpleMapBuilder<String, BaseComponent[]>()
+                                .add("{conversation}", VkUtils.getInviteLink(selected))
+                                .getMap()));
     }
 
     private void sendPlayerConversationList(AbstractPlayer player, PlayerModel model) throws SQLException {

@@ -22,7 +22,6 @@ import ru.spliterash.vkchat.db.model.PlayerConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
 import ru.spliterash.vkchat.md_5_chat.api.chat.*;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
-import ru.spliterash.vkchat.wrappers.AbstractSender;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -222,7 +221,7 @@ public class VkUtils {
     }
 
     public String getPlayerToVk(PlayerModel model) {
-        return "[" + model.getNickname() + "|id" + model.getVk() + "]";
+        return String.format("[id%d|%s]", model.getVk(), model.getNickname());
     }
 
     public String getPlayerToVk(int userId) throws ClientException, ApiException {
@@ -241,7 +240,7 @@ public class VkUtils {
             return getPlayerToVk(link);
         } else {
             String format = formatUser(user);
-            return "[" + format + "|id" + user.getId() + "]";
+            return String.format("[id%d|%s]", user.getId(), format);
         }
     }
 
@@ -251,5 +250,9 @@ public class VkUtils {
                         "{user}", VkUtils.getPlayerToVk(sender),
                         "{message}", playerMessage
                 );
+    }
+
+    public BaseComponent[] getInviteLink(ConversationModel selected) {
+        return getInviteLink(selected.getInviteLink(),selected.getTitle());
     }
 }
