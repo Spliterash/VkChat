@@ -393,7 +393,13 @@ public class VkChat {
         }
         PlayerConversationDao pcDao = Database.getDao(PlayerConversationModel.class);
         List<PlayerConversationModel> storeLinks = pcDao.findByConversation(conversationId);
-        ConversationInfo info = ConversationInfo.getInfo(conversationId);
+        ConversationInfo info;
+        try {
+            info = ConversationInfo.getInfo(conversationId);
+        } catch (ApiException ex) {
+            cDao.delete(currentConversation);
+            return null;
+        }
         Set<Integer> conversationMembers = info.getMembers();
         Set<Integer> storeLinksIds = storeLinks.stream().map(a -> a.getPlayer().getVk()).collect(Collectors.toSet());
         int[] array = ArrayUtils.mergeTwoIntCollections(conversationMembers, storeLinksIds);

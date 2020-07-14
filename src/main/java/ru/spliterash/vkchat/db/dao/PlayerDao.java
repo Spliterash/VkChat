@@ -1,8 +1,11 @@
 package ru.spliterash.vkchat.db.dao;
 
 import com.j256.ormlite.dao.BaseDaoImpl;
+import com.j256.ormlite.stmt.DeleteBuilder;
 import com.j256.ormlite.support.ConnectionSource;
+import ru.spliterash.vkchat.db.Database;
 import ru.spliterash.vkchat.db.model.ConversationModel;
+import ru.spliterash.vkchat.db.model.PlayerConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
 
 import java.sql.SQLException;
@@ -45,5 +48,24 @@ public class PlayerDao extends BaseDaoImpl<PlayerModel, UUID> {
 
     public List<ConversationModel> queryForConversation(PlayerModel pModel) {
         return null;
+    }
+
+    public List<PlayerModel> queryForSelected(int id) throws SQLException {
+        return queryBuilder()
+                .where()
+                .eq(PlayerModel.SELECTED_NAME, id)
+                .query();
+    }
+    //FIXME
+    @Override
+    public int delete(PlayerModel data) throws SQLException {
+        int count = super.delete(data);
+        if (count > 0) {
+            ConversationDao dao = Database.getDao(ConversationModel.class);
+            DeleteBuilder<ConversationModel, Integer> builder = dao.deleteBuilder();
+            builder.where().eq(ConversationModel.OWNER_NAME, data.getUuid());
+            builder.delete();
+        }
+        return count;
     }
 }

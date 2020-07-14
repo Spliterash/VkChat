@@ -18,9 +18,10 @@ import java.sql.SQLException;
 @DatabaseTable(tableName = "conversations", daoClass = ConversationDao.class)
 public class ConversationModel {
     public static final String ID_NAME = "id";
+    public static final String OWNER_NAME = "owner";
     @DatabaseField(id = true, columnName = ID_NAME)
     private int id;
-    @DatabaseField(foreign = true)
+    @DatabaseField(foreign = true,columnName = OWNER_NAME)
     private PlayerModel owner;
     @DatabaseField
     @Setter

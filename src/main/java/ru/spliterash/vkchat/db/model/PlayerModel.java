@@ -16,6 +16,7 @@ import java.util.UUID;
 @DatabaseTable(tableName = "players", daoClass = PlayerDao.class)
 public class PlayerModel {
     public static final String UUID_NAME = "uuid";
+    public static final String SELECTED_NAME = "selected_conversation";
 
     @DatabaseField(columnName = UUID_NAME, id = true, index = true, canBeNull = false, unique = true)
     private UUID uuid;
@@ -23,7 +24,7 @@ public class PlayerModel {
     private String nickname;
     @DatabaseField(canBeNull = false, unique = true)
     private int vk;
-    @DatabaseField(foreign = true, columnName = "selected_conversation")
+    @DatabaseField(foreign = true, columnName = SELECTED_NAME)
     private ConversationModel selectedConversation;
 
     public PlayerModel(UUID uuid, String nickname, int vk) {

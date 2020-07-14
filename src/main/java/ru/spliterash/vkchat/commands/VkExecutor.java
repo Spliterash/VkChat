@@ -2,11 +2,13 @@ package ru.spliterash.vkchat.commands;
 
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
+import lombok.SneakyThrows;
 import ru.spliterash.vkchat.Lang;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.chat.ChatBuilder;
 import ru.spliterash.vkchat.chat.LinkHelper;
 import ru.spliterash.vkchat.db.Database;
+import ru.spliterash.vkchat.db.dao.ConversationDao;
 import ru.spliterash.vkchat.db.dao.PlayerConversationDao;
 import ru.spliterash.vkchat.db.dao.PlayerDao;
 import ru.spliterash.vkchat.db.model.ConversationModel;
@@ -29,23 +31,41 @@ import java.util.List;
 public class VkExecutor implements AbstractCommandExecutor {
 
 
+    @SneakyThrows
     @Override
     public List<String> onTabComplete(AbstractSender sender, String... args) {
-        if (args.length <= 1) {
-            List<String> variants = new ArrayList<>();
-            if (sender.hasPermission("vk.setup")) {
-                variants.add("setup");
-            }
-            if (sender.hasPermission("vk.admin")) {
-                variants.add("main");
-            }
-            if (sender.hasPermission("vk.use")) {
-                variants.add("link");
-                variants.add("unlink");
-            }
-            return variants;
-        } else
+        if (!(sender instanceof AbstractPlayer)) {
             return Collections.emptyList();
+        }
+        AbstractPlayer player = (AbstractPlayer) sender;
+        List<String> variants = new ArrayList<>();
+        if (args.length <= 1) {
+            if (sender.hasPermission("vk.use")) {
+                PlayerDao pDao = Database.getDao(PlayerModel.class);
+                PlayerModel link = pDao.queryForId(player.getUUID());
+                if (link == null) {
+                    variants.add("link");
+                } else {
+                    variants.add("unlink");
+                    variants.add("list");
+                    if (sender.hasPermission("vk.setup")) {
+                        variants.add("setup");
+                    }
+                    if (sender.hasPermission("vk.admin")) {
+                        variants.add("main");
+                    }
+                }
+            }
+        } else if (args.length <= 2) {
+            //noinspection SwitchStatementWithTooFewBranches
+            switch (args[0]) {
+                case "list":
+                    variants.add("all");
+                    variants.add("owner");
+                    break;
+            }
+        }
+        return variants;
     }
 
     @Override
@@ -78,6 +98,9 @@ public class VkExecutor implements AbstractCommandExecutor {
                 case "createNewConversation":
                     createNewConversation(player);
                     break;
+                case "list":
+                    listConversations(player, args);
+                    break;
                 default:
                     sendMessage(player, args);
 
@@ -86,6 +109,10 @@ public class VkExecutor implements AbstractCommandExecutor {
             exception.printStackTrace();
             sender.sendMessage(ChatColor.RED + "Something goes wrong, check console");
         }
+    }
+
+    private void listConversations(AbstractPlayer player, String[] args) {
+
     }
 
     private void selectConversation(AbstractPlayer player, String[] args) throws SQLException {

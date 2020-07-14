@@ -45,14 +45,19 @@ public enum Lang {
     USER_VK_HELP(
             Arrays.asList(
                     "&b/vk link &6- Link minecraft to vk",
-                    "&b/vk [message] &6- send message to personal conversation and online players in this conversation",
-                    "&b/vk setup &6- Setup or create new private conversation"
+                    "&b/vk unlink &6- Unlink minecraft to vk &c(Delete all conversations)",
+                    "&b/vk select &6- Select personal conversaiton to write with &b/vk Any message",
+                    "&b/vk &a[message] &6- send message to personal conversation and online players in this conversation",
+                    "&b/vk setup &6- Setup or create new private conversation",
+                    "&b/vk list &a[all|owner]&6- List conversations"
             ),
             Arrays.asList(
-                    "&bvk link &6- Привязать аккаунт майнкрафта к вк",
-                    "&bvk select &6- Выбрать приватную беседу для чата",
-                    "&bvk [сообщение] &6- Отправить сообщение в приватную беседу и онлайн игрокам в этой беседе",
-                    "&bvk setup &6- Настроить или создать новую приватную беседу"
+                    "&b/vk link &6- Привязать аккаунт майнкрафта к вк",
+                    "&b/vk unlink &6- Отвязать аккаунт от вк &c(Удаляет все приваязанные беседы)",
+                    "&b/vk select &6- Выбрать приватную беседу для чата",
+                    "&b/vk &a[сообщение] &6- Отправить сообщение в приватную беседу и онлайн игрокам в этой беседе",
+                    "&b/vk setup &6- Настроить или создать новую приватную беседу",
+                    "&b/vk list &a[all|owner]&6- Посмотреть список своих бесед"
             )
     ),
     ADMIN_VK_HELP(
@@ -136,6 +141,8 @@ public enum Lang {
     CONVERSATION_SELECT_ROW("&9{vk}&7 - &n&a{select}"),
     NO_ANY_CONVERSATION("&6You are does not have any conversation", "&6Вы не состоите ни в одной беседе"),
     CONVERSATION_SELECTED("&6You select conversation", "&6Вы выбрали беседу"),
+    CONVERSATION_LIST_TITLE("&6Conversation list:", "&6Список бесед:"),
+    CONVERSATION_LIST_ROW("&9{conversation} &aAction &6- &c{delete}", "&9{conversation} &aдействия &6- &c{delete}"),
     MESSAGE_SEND(
             "&aYour message send to selected conversation &9{conversation}",
             "&aВаше сообщение было отправлено в выбранную вами беседу &9{conversation}"
