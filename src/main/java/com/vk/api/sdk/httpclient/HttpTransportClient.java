@@ -25,7 +25,6 @@ import ru.spliterash.vkchat.utils.StringUtils;
 
 import java.io.*;
 import java.net.SocketException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -93,21 +92,6 @@ public class HttpTransportClient implements TransportClient {
         return instance;
     }
 
-    public String getString(InputStream stream) throws IOException {
-        final int bufferSize = 1024;
-        final char[] buffer = new char[bufferSize];
-        final StringBuilder out = new StringBuilder();
-        try (Reader in = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
-            for (; ; ) {
-                int rsz = in.read(buffer, 0, buffer.length);
-                if (rsz < 0)
-                    break;
-                out.append(buffer, 0, rsz);
-            }
-            return out.toString();
-        }
-    }
-
     private static Map<String, String> getHeaders(Header[] headers) {
         Map<String, String> result = new HashMap<>();
         for (Header header : headers) {
@@ -148,7 +132,7 @@ public class HttpTransportClient implements TransportClient {
                 long resultTime = endTime - startTime;
 
                 try (InputStream content = response.getEntity().getContent()) {
-                    String result = getString(content);
+                    String result = StringUtils.getString(content);
                     Map<String, String> responseHeaders = getHeaders(response.getAllHeaders());
                     Map<String, String> requestHeaders = getHeaders(request.getAllHeaders());
                     logRequest(request, requestHeaders, response, responseHeaders, result, resultTime);
@@ -187,7 +171,7 @@ public class HttpTransportClient implements TransportClient {
             }
         }
 
-        return getString(postRequest.getEntity().getContent());
+        return StringUtils.getString(postRequest.getEntity().getContent());
     }
 
     private void logRequest(HttpRequestBase request, Map<String, String> requestHeaders, HttpResponse response, Map<String, String> responseHeaders, String body, Long time) throws IOException {

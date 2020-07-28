@@ -10,20 +10,16 @@ import com.vk.api.sdk.objects.messages.ForeignMessage;
 import com.vk.api.sdk.objects.users.UserFull;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
-import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
 import ru.spliterash.vkchat.Lang;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.chat.ChatBuilder;
-import ru.spliterash.vkchat.db.Database;
-import ru.spliterash.vkchat.db.dao.PlayerConversationDao;
-import ru.spliterash.vkchat.db.dao.PlayerDao;
+import ru.spliterash.vkchat.db.DatabaseLoader;
 import ru.spliterash.vkchat.db.model.ConversationModel;
-import ru.spliterash.vkchat.db.model.PlayerConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
+import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
 import ru.spliterash.vkchat.md_5_chat.api.chat.*;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 
-import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -192,9 +188,8 @@ public class VkUtils {
     /**
      * Только в асинхронном
      */
-    public void sendPlayerPeerMessage(PlayerModel pModel, String message) throws SQLException {
-        PlayerConversationDao pcd = Database.getDao(PlayerConversationModel.class);
-        for (ConversationModel model : pcd.queryForPlayer(pModel)) {
+    public void sendPlayerPeerMessage(PlayerModel pModel, String message) {
+        for (ConversationModel model : DatabaseLoader.getBase().getPlayerMemberConversation(pModel.getUuid())) {
             int peerId = model.getId();
             VkChat.getInstance().sendMessage(peerId, message);
         }
@@ -208,10 +203,9 @@ public class VkUtils {
             }
     }
 
-    @SneakyThrows
+
     public String getPlayerToVk(AbstractPlayer sender) {
-        PlayerDao dao = Database.getDao(PlayerModel.class);
-        PlayerModel link = dao.queryForId(sender.getUUID());
+        PlayerModel link = DatabaseLoader.getBase().getPlayerByUUID(sender.getUUID());
         if (link != null) {
             return getPlayerToVk(link);
         } else {
@@ -234,8 +228,7 @@ public class VkUtils {
     }
 
     private String getPlayerToVk(UserFull user) {
-        PlayerDao pDao = Database.getDao(PlayerModel.class);
-        PlayerModel link = pDao.queryForVk(user.getId());
+        PlayerModel link = DatabaseLoader.getBase().getPlayerByVk(user.getId());
         if (link != null) {
             return getPlayerToVk(link);
         } else {
@@ -253,6 +246,6 @@ public class VkUtils {
     }
 
     public BaseComponent[] getInviteLink(ConversationModel selected) {
-        return getInviteLink(selected.getInviteLink(),selected.getTitle());
+        return getInviteLink(selected.getInviteLink(), selected.getTitle());
     }
 }

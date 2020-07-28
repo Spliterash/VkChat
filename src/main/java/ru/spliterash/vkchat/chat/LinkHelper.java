@@ -8,8 +8,7 @@ import ru.spliterash.vkchat.md_5_chat.api.chat.TextComponent;
 import org.jetbrains.annotations.NotNull;
 import ru.spliterash.vkchat.Lang;
 import ru.spliterash.vkchat.VkChat;
-import ru.spliterash.vkchat.db.Database;
-import ru.spliterash.vkchat.db.dao.PlayerDao;
+import ru.spliterash.vkchat.db.DatabaseLoader;
 import ru.spliterash.vkchat.db.model.PlayerModel;
 import ru.spliterash.vkchat.utils.StringUtils;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
@@ -49,8 +48,7 @@ public class LinkHelper {
     }
 
     public PlayerModel getPlayerModel() throws SQLException {
-        PlayerDao pDao = Database.getDao(PlayerModel.class);
-        return pDao.queryForId(player.getUUID());
+        return DatabaseLoader.getBase().getPlayerByUUID(player.getUUID());
     }
 
     public void sendStartMessage() {

@@ -13,18 +13,15 @@ import com.vk.api.sdk.objects.users.UserFull;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
 import lombok.AccessLevel;
 import lombok.Getter;
+import ru.spliterash.vkchat.db.AbstractBase;
 import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
 import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
 import org.jetbrains.annotations.NotNull;
 import ru.spliterash.vkchat.chat.ChatBuilder;
 import ru.spliterash.vkchat.chat.LinkHelper;
 import ru.spliterash.vkchat.commands.VkExecutor;
-import ru.spliterash.vkchat.db.Database;
-import ru.spliterash.vkchat.db.dao.ConversationDao;
-import ru.spliterash.vkchat.db.dao.PlayerConversationDao;
-import ru.spliterash.vkchat.db.dao.PlayerDao;
+import ru.spliterash.vkchat.db.DatabaseLoader;
 import ru.spliterash.vkchat.db.model.ConversationModel;
-import ru.spliterash.vkchat.db.model.PlayerConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
 import ru.spliterash.vkchat.utils.*;
 import ru.spliterash.vkchat.vk.CallbackApiLongPoll;
@@ -65,7 +62,6 @@ public class VkChat {
 
     /**
      * Создаёт новый инстанц плагина
-     * Вызывать ТОЛЬКО В ДРУГОМ ПОТОКЕ
      *
      * @param launcher Лаунчер, который запускает собсна, может быть спигот, банжа или Sponge
      *                 Можете вообще свой написать, если есть на что
@@ -75,7 +71,7 @@ public class VkChat {
     }
 
     private void start() throws ClientException, ApiException, SQLException {
-        Database.reload();
+        DatabaseLoader.reload();
         AbstractConfig config = launcher.getVkConfig();
         File langFolder = new File(launcher.getDataFolder(), "lang");
         if (!langFolder.isDirectory()) {
@@ -290,15 +286,15 @@ public class VkChat {
             sendMessage(peerId, Lang.ALREADY_LINK.toPlainText("{user}", VkUtils.getPlayerToVk(link)));
             return;
         }
+        AbstractBase base = DatabaseLoader.getBase();
         AbstractPlayer p = setup.getPlayer();
-        PlayerDao dao = Database.getDao(PlayerModel.class);
-        PlayerModel anotherLink = dao.queryForVk(sender.getId());
+        PlayerModel anotherLink = base.getPlayerByVk(sender.getId());
         if (anotherLink != null) {
             sendMessage(peerId, Lang.VK_LINKED.toString("{minecraft}", VkUtils.getPlayerToVk(anotherLink)));
             return;
         }
-        link = new PlayerModel(p.getUUID(), p.getName(), sender.getId());
-        dao.create(link);
+        link = new PlayerModel(p.getUUID(), p.getName(), sender.getId(), null);
+        link.saveOrUpdate();
         sendMessage(peerId, Lang.USER_LINK_SUCCESS.toString());
     }
 
@@ -325,10 +321,10 @@ public class VkChat {
             sendMessage(peerId, Lang.NOT_CONVERSATION.toString());
             return;
         }
-        ConversationDao cDao = Database.getDao(ConversationModel.class);
-        ConversationModel conversation = cDao.queryForId(peerId);
+        AbstractBase base = DatabaseLoader.getBase();
+        ConversationModel conversation = base.getConversationById(peerId);
         if (conversation != null) {
-            sendMessage(peerId, Lang.CONVERSATION_ALREADY_LINK.toString("{user}", VkUtils.getPlayerToVk(conversation.getOwner())));
+            sendMessage(peerId, Lang.CONVERSATION_ALREADY_LINK.toString("{user}", VkUtils.getPlayerToVk(conversation.getOwnerModel())));
             return;
         }
         if (!setup.getPlayer().getUUID().equals(link.getUuid())) {
@@ -344,8 +340,8 @@ public class VkChat {
                 return;
             }
         }
-        ConversationModel model = new ConversationModel(peerId, link, inviteLink);
-        cDao.create(model);
+        ConversationModel model = new ConversationModel(peerId, link.getUuid(), "[ДАННЫЕ УДАЛЕНЫ]", inviteLink);
+        model.saveOrUpdate();
         sendMessage(peerId, Lang.CONVERSATION_LINK_SUCCESS.toString());
 
     }
@@ -360,8 +356,7 @@ public class VkChat {
         } else {
             ConversationModel conversation = refreshConversationUsers(peerId);
             if (conversation != null) {
-                PlayerConversationDao pcDao = Database.getDao(PlayerConversationModel.class);
-                List<PlayerModel> list = pcDao.queryForConversation(peerId);
+                List<PlayerModel> list = DatabaseLoader.getBase().getConversationMembers(peerId);
                 BaseComponent[] msg = getter.apply(conversation);
                 for (PlayerModel model : list) {
                     AbstractPlayer player = model.getOnlinePlayer();
@@ -382,28 +377,29 @@ public class VkChat {
     }
 
 
-    public ConversationModel refreshConversationUsers(int conversationId) throws ClientException, ApiException, SQLException {
-        ConversationDao cDao = Database.getDao(ConversationModel.class);
-        PlayerDao pDao = Database.getDao(PlayerModel.class);
-        ConversationModel currentConversation = cDao.queryForId(conversationId);
+    public ConversationModel refreshConversationUsers(int conversationId) throws ClientException, SQLException {
+        AbstractBase base = DatabaseLoader.getBase();
+        ConversationModel currentConversation = base.getConversationById(conversationId);
 
         if (currentConversation == null) {
             sendMessage(conversationId, Lang.NOT_LINK_CONVERSATION.toString());
             return null;
         }
-        PlayerConversationDao pcDao = Database.getDao(PlayerConversationModel.class);
-        List<PlayerConversationModel> storeLinks = pcDao.findByConversation(conversationId);
+        //Участники которые находятся в беседе в нашей БД
+        List<PlayerModel> storeLinks = base.getConversationMembers(conversationId);
         ConversationInfo info;
         try {
             info = ConversationInfo.getInfo(conversationId);
         } catch (ApiException ex) {
-            cDao.delete(currentConversation);
+            currentConversation.delete();
             return null;
         }
+        //Участники которые находятся в беседе на стороне вк
         Set<Integer> conversationMembers = info.getMembers();
-        Set<Integer> storeLinksIds = storeLinks.stream().map(a -> a.getPlayer().getVk()).collect(Collectors.toSet());
+        //Идшники наших участников
+        Set<Integer> storeLinksIds = storeLinks.stream().map(PlayerModel::getVk).collect(Collectors.toSet());
         int[] array = ArrayUtils.mergeTwoIntCollections(conversationMembers, storeLinksIds);
-        List<PlayerModel> models = pDao.queryForVkMultiply(array);
+        List<PlayerModel> models = base.getPlayerByVk(array);
         for (Integer conversationMember : conversationMembers) {
             PlayerModel currentPlayer = models
                     .stream()
@@ -413,24 +409,21 @@ public class VkChat {
             if (currentPlayer == null)
                 continue;
             //Если пользователь не сохранён на сервере как участник беседы, то добавляем его
-            if (storeLinks.stream().noneMatch(storeUser -> storeUser.getPlayer().getVk() == conversationMember)) {
-                PlayerConversationModel newModel = new PlayerConversationModel(currentPlayer, currentConversation);
-                pcDao.create(newModel);
+            if (storeLinks.stream().noneMatch(storeUser -> storeUser.getVk() == conversationMember)) {
+                base.addMember(currentPlayer, currentConversation);
             }
         }
-        for (PlayerConversationModel storeLink : storeLinks) {
-            if (conversationMembers.stream().noneMatch(m -> m == storeLink.getPlayer().getVk())) {
-                ConversationModel conv = storeLink.getConversation();
-                PlayerModel playerLink = storeLink.getPlayer();
-                if (playerLink.getSelectedConversation() != null && playerLink.getSelectedConversation().getId() == conv.getId()) {
-                    playerLink.setSelectedConversation(null);
-                    pDao.update(playerLink);
+        for (PlayerModel player : storeLinks) {
+            if (conversationMembers.stream().noneMatch(m -> m == player.getVk())) {
+                if (player.getSelectedConversation() != null && player.getSelectedConversation() == currentConversation.getId()) {
+                    player.setSelectedConversation(null);
+                    player.saveOrUpdate();
                 }
-                pcDao.delete(storeLink);
+                base.removeMember(player, currentConversation);
             }
         }
         currentConversation.setTitle(info.getTitle());
-        cDao.update(currentConversation);
+        currentConversation.saveOrUpdate();
         return currentConversation;
     }
 

@@ -1,10 +1,9 @@
 package ru.spliterash.vkchat.db.model;
 
-import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.table.DatabaseTable;
+import com.vk.api.sdk.actions.Database;
 import lombok.*;
 import ru.spliterash.vkchat.VkChat;
-import ru.spliterash.vkchat.db.dao.PlayerDao;
+import ru.spliterash.vkchat.db.DatabaseLoader;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 
 import java.util.Objects;
@@ -12,26 +11,16 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@DatabaseTable(tableName = "players", daoClass = PlayerDao.class)
+@AllArgsConstructor
 public class PlayerModel {
-    public static final String UUID_NAME = "uuid";
-    public static final String SELECTED_NAME = "selected_conversation";
 
-    @DatabaseField(columnName = UUID_NAME, id = true, index = true, canBeNull = false, unique = true)
     private UUID uuid;
-    @DatabaseField
-    private String nickname;
-    @DatabaseField(canBeNull = false, unique = true)
-    private int vk;
-    @DatabaseField(foreign = true, columnName = SELECTED_NAME)
-    private ConversationModel selectedConversation;
 
-    public PlayerModel(UUID uuid, String nickname, int vk) {
-        this.uuid = uuid;
-        this.nickname = nickname;
-        this.vk = vk;
-    }
+    private String nickname;
+
+    private int vk;
+    private Integer selectedConversation;
+
 
     @Override
     public boolean equals(Object o) {
@@ -50,5 +39,20 @@ public class PlayerModel {
 
     public AbstractPlayer getOnlinePlayer() {
         return VkChat.getInstance().getLauncher().getPlayer(getUuid());
+    }
+
+    public void saveOrUpdate() {
+        DatabaseLoader.getBase().updateOrSaveMePls(this);
+    }
+
+    public ConversationModel getSelectedConversationModel() {
+        if (selectedConversation != null)
+            return DatabaseLoader.getBase().getConversationById(selectedConversation);
+        else
+            return null;
+    }
+
+    public void delete() {
+        DatabaseLoader.getBase().deleteMe(this);
     }
 }

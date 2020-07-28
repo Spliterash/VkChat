@@ -3,6 +3,8 @@ package ru.spliterash.vkchat.utils;
 import lombok.experimental.UtilityClass;
 
 import java.lang.reflect.Array;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,5 +46,14 @@ public class ArrayUtils {
             array[k++] = t;
         }
         return array;
+    }
+
+    public int setSize(ResultSet rs) throws SQLException {
+        int rowcount = 0;
+        if (rs.last()) {
+            rowcount = rs.getRow();
+            rs.beforeFirst(); // not rs.first() because the rs.next() below will move on, missing the first element
+        }
+        return rowcount;
     }
 }

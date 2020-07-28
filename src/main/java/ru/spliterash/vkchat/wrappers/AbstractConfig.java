@@ -60,4 +60,12 @@ public interface AbstractConfig {
     default Integer getInt(String key) {
         return getInt(key,null);
     }
+
+    default boolean getBoolean(String key, boolean def){
+        Object obj = get(key);
+        if(obj instanceof Boolean)
+            return (boolean) obj;
+        else
+            return def;
+    }
 }

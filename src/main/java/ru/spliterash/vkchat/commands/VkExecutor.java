@@ -2,17 +2,13 @@ package ru.spliterash.vkchat.commands;
 
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
-import lombok.SneakyThrows;
 import ru.spliterash.vkchat.Lang;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.chat.ChatBuilder;
 import ru.spliterash.vkchat.chat.LinkHelper;
-import ru.spliterash.vkchat.db.Database;
-import ru.spliterash.vkchat.db.dao.ConversationDao;
-import ru.spliterash.vkchat.db.dao.PlayerConversationDao;
-import ru.spliterash.vkchat.db.dao.PlayerDao;
+import ru.spliterash.vkchat.db.AbstractBase;
+import ru.spliterash.vkchat.db.DatabaseLoader;
 import ru.spliterash.vkchat.db.model.ConversationModel;
-import ru.spliterash.vkchat.db.model.PlayerConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
 import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
 import ru.spliterash.vkchat.md_5_chat.api.chat.*;
@@ -31,7 +27,6 @@ import java.util.List;
 public class VkExecutor implements AbstractCommandExecutor {
 
 
-    @SneakyThrows
     @Override
     public List<String> onTabComplete(AbstractSender sender, String... args) {
         if (!(sender instanceof AbstractPlayer)) {
@@ -39,10 +34,10 @@ public class VkExecutor implements AbstractCommandExecutor {
         }
         AbstractPlayer player = (AbstractPlayer) sender;
         List<String> variants = new ArrayList<>();
+        AbstractBase base = DatabaseLoader.getBase();
         if (args.length <= 1) {
             if (sender.hasPermission("vk.use")) {
-                PlayerDao pDao = Database.getDao(PlayerModel.class);
-                PlayerModel link = pDao.queryForId(player.getUUID());
+                PlayerModel link = base.getPlayerByUUID(player.getUUID());
                 if (link == null) {
                     variants.add("link");
                 } else {
@@ -112,18 +107,17 @@ public class VkExecutor implements AbstractCommandExecutor {
     }
 
     private void listConversations(AbstractPlayer player, String[] args) {
-
+        //TODO
     }
 
-    private void selectConversation(AbstractPlayer player, String[] args) throws SQLException {
-        PlayerConversationDao pc = Database.getDao(PlayerConversationModel.class);
-        PlayerDao pDao = Database.getDao(PlayerModel.class);
-        PlayerModel pLink = pDao.queryForId(player.getUUID());
+    private void selectConversation(AbstractPlayer player, String[] args) {
+        AbstractBase base = DatabaseLoader.getBase();
+        PlayerModel pLink = base.getPlayerByUUID(player.getUUID());
         if (pLink == null) {
             player.sendMessage(Lang.NOT_LINK.toComponent());
             return;
         }
-        List<ConversationModel> playerConversations = pc.queryForPlayer(pLink);
+        List<ConversationModel> playerConversations = base.getPlayerMemberConversation(pLink.getUuid());
         if (playerConversations.size() == 0) {
             player.sendMessage(Lang.NO_ANY_CONVERSATION.toComponent());
             return;
@@ -151,8 +145,8 @@ public class VkExecutor implements AbstractCommandExecutor {
                 player.sendMessage(ChatColor.RED + "Пашол нафиг отсюдова");
                 return;
             }
-            pLink.setSelectedConversation(selected);
-            pDao.update(pLink);
+            pLink.setSelectedConversation(selected.getId());
+            pLink.saveOrUpdate();
             player.sendMessage(Lang.CONVERSATION_SELECTED.toString());
         }
     }
@@ -176,16 +170,16 @@ public class VkExecutor implements AbstractCommandExecutor {
         }
     }
 
-    private void sendMessage(AbstractPlayer player, String[] args) throws SQLException {
-        PlayerDao dao = Database.getDao(PlayerModel.class);
-        PlayerModel link = dao.queryForId(player.getUUID());
+    private void sendMessage(AbstractPlayer player, String[] args) {
+        AbstractBase base = DatabaseLoader.getBase();
+        PlayerModel link = base.getPlayerByUUID(player.getUUID());
         if (link == null) {
             player.sendMessage(Lang.NOT_LINK.toComponent());
             return;
         }
-        ConversationModel selected = link.getSelectedConversation();
+        ConversationModel selected = link.getSelectedConversationModel();
         if (selected == null) {
-            sendPlayerConversationList(player, link);
+            sendPlayerConversationList(player);
             return;
         }
         String msg = String.join(" ", args);
@@ -197,22 +191,21 @@ public class VkExecutor implements AbstractCommandExecutor {
                                 .getMap()));
     }
 
-    private void sendPlayerConversationList(AbstractPlayer player, PlayerModel model) throws SQLException {
-        PlayerConversationDao dao = Database.getDao(PlayerConversationModel.class);
-        List<ConversationModel> list = dao.queryForPlayer(model);
+    private void sendPlayerConversationList(AbstractPlayer player) {
+        List<ConversationModel> list = DatabaseLoader.getBase().getPlayerMemberConversation(player.getUUID());
         sendPlayerConversationList(player, list);
     }
 
-    private void createNewConversation(AbstractPlayer player) throws SQLException {
+    private void createNewConversation(AbstractPlayer player) {
         LinkHelper setup = LinkHelper.getSetup(player);
         if (setup == null) {
             player.sendMessage(Lang.SETUP_NOT_IN_PROGRESS.toComponent());
             return;
         }
         PlayerModel playerModel;
-        PlayerDao dao = Database.getDao(PlayerModel.class);
+        AbstractBase base = DatabaseLoader.getBase();
 
-        playerModel = dao.queryForId(player.getUUID());
+        playerModel = base.getPlayerByUUID(player.getUUID());
         if (playerModel == null) {
             player.sendMessage(Lang.NOT_LINK.toComponent());
             return;
@@ -234,7 +227,8 @@ public class VkExecutor implements AbstractCommandExecutor {
                 );
                 ConversationModel model = new ConversationModel(
                         peer,
-                        playerModel,
+                        playerModel.getUuid(),
+                        "[ДАННЫЕ УДАЛЕНЫ]",
                         link);
                 model.saveOrUpdate();
             } catch (ClientException | ApiException | SQLException e) {
@@ -243,13 +237,13 @@ public class VkExecutor implements AbstractCommandExecutor {
         });
     }
 
-    private void setupConversation(AbstractPlayer player) throws SQLException {
+    private void setupConversation(AbstractPlayer player) {
         if (!player.hasPermission("vk.setup")) {
             player.sendMessage(Lang.NO_PEX.toComponent());
             return;
         }
-        PlayerDao dao = Database.getDao(PlayerModel.class);
-        PlayerModel link = dao.queryForId(player.getUUID());
+        AbstractBase base = DatabaseLoader.getBase();
+        PlayerModel link = base.getPlayerByUUID(player.getUUID());
         if (link == null) {
             player.sendMessage(Lang.NOT_LINK.toComponent());
             return;
@@ -258,37 +252,32 @@ public class VkExecutor implements AbstractCommandExecutor {
 
     }
 
-    private void processUnLink(AbstractPlayer player) throws SQLException {
-        PlayerDao dao = Database.getDao(PlayerModel.class);
+    private void processUnLink(AbstractPlayer player) {
+        AbstractBase base = DatabaseLoader.getBase();
         PlayerModel model;
 
-        model = dao.queryForId(player.getUUID());
+        model = base.getPlayerByUUID(player.getUUID());
         if (model == null) {
             player.sendMessage(Lang.NOT_LINK.toComponent());
             return;
         }
-        dao.delete(model);
+        model.delete();
         player.sendMessage(Lang.OK.toString());
     }
 
     private void processLink(AbstractPlayer player) {
-        PlayerDao dao = Database.getDao(PlayerModel.class);
-        try {
-            PlayerModel link = dao.queryForId(player.getUUID());
-            if (link != null) {
-                VkChat.getInstance().userAction(String.valueOf(link.getVk()), (u) -> player.sendMessage(
-                        ChatBuilder.compile(
-                                Lang.ALREADY_LINK.toString(),
-                                ArrayUtils.createMap("{user}",
-                                        new BaseComponent[]{VkUtils.getUserComponent(u)})
-                        )
-                ));
-            } else {
-                LinkHelper.start(player, LinkHelper.SetupType.PROFILE);
-            }
-        } catch (SQLException throwables) {
-            player.sendMessage("&cSomething goes wrong, uff :(");
-            throw new RuntimeException(throwables);
+        AbstractBase base = DatabaseLoader.getBase();
+        PlayerModel link = base.getPlayerByUUID(player.getUUID());
+        if (link != null) {
+            VkChat.getInstance().userAction(String.valueOf(link.getVk()), (u) -> player.sendMessage(
+                    ChatBuilder.compile(
+                            Lang.ALREADY_LINK.toString(),
+                            ArrayUtils.createMap("{user}",
+                                    new BaseComponent[]{VkUtils.getUserComponent(u)})
+                    )
+            ));
+        } else {
+            LinkHelper.start(player, LinkHelper.SetupType.PROFILE);
         }
     }
 

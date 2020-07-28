@@ -1,40 +1,26 @@
 package ru.spliterash.vkchat.db.model;
 
-import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.table.DatabaseTable;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.spliterash.vkchat.db.Database;
-import ru.spliterash.vkchat.db.dao.ConversationDao;
+import ru.spliterash.vkchat.db.DatabaseLoader;
 import ru.spliterash.vkchat.utils.VkUtils;
 
 import java.sql.SQLException;
+import java.util.UUID;
 
-@NoArgsConstructor
+@AllArgsConstructor
 @Getter
-@DatabaseTable(tableName = "conversations", daoClass = ConversationDao.class)
 public class ConversationModel {
-    public static final String ID_NAME = "id";
-    public static final String OWNER_NAME = "owner";
-    @DatabaseField(id = true, columnName = ID_NAME)
-    private int id;
-    @DatabaseField(foreign = true,columnName = OWNER_NAME)
-    private PlayerModel owner;
-    @DatabaseField
+    private final int id;
+    private final UUID owner;
     @Setter
     private String title;
-    @DatabaseField(columnName = "invite_link")
     private String inviteLink;
 
-    public ConversationModel(int id, PlayerModel owner, String inviteLink) {
-        this.id = id;
-        this.title = "Unknown";
-        this.owner = owner;
-        this.inviteLink = inviteLink;
-    }
 
     public void updateLink() throws ClientException, ApiException, SQLException {
         inviteLink = VkUtils.getInviteLink(id);
@@ -42,6 +28,14 @@ public class ConversationModel {
     }
 
     public void saveOrUpdate() throws SQLException {
-        Database.getDao(ConversationModel.class).createOrUpdate(this);
+        DatabaseLoader.getBase().updateOrSaveMePls(this);
+    }
+
+    public PlayerModel getOwnerModel() {
+        return DatabaseLoader.getBase().getPlayerByUUID(getOwner());
+    }
+
+    public void delete() {
+        DatabaseLoader.getBase().deleteMe(this);
     }
 }

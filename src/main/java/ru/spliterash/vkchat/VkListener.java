@@ -1,8 +1,7 @@
 package ru.spliterash.vkchat;
 
 import lombok.SneakyThrows;
-import ru.spliterash.vkchat.db.Database;
-import ru.spliterash.vkchat.db.dao.PlayerDao;
+import ru.spliterash.vkchat.db.DatabaseLoader;
 import ru.spliterash.vkchat.db.model.PlayerModel;
 import ru.spliterash.vkchat.utils.VkUtils;
 import ru.spliterash.vkchat.wrappers.AbstractListener;
@@ -20,17 +19,16 @@ public class VkListener implements AbstractListener {
             sendGlobal(VkUtils.prepareMessage(sender, playerMessage));
     }
 
-    private void processMessage(AbstractPlayer player, String message) throws SQLException {
-        PlayerDao playerDao = Database.getDao(PlayerModel.class);
+    private void processMessage(AbstractPlayer player, String message) {
         String vkName = VkUtils.getPlayerToVk(player);
         sendGlobal(message.replace("{player}", vkName));
-        PlayerModel pModel = playerDao.queryForId(player.getUUID());
+        PlayerModel pModel = DatabaseLoader.getBase().getPlayerByUUID(player.getUUID());
         if (pModel != null) {
             VkUtils.sendPlayerPeerMessage(pModel, message);
         }
     }
 
-    @SneakyThrows
+
     @Override
     public void onJoin(AbstractPlayer player, boolean first) {
         if (noHasPerms(player))
@@ -43,7 +41,7 @@ public class VkListener implements AbstractListener {
         processMessage(player, message);
     }
 
-    @SneakyThrows
+
     @Override
     public void onExit(AbstractPlayer player) {
         if (noHasPerms(player))
@@ -51,7 +49,7 @@ public class VkListener implements AbstractListener {
         processMessage(player, Lang.PLAYER_EXIT.toString());
     }
 
-    @SneakyThrows
+
     @Override
     public void onDie(AbstractPlayer player, String deathMessage) {
         if (noHasPerms(player))
