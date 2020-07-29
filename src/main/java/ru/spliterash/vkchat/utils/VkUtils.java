@@ -8,7 +8,6 @@ import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.messages.ForeignMessage;
 import com.vk.api.sdk.objects.users.UserFull;
-import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import ru.spliterash.vkchat.Lang;
 import ru.spliterash.vkchat.VkChat;
@@ -189,7 +188,7 @@ public class VkUtils {
      * Только в асинхронном
      */
     public void sendPlayerPeerMessage(PlayerModel pModel, String message) {
-        for (ConversationModel model : DatabaseLoader.getBase().getPlayerMemberConversation(pModel.getUuid())) {
+        for (ConversationModel model : DatabaseLoader.getBase().getPlayerMemberConversation(pModel.getUUID())) {
             int peerId = model.getId();
             VkChat.getInstance().sendMessage(peerId, message);
         }
@@ -245,7 +244,7 @@ public class VkUtils {
                 );
     }
 
-    public BaseComponent[] getInviteLink(ConversationModel selected) {
-        return getInviteLink(selected.getInviteLink(), selected.getTitle());
+    public BaseComponent[] getInviteLink(ConversationModel model) {
+        return getInviteLink(model.getInviteLink(), model.getTitle());
     }
 }

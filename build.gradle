@@ -72,9 +72,9 @@ task createFatJar(type: Jar) {
     with jar
 }
 
-//Зона proguard
+
 /*
-// import proguard.gradle.ProGuardTask
+import proguard.gradle.ProGuardTask
 buildscript {
     repositories {
         mavenLocal()
@@ -114,12 +114,12 @@ List<File> getProGuardDependencies() {
         a.getFile()
     }
 }
-task proguard(type: ProGuardTask ) {
+task proguard(type: ProGuardTask,dependsOn: createFatJar ) {
     def libs = getProGuardDependencies()
     println(libs)
     configuration("conf.pro")
     libraryjars libs
     injars configurations.archives.allArtifacts.first().file
     outjars 'VkChat_minifed.jar'
-
-}*/
+}
+*/

@@ -36,6 +36,14 @@ public class ArrayUtils {
         return map;
     }
 
+    public <T> T[] removeFirst(Class<T> clazz, T[] source) {
+        if (source.length == 0)
+            return source;
+        T[] result = (T[]) Array.newInstance(clazz, source.length - 1);
+        System.arraycopy(source, 1, result, 0, source.length - 1);
+        return result;
+    }
+
     public int[] mergeTwoIntCollections(Collection<Integer> a1, Collection<Integer> a2) {
         int[] array = new int[a1.size() + a2.size()];
         int k = 0;

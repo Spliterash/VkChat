@@ -17,10 +17,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
-@SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
+@SuppressWarnings({"ArraysAsListWithZeroOrOneArgument", "SpellCheckingInspection", "unused"})
 public enum Lang {
-    CONVERSATION_INVITE("User {inviter} invite {invited}", "Пользователь {inviter} пригласил {invited}"),
-    UNKNOWN("unknown", "неизвестно"),
+    CONVERSATION_INVITE(
+            "User {inviter} invite {invited}",
+            "Пользователь {inviter} пригласил {invited}"),
+    UNKNOWN(
+            "unknown",
+            "неизвестно"),
     USER_HOVER(
             Arrays.asList(
                     "&7Gender: &6{gender}",
@@ -40,8 +44,12 @@ public enum Lang {
     VK_TO_MINECRAFT_CHAT_FORMAT("&7[&9{vk}&7]&a{user}&e: &f{text}"),
     VK_TO_MINECRAFT_INFO_FORMAT("&[&9{vk}&7] &a{message}"),
     MINECRAFT_TO_VK_FORMAT("{user}: {message}"),
-    MALE("Male", "Мужской"),
-    FEMALE("Female", "Женский"),
+    MALE(
+            "Male",
+            "Мужской"),
+    FEMALE(
+            "Female",
+            "Женский"),
     USER_VK_HELP(
             Arrays.asList(
                     "&b/vk link &6- Link minecraft to vk",
@@ -49,7 +57,7 @@ public enum Lang {
                     "&b/vk select &6- Select personal conversaiton to write with &b/vk Any message",
                     "&b/vk &a[message] &6- send message to personal conversation and online players in this conversation",
                     "&b/vk setup &6- Setup or create new private conversation",
-                    "&b/vk list &a[all|owner]&6- List conversations"
+                    "&b/vk list &6- List created conversations"
             ),
             Arrays.asList(
                     "&b/vk link &6- Привязать аккаунт майнкрафта к вк",
@@ -57,7 +65,7 @@ public enum Lang {
                     "&b/vk select &6- Выбрать приватную беседу для чата",
                     "&b/vk &a[сообщение] &6- Отправить сообщение в приватную беседу и онлайн игрокам в этой беседе",
                     "&b/vk setup &6- Настроить или создать новую приватную беседу",
-                    "&b/vk list &a[all|owner]&6- Посмотреть список своих бесед"
+                    "&b/vk list &6- Посмотреть список созданных своих бесед"
             )
     ),
     ADMIN_VK_HELP(
@@ -68,17 +76,22 @@ public enum Lang {
                     "&b/vk main &6- Установить главную беседу, в неё приходят все сообщения"
             )
     ),
-    OPEN_URL_HOVER("&6Click me to open a &bvk.com&6 conversation", "&6Нажми на меня чтобы открыть беседу &bvk.com"),
-    ALREADY_LINK("&6You are already link your account to &a{user}", "&6Вы уже привязали свой аккаунт к &a{user}"),
+    OPEN_URL_HOVER(
+            "&6Click me to open a &bvk.com&6 conversation",
+            "&6Нажми на меня чтобы открыть беседу &bvk.com"),
+    ALREADY_LINK(
+            "&6You are already link your account to &a{user}",
+            "&6Вы уже привязали свой аккаунт к &a{user}"),
     NOT_LINK(
             "&6For this action your account need be linked, you can link use &b/vk link",
             "&6Ваш аккаунт не привязан, вы можете привязать его с помощью команды &b/vk link"
     ),
     OK("&aOperation completed", "&aОперация выполнена"),
     WRONG_USER("&6User does not exists", "&6Пользователя не существует"),
-    SETUP_START("&6To install the conversation, invite the bot to the existing conversation " +
-            "and give it read permissions, and then enter &b{code}&r&a(clickable)&6. " +
-            "If you are too lazy, click &b&n{new}&r&6 and the conversation will be created automatically",
+    SETUP_START(
+            "&6To install the conversation, invite the bot to the existing conversation " +
+                    "and give it read permissions, and then enter &b{code}&r&a(clickable)&6. " +
+                    "If you are too lazy, click &b&n{new}&r&6 and the conversation will be created automatically",
             "&6Для установки беседы пригласите в существующую беседу бота и выдайте " +
                     "ему права на чтение, а после этого введите &b&n{code}&r&a(кликабельно)&6. " +
                     "Если вам лень, нажмите &b&n{new}&r&6 и беседа будет создана автоматически"),
@@ -100,11 +113,21 @@ public enum Lang {
             "&6Conversation setup will be autoremoved, because you dont setup conversation",
             "&6Установка беседы была отменена поскольку вы ничего не сделали"),
     LINK("[URL]", "[Ссылка]"),
-    CONVERSATION_CREATED("&6Conversation created, to open click: &b{link}", "&6Беседа успешно создана, чтобы открыть нажмите: &6{link}"),
-    CONVERSATION_OPEN_HOVER("&6Press me to open conversation", "&6Нажми на меня, чтобы попасть в эту беседу"),
-    PLAYER_JOIN("Player {player} join to server", "Игрок {player} зашёл на сервер"),
-    PLAYER_JOIN_FIRST("Player {player} join to server first time", "Игрок {player} зашёл на сервер в первый раз"),
-    PLAYER_EXIT("Player {player} exit", "Игрок {player} вышел с сервера"),
+    CONVERSATION_CREATED(
+            "&6Conversation created, to open click: &b{link}",
+            "&6Беседа успешно создана, чтобы открыть нажмите: &6{link}"),
+    CONVERSATION_OPEN_HOVER(
+            "&6Press me to open conversation",
+            "&6Нажми на меня, чтобы попасть в эту беседу"),
+    PLAYER_JOIN(
+            "Player {player} join to server",
+            "Игрок {player} зашёл на сервер"),
+    PLAYER_JOIN_FIRST(
+            "Player {player} join to server first time",
+            "Игрок {player} зашёл на сервер в первый раз"),
+    PLAYER_EXIT(
+            "Player {player} exit",
+            "Игрок {player} вышел с сервера"),
     NOT_LINK_CONVERSATION(
             "This conversation does not link, please remove bot",
             "Эта беседа не связана с сервером, пожалуйста, выгоните меня, чтобы не нагружать базу"
@@ -113,18 +136,30 @@ public enum Lang {
             "This command can be input only from console, so none output",
             "Данная команда может быть выполнена только в консоли, поэтому невозможно прислать результат сюда"
     ),
-    WRONG_CODE("Wrong verification code", "Неправильный код верификации"),
-    CONVERSATION_ALREADY_LINK("This conversation already linked by {user}", "Эта беседа уже связана {user}"),
-    YOU_NOT_INITIALIZE_LINK("It not your code, please go away", "Это не твой код верификации"),
-    CONVERSATION_LINK_SUCCESS("You link this conversation to your account", "Успешно, вы связали эту беседу со своим аккаунтом"),
-    CONVERSATION_INVITE_BY_URL("&aUser &b{user}&a join with url", "&b{user}&a присоединился к беседе по ссылке"),
-    CONVERSATION_KICK("&aUser &b{user_1}&a kick &b{user_2}", "&aПользователь &b{user_1}&a кикнул &b{user_2}"),
+    WRONG_CODE(
+            "Wrong verification code",
+            "Неправильный код верификации"),
+    CONVERSATION_ALREADY_LINK(
+            "This conversation already linked by {user}",
+            "Эта беседа уже связана {user}"),
+    YOU_NOT_INITIALIZE_LINK(
+            "It not your code, please go away",
+            "Это не твой код верификации"),
+    CONVERSATION_LINK_SUCCESS(
+            "You link this conversation to your account",
+            "Успешно, вы связали эту беседу со своим аккаунтом"),
+    CONVERSATION_INVITE_BY_URL(
+            "&aUser &b{user}&a join with url",
+            "&b{user}&a присоединился к беседе по ссылке"),
+    CONVERSATION_KICK(
+            "&aUser &b{user_1}&a kick &b{user_2}",
+            "&aПользователь &b{user_1}&a кикнул &b{user_2}"),
     LINK_START(
             "&6In order to link your minecraft account with VK, you need to send this code &b({code})&6 to the group messages",
-            "&6Для того чтобы связать свой майнкрафт аккаунт с вк, вам необходимо отправить этот код &b&n{code}&r&6 в сообщения группы"
-    ),
+            "&6Для того чтобы связать свой майнкрафт аккаунт с вк, вам необходимо отправить этот код &b&n{code}&r&6 в сообщения группы"),
 
-    VK_LINKED("This vk account already linked to {minecraft}", "Этот аккаунт уже привязан на {minecraft}"),
+    VK_LINKED("This vk account already linked to {minecraft}",
+            "Этот аккаунт уже привязан на {minecraft}"),
     USER_LINK_SUCCESS(
             "You success link user to minecraft",
             "Вы успешно связали свой аккаунт с майнкрафтом, теперь ваш ник будет видно в сообщениях"
@@ -135,18 +170,44 @@ public enum Lang {
                     "as well as in the conversation settings allowed to receive links",
             "При получении ссылки произошла ошибка. Убедитесь что сообщество имеет права администратора, " +
                     "а так же в настройках беседы разрешено получение ссылок"),
-    CONVERSATION_SELECT_TITLE("&6Select conversation before write to private", "&6Выбери в какую приватную беседу писать"),
+    CONVERSATION_SELECT_TITLE(
+            "&6Select conversation before write to private",
+            "&6Выбери в какую приватную беседу писать"),
     CONVERSATION_SELECT_BUTTON_TITLE("[SELECT]", "[ВЫБРАТЬ]"),
-    CONVERSATION_SELECT_BUTTON_HOVER("&7Click me to select this conversation", "&7Нажми на меня, чтобы выбрать эту беседу"),
+    CONVERSATION_SELECT_BUTTON_HOVER(
+            "&7Click me to select this conversation",
+            "&7Нажми на меня, чтобы выбрать эту беседу"),
     CONVERSATION_SELECT_ROW("&9{vk}&7 - &n&a{select}"),
-    NO_ANY_CONVERSATION("&6You are does not have any conversation", "&6Вы не состоите ни в одной беседе"),
-    CONVERSATION_SELECTED("&6You select conversation", "&6Вы выбрали беседу"),
-    CONVERSATION_LIST_TITLE("&6Conversation list:", "&6Список бесед:"),
-    CONVERSATION_LIST_ROW("&9{conversation} &aAction &6- &c{delete}", "&9{conversation} &aдействия &6- &c{delete}"),
+    NO_ANY_CONVERSATION(
+            "&6You are does not have any conversation",
+            "&6Вы не состоите ни в одной беседе"),
+    CONVERSATION_SELECTED(
+            "&6You select conversation",
+            "&6Вы выбрали беседу"),
+    CONVERSATION_LIST_TITLE(
+            "&6Created conversation list:",
+            "&6Список созданных бесед:"),
+    DELETE_TITLE(
+            "[DELETE]",
+            "[УДАЛИТЬ]"),
+    DELETE_CONVERSATION_HOVER(
+            "&7Click to unlink this conversation",
+            "&7Нажми чтобы отвязать эту беседу"),
+    CONVERSATION_LIST_ROW(
+            "&9{conversation} &aAction &6- &c{delete}{select_main}",
+            "&9{conversation} &aдействия &6- &c{delete}{select_main}"),
     MESSAGE_SEND(
             "&aYour message send to selected conversation &9{conversation}",
-            "&aВаше сообщение было отправлено в выбранную вами беседу &9{conversation}"
-    );
+            "&aВаше сообщение было отправлено в выбранную вами беседу &9{conversation}"),
+    CONVERSATION_SELECT_MAIN_HOVER(
+            "&7Click here to select MAIN plugin conversation",
+            "&7Нажми чтобы выбрать эту беседу как основную"),
+    NOT_OWNER(
+            "&6You are not owner on this conversation",
+            "&6Вы не владелец беседы"),
+    DELETE_CONFIRMATION(
+            "&6If you rly want delete &9{conversation}&6 click &c{delete}",
+            "&6Для того чтобы удалить &9{conversation}&6 нажмите на &c{delete}");
 
 
     /**

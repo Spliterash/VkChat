@@ -11,12 +11,7 @@
 -whyareyoukeeping class com.vk.api.sdk.objects.widgets.**
 
 
-# OrmLite
--keepclassmembers @com.j256.ormlite.field.DatabaseField class ** {
-	@com.j256.ormlite.field.DatabaseField <fields>;
-	@com.j256.ormlite.field.ForeignCollectionField <fields>;
-}
-# Мои лаунчеры, так как в конфигах
+# Мои лаунчеры
 -keep class ** extends ru.spliterash.vkchat.wrappers.Launcher {
     public <methods>;
 }

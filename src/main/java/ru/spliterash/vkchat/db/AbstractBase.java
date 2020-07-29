@@ -138,13 +138,10 @@ public abstract class AbstractBase {
             return null;
     }
 
-    public List<ConversationModel> getPlayerMemberConversation(UUID player) {
+    private List<ConversationModel> listConversation(@Language("SQL") String query, Object... args) {
         try {
             List<ConversationModel> list = new ArrayList<>();
-            ResultSet set = query("SELECT id, owner, title, invite_link\n" +
-                    "from conversation_members cm\n" +
-                    "join conversations c on cm.conversation = c.id\n" +
-                    "where player = ?", player);
+            ResultSet set = query(query, args);
             while (set.next()) {
                 list.add(extractConversation(set));
             }
@@ -154,11 +151,24 @@ public abstract class AbstractBase {
         }
     }
 
+    public List<ConversationModel> getPlayerAdminConversation(UUID player) {
+        return listConversation("SELECT id, owner, title, invite_link\n" +
+                "from conversations\n" +
+                "where owner = ?", player.toString());
+    }
+
+    public List<ConversationModel> getPlayerMemberConversation(UUID player) {
+        return listConversation("SELECT id, owner, title, invite_link\n" +
+                "from conversation_members cm\n" +
+                "join conversations c on cm.conversation = c.id\n" +
+                "where player = ?", player.toString());
+    }
+
     protected abstract String getPlayerModelUpdateCreateQuery();
 
     public void updateOrSaveMePls(PlayerModel model) {
         NamedParamStatement statement = new NamedParamStatement(getPlayerModelUpdateCreateQuery());
-        statement.setValue("uuid", model.getUuid());
+        statement.setValue("uuid", model.getUUID());
         statement.setValue("vk", model.getVk());
         statement.setValue("nickname", model.getNickname());
         statement.setValue("selected_conversation", model.getSelectedConversation());
@@ -179,7 +189,7 @@ public abstract class AbstractBase {
 
     public void deleteMe(PlayerModel model) {
         try {
-            update("DELETE FROM players where uuid = ?", model.getUuid().toString());
+            update("DELETE FROM players where uuid = ?", model.getUUID().toString());
         } catch (SQLException throwables) {
             throw new RuntimeException(throwables);
         }
@@ -211,7 +221,7 @@ public abstract class AbstractBase {
 
     public void addMember(PlayerModel player, ConversationModel conversation) {
         try {
-            update("INSERT INTO conversation_members (player, conversation) values (?,?)", player.getUuid(), conversation.getId());
+            update("INSERT INTO conversation_members (player, conversation) values (?,?)", player.getUUID(), conversation.getId());
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -219,9 +229,11 @@ public abstract class AbstractBase {
 
     public void removeMember(PlayerModel player, ConversationModel conversation) {
         try {
-            update("DELETE FROM conversation_members WHERE player = ? AND  conversation = ?", player.getUuid(), conversation.getId());
+            update("DELETE FROM conversation_members WHERE player = ? AND  conversation = ?", player.getUUID(), conversation.getId());
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
     }
+
+
 }

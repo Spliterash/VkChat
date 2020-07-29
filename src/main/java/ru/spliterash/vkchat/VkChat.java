@@ -327,7 +327,7 @@ public class VkChat {
             sendMessage(peerId, Lang.CONVERSATION_ALREADY_LINK.toString("{user}", VkUtils.getPlayerToVk(conversation.getOwnerModel())));
             return;
         }
-        if (!setup.getPlayer().getUUID().equals(link.getUuid())) {
+        if (!setup.getPlayer().getUUID().equals(link.getUUID())) {
             sendMessage(peerId, Lang.YOU_NOT_INITIALIZE_LINK.toString());
             return;
         }
@@ -340,7 +340,7 @@ public class VkChat {
                 return;
             }
         }
-        ConversationModel model = new ConversationModel(peerId, link.getUuid(), "[ДАННЫЕ УДАЛЕНЫ]", inviteLink);
+        ConversationModel model = new ConversationModel(peerId, link.getUUID(), "[ДАННЫЕ УДАЛЕНЫ]", inviteLink);
         model.saveOrUpdate();
         sendMessage(peerId, Lang.CONVERSATION_LINK_SUCCESS.toString());
 

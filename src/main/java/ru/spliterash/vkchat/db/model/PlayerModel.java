@@ -1,6 +1,5 @@
 package ru.spliterash.vkchat.db.model;
 
-import com.vk.api.sdk.actions.Database;
 import lombok.*;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.db.DatabaseLoader;
@@ -14,7 +13,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class PlayerModel {
 
-    private UUID uuid;
+    private UUID UUID;
 
     private String nickname;
 
@@ -28,17 +27,17 @@ public class PlayerModel {
         if (o == null || getClass() != o.getClass()) return false;
         PlayerModel model = (PlayerModel) o;
         return vk == model.vk &&
-                Objects.equals(uuid, model.uuid) &&
+                Objects.equals(UUID, model.UUID) &&
                 Objects.equals(nickname, model.nickname);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(uuid, nickname, vk);
+        return Objects.hash(UUID, nickname, vk);
     }
 
     public AbstractPlayer getOnlinePlayer() {
-        return VkChat.getInstance().getLauncher().getPlayer(getUuid());
+        return VkChat.getInstance().getLauncher().getPlayer(getUUID());
     }
 
     public void saveOrUpdate() {
