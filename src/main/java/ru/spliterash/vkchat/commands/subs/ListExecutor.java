@@ -34,7 +34,6 @@ public class ListExecutor implements SubExecutor {
             player.sendMessage(Lang.NOT_LINK.toString());
             return;
         }
-        List<ConversationModel> list = base.getPlayerAdminConversation(player.getUUID());
         if (args.length == 2) {
             switch (args[0]) {
                 case "preDeleteConversation":
@@ -44,7 +43,13 @@ public class ListExecutor implements SubExecutor {
                     onDeleteConversation(player, args[1]);
                     break;
             }
+        } else {
+            sendList(player,base);
         }
+    }
+
+    private void sendList(AbstractPlayer player, AbstractBase base) {
+        List<ConversationModel> list = base.getPlayerAdminConversation(player.getUUID());
         if (list.size() > 0) {
             player.sendMessage(Lang.CONVERSATION_LIST_TITLE.toComponent());
             for (ConversationModel model : list) {

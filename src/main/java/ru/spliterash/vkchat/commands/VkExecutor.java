@@ -51,6 +51,8 @@ public class VkExecutor implements AbstractCommandExecutor {
             SubExecutor executor = getExecutor(args);
             if (executor != null) {
                 executor.onCommand(player, ArrayUtils.removeFirst(String.class, args));
+            } else {
+                sendMessage(player, args);
             }
         } catch (Exception exception) {
             exception.printStackTrace();
