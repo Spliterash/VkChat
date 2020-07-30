@@ -65,7 +65,7 @@ public class CreateNewConversationExecutor implements SubExecutor {
                         "[ДАННЫЕ УДАЛЕНЫ]",
                         link);
                 model.saveOrUpdate();
-            } catch (ClientException | ApiException | SQLException e) {
+            } catch (ClientException | ApiException e) {
                 player.sendMessage(e.getLocalizedMessage());
             }
         });

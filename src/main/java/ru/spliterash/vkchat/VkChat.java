@@ -100,7 +100,7 @@ public class VkChat {
         );
         Integer gId = config.getInt("global_peer");
         if (gId != null)
-            setGlobalPeer(gId);
+            _setGlobalPeer(gId);
         commandPrefix = config.getString("command_prefix", "/");
 
         launcher.registerCommand("vk", new VkExecutor());
@@ -114,7 +114,16 @@ public class VkChat {
         }
     }
 
-    private void setGlobalPeer(int id) throws ClientException, ApiException, SQLException {
+    public void setGlobalPeer(int id) {
+        launcher.getVkConfig().set("global_peer", id);
+        try {
+            _setGlobalPeer(id);
+        } catch (ClientException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void _setGlobalPeer(int id) throws ClientException {
         globalPeer = id;
         if (VkUtils.isConversation(id)) {
             globalConversation = refreshConversationUsers(id);
@@ -377,7 +386,7 @@ public class VkChat {
     }
 
 
-    public ConversationModel refreshConversationUsers(int conversationId) throws ClientException, SQLException {
+    public ConversationModel refreshConversationUsers(int conversationId) throws ClientException {
         AbstractBase base = DatabaseLoader.getBase();
         ConversationModel currentConversation = base.getConversationById(conversationId);
 

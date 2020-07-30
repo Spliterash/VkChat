@@ -1,6 +1,7 @@
 package ru.spliterash.vkchat.commands.subs;
 
 import ru.spliterash.vkchat.Lang;
+import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.chat.ChatBuilder;
 import ru.spliterash.vkchat.commands.SubExecutor;
 import ru.spliterash.vkchat.commands.VkExecutor;
@@ -42,10 +43,47 @@ public class ListExecutor implements SubExecutor {
                 case "deleteConversation":
                     onDeleteConversation(player, args[1]);
                     break;
+                case "preSelectMainConversation":
+                    onPreSelectMainConversation(player, args[1]);
+                    break;
+                case "selectMainConversation":
+                    onSelectMainConversation(player, args[1]);
             }
         } else {
-            sendList(player,base);
+            sendList(player, base);
         }
+    }
+
+    private void onSelectMainConversation(AbstractPlayer player, String arg) {
+        ConversationModel conversation = checkConversation(player, arg);
+        if (conversation == null)
+            return;
+        VkChat.getInstance().getLauncher().runTaskAsync(() -> {
+            try {
+                VkChat.getInstance().setGlobalPeer(conversation.getId());
+                player.sendMessage(Lang.OK.toComponent());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                player.sendMessage(ex.getLocalizedMessage());
+            }
+
+        });
+    }
+
+    private void onPreSelectMainConversation(AbstractPlayer player, String arg) {
+        ConversationModel conversation = checkConversation(player, arg);
+        if (conversation == null)
+            return;
+        TextComponent select = new TextComponent(Lang.CONVERSATION_SELECT_BUTTON_TITLE.toComponent());
+        select.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/vk list selectMainConversation " + arg));
+        BaseComponent[] conversationComponent = VkUtils.getInviteLink(conversation);
+        player.sendMessage(ChatBuilder.compile(
+                Lang.SELECT_MAIN_CONFIRMATION.toString(),
+                new SimpleMapBuilder<String, BaseComponent[]>()
+                        .add("{select}", new BaseComponent[]{select})
+                        .add("{conversation}", conversationComponent)
+                        .getMap()
+        ));
     }
 
     private void sendList(AbstractPlayer player, AbstractBase base) {
@@ -60,8 +98,10 @@ public class ListExecutor implements SubExecutor {
                 BaseComponent[] selectComponent = new BaseComponent[1];
                 if (player.hasPermission("vk.admin")) {
                     selectComponent[0] = new TextComponent(Lang.CONVERSATION_SELECT_BUTTON_TITLE.toComponent());
-                    selectComponent[0].setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/vk list selectMainConversationPrepare " + model.getId()));
+                    selectComponent[0].setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/vk list preSelectMainConversation " + model.getId()));
                     selectComponent[0].setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Lang.CONVERSATION_SELECT_MAIN_HOVER.toComponent()));
+                } else {
+                    selectComponent[0] = new TextComponent();
                 }
                 player.sendMessage(ChatBuilder.compile(
                         Lang.CONVERSATION_LIST_ROW.toString(),
@@ -77,15 +117,22 @@ public class ListExecutor implements SubExecutor {
         }
     }
 
-    private void onPreDeleteConversation(AbstractPlayer player, String arg) {
+    private ConversationModel checkConversation(AbstractPlayer player, String arg) {
         int conversationId = parse(player, arg);
         if (conversationId == -1)
-            return;
+            return null;
         ConversationModel conversation = DatabaseLoader.getBase().getConversationById(conversationId);
         if (conversation == null) {
             player.sendMessage(ChatColor.RED + "Bruh");
-            return;
+            return null;
         }
+        return conversation;
+    }
+
+    private void onPreDeleteConversation(AbstractPlayer player, String arg) {
+        ConversationModel conversation = checkConversation(player, arg);
+        if (conversation == null)
+            return;
         TextComponent delete = new TextComponent(Lang.DELETE_TITLE.toComponent());
         delete.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/vk list deleteConversation " + arg));
         BaseComponent[] conversationComponent = VkUtils.getInviteLink(conversation);

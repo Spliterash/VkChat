@@ -27,7 +27,7 @@ public class ConversationModel {
         saveOrUpdate();
     }
 
-    public void saveOrUpdate() throws SQLException {
+    public void saveOrUpdate() {
         DatabaseLoader.getBase().updateOrSaveMePls(this);
     }
 

@@ -106,27 +106,28 @@ public class VkUtils {
                     sex = Lang.FEMALE.toString();
                     break;
                 default:
-                    sex = Lang.UNKNOWN.toString();
+                    sex = null;
                     break;
             }
             if (user.getCity() != null)
                 city = user.getCity().getTitle();
             else
-                city = Lang.UNKNOWN.toString();
-            if (user.getStatus() != null)
+                city = null;
+            if (user.getStatus() != null && user.getStatus().isEmpty())
                 status = user.getStatus();
             else
-                status = Lang.UNKNOWN.toString();
-            if (user.getBdate() != null)
+                status = null;
+            if (user.getBdate() != null && user.getBdate().isEmpty())
                 birthday = user.getBdate();
             else
-                birthday = Lang.UNKNOWN.toString();
-            List<String> list = Lang.USER_HOVER.toList(
-                    "{sex}", sex,
-                    "{city}", city,
-                    "{status}", status,
-                    "{birthday}", birthday
-            );
+                birthday = null;
+            List<String> list = Lang.USER_HOVER.toList();
+            Map<String, String> replaceMap = new HashMap<>();
+            replaceMap.put("{sex}", sex);
+            replaceMap.put("{city}", city);
+            replaceMap.put("{status}", status);
+            replaceMap.put("{birthday}", birthday);
+            ArrayUtils.replaceOrRemove(list, replaceMap);
             for (int i = 0; i < list.size(); i++) {
                 String current = list.get(i);
                 hoverBuilder.append(TextComponent.fromLegacyText(current), ComponentBuilder.FormatRetention.NONE);
@@ -176,12 +177,6 @@ public class VkUtils {
 
     public TextComponent getUserComponent(Integer user) {
         return getUserComponent(VkChat.getInstance().getCachedUserById(user));
-    }
-
-    public void sendToPlayers(int peerId, BaseComponent... components) {
-        if (VkChat.getInstance().getGlobalPeer() == peerId) {
-
-        }
     }
 
     /**

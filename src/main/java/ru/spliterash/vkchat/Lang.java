@@ -1,6 +1,7 @@
 package ru.spliterash.vkchat;
 
 
+import com.vk.api.sdk.exceptions.RequiredFieldException;
 import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
 import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
 import ru.spliterash.vkchat.md_5_chat.api.chat.ComponentBuilder;
@@ -206,11 +207,15 @@ public enum Lang {
             "&6You are not owner on this conversation",
             "&6Вы не владелец беседы"),
     DELETE_CONFIRMATION(
-            "&6If you rly want delete &9{conversation}&6 click &c{delete}",
-            "&6Для того чтобы удалить &9{conversation}&6 нажмите на &c{delete}");
+            "&6If you rly want delete &9{conversation}&6 click &c&n{delete}",
+            "&6Для того чтобы удалить &9{conversation}&6 нажмите на &c&n{delete}"),
+    SELECT_MAIN_CONFIRMATION(
+            "&6If you click, you select new main conversation for &9{conversation}&6 click if you want &a&n{select}",
+            "&6Вы точно хотите выбрать беседу &9{conversation}&6 в качестве основной беседы ? Если да то нажмите &a&n{select}"
+    );
 
 
-    /**
+    /** 
      * Оригинальные переводы
      * 0 индекс - англиский
      * 1 индекс - русский

@@ -152,9 +152,6 @@ public class VkExecutor implements AbstractCommandExecutor {
                     if (sender.hasPermission("vk.setup")) {
                         variants.add("setup");
                     }
-                    if (sender.hasPermission("vk.admin")) {
-                        variants.add("main");
-                    }
                 }
             }
             return variants;

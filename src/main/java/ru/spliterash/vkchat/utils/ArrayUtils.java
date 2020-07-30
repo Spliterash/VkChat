@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @UtilityClass
@@ -39,6 +40,7 @@ public class ArrayUtils {
     public <T> T[] removeFirst(Class<T> clazz, T[] source) {
         if (source.length == 0)
             return source;
+        //noinspection unchecked
         T[] result = (T[]) Array.newInstance(clazz, source.length - 1);
         System.arraycopy(source, 1, result, 0, source.length - 1);
         return result;
@@ -63,5 +65,47 @@ public class ArrayUtils {
             rs.beforeFirst(); // not rs.first() because the rs.next() below will move on, missing the first element
         }
         return rowcount;
+    }
+
+    public void replaceOrRemove(List<String> list, String key, String value) {
+        for (int i = 0; i < list.size(); i++) {
+            String element = list.get(i);
+            if (element.contains(key))
+                continue;
+            if (value != null) {
+                list.set(i, element.replace(key, value));
+            } else {
+                list.remove(i);
+                i--;
+            }
+
+        }
+    }
+
+    public void replaceOrRemove(List<String> list, Map<String, String> replaceMap) {
+        for (int i = 0; i < list.size(); i++) {
+            String element = list.get(i);
+            String[] foundKeys = replaceMap
+                    .keySet()
+                    .stream()
+                    .filter(element::contains)
+                    .toArray(String[]::new);
+            if (foundKeys.length == 0) {
+                list.remove(i);
+                i--;
+            }
+            boolean onlyOne = false;
+            String finalStr = element;
+            for (String key : foundKeys) {
+                String replaceTo = replaceMap.get(key);
+                if (replaceTo == null) {
+                    if (onlyOne)
+                        finalStr = finalStr.replace(key, "");
+                    continue;
+                }
+                onlyOne = true;
+                finalStr = finalStr.replace(key,replaceTo);
+            }
+        }
     }
 }
