@@ -1,5 +1,6 @@
 package ru.spliterash.vkchat.launchers.bukkit.listeners;
 
+import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -18,6 +19,6 @@ public class BukkitDieListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onMessage(PlayerDeathEvent e) {
-        listener.onDie((AbstractPlayer) BukkitPlugin.wrapSender(e.getEntity()), e.getDeathMessage());
+        listener.onDie((AbstractPlayer) BukkitPlugin.wrapSender(e.getEntity()), ChatColor.stripColor(e.getDeathMessage()));
     }
 }
