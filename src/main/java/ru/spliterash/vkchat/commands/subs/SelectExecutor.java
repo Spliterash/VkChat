@@ -38,7 +38,7 @@ public class SelectExecutor implements SubExecutor {
         if (args.length == 0) {
             parent.sendPlayerConversationList(player, playerConversations);
         } else {
-            String strPeer = args[1];
+            String strPeer = args[0];
             int peer;
             try {
                 peer = Integer.parseInt(strPeer);

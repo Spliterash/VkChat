@@ -63,7 +63,8 @@ public abstract class UploadQueryBuilder<T, R> extends ApiRequest<R> {
         ClientResponse response;
         try {
             if (file != null) {
-                response = getClient().post(getUrl(), filename, file);
+                response = getClient()
+                        .post(getUrl(), filename, file);
             } else {
                 response = getClient().post(getUrl());
             }

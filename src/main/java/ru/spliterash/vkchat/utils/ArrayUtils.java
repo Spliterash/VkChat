@@ -5,10 +5,7 @@ import lombok.experimental.UtilityClass;
 import java.lang.reflect.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @UtilityClass
 public class ArrayUtils {
@@ -46,25 +43,17 @@ public class ArrayUtils {
         return result;
     }
 
-    public int[] mergeTwoIntCollections(Collection<Integer> a1, Collection<Integer> a2) {
-        int[] array = new int[a1.size() + a2.size()];
+    public <T> T[] mergeTwoIntCollections(Class<T> clazz, Collection<T> a1, Collection<T> a2) {
+        //noinspection unchecked
+        T[] array = (T[]) Array.newInstance(clazz, a1.size() + a2.size());
         int k = 0;
-        for (int t : a1) {
+        for (T t : a1) {
             array[k++] = t;
         }
-        for (int t : a2) {
+        for (T t : a2) {
             array[k++] = t;
         }
         return array;
-    }
-
-    public int setSize(ResultSet rs) throws SQLException {
-        int rowcount = 0;
-        if (rs.last()) {
-            rowcount = rs.getRow();
-            rs.beforeFirst(); // not rs.first() because the rs.next() below will move on, missing the first element
-        }
-        return rowcount;
     }
 
     public void replaceOrRemove(List<String> list, String key, String value) {
@@ -83,29 +72,25 @@ public class ArrayUtils {
     }
 
     public void replaceOrRemove(List<String> list, Map<String, String> replaceMap) {
+        Iterator<Map.Entry<String, String>> iter = replaceMap.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry<String, String> next = iter.next();
+            String value = next.getValue();
+            if (value == null || value.isEmpty())
+                iter.remove();
+        }
+        //Удаляем всё чо неюзается
+        list.removeIf(listElement -> replaceMap
+                .keySet()
+                .stream()
+                .noneMatch(listElement::contains));
         for (int i = 0; i < list.size(); i++) {
-            String element = list.get(i);
-            String[] foundKeys = replaceMap
-                    .keySet()
-                    .stream()
-                    .filter(element::contains)
-                    .toArray(String[]::new);
-            if (foundKeys.length == 0) {
-                list.remove(i);
-                i--;
+            String str = list.get(i);
+            for (Map.Entry<String, String> entry : replaceMap.entrySet()) {
+                str = str.replace(entry.getKey(),entry.getValue());
             }
-            boolean onlyOne = false;
-            String finalStr = element;
-            for (String key : foundKeys) {
-                String replaceTo = replaceMap.get(key);
-                if (replaceTo == null) {
-                    if (onlyOne)
-                        finalStr = finalStr.replace(key, "");
-                    continue;
-                }
-                onlyOne = true;
-                finalStr = finalStr.replace(key,replaceTo);
-            }
+            list.set(i,str);
         }
     }
+
 }

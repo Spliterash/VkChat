@@ -5,6 +5,7 @@ import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.db.types.MySQL;
 import ru.spliterash.vkchat.db.types.SQLite;
 import ru.spliterash.vkchat.wrappers.AbstractConfig;
+import ru.spliterash.vkchat.wrappers.Launcher;
 
 import java.io.File;
 
@@ -23,21 +24,22 @@ public class DatabaseLoader {
 
     private DatabaseLoader() {
         AbstractConfig config = VkChat.getInstance().getLauncher().getVkConfig();
-        if (config.getBoolean("mysql_enable", false))
-            base = new SQLite(new File(VkChat.getInstance().getLauncher().getDataFolder(), "base.db"));
-        else
-            base = new MySQL(
-                    config.getString("mysql_host"),
-                    config.getString("mysql_port"),
-                    config.getString("mysql_db"),
-                    config.getString("mysql_user"),
-                    config.getString("mysql_password")
-            );
+        try {
+            if (config.getBoolean("mysql_enable", false)) {
+                base = new MySQL(
+                        config.getString("mysql_host"),
+                        config.getString("mysql_port"),
+                        config.getString("mysql_db"),
+                        config.getString("mysql_user"),
+                        config.getString("mysql_password")
+                );
+            } else {
+                base = new SQLite(new File(VkChat.getInstance().getLauncher().getDataFolder(), "base.db"));
+            }
+        } catch (Exception ex) {
+            Launcher launcher = VkChat.getInstance().getLauncher();
+            launcher.unload();
+            throw new RuntimeException("Can't connect to db, plugin disable", ex);
+        }
     }
-
-    private void loadSQLite() {
-
-    }
-
-
 }

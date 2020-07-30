@@ -1,6 +1,7 @@
 package ru.spliterash.vkchat.db.utils;
 
 import org.intellij.lang.annotations.Language;
+import ru.spliterash.vkchat.db.AbstractBase;
 
 import java.sql.*;
 import java.sql.Date;
@@ -50,7 +51,7 @@ public class NamedParamStatement {
             finalQuery = queryBuilder.append(query, oldEnd, query.length()).toString();
         PreparedStatement statement = connection.prepareStatement(finalQuery);
         for (int i = 0; i < result.size(); i++) {
-            setValue(statement, i, result.get(i));
+            AbstractBase.setValue(statement, i, result.get(i));
         }
         reset();
         return statement;
@@ -80,24 +81,8 @@ public class NamedParamStatement {
         map.put(key, values);
     }
 
-    public <T> void setValues(String key, T... values) {
-        map.put(key, Arrays.stream(values).collect(Collectors.toSet()));
-    }
-
-    private <T> void setValue(PreparedStatement statement, int i, T obj) throws SQLException {
-        int index = i + 1;
-        if (obj instanceof String)
-            statement.setString(index, (String) obj);
-        else if (obj instanceof Double)
-            statement.setDouble(index, (double) obj);
-        else if (obj instanceof Integer)
-            statement.setInt(index, (Integer) obj);
-        else if (obj instanceof Date)
-            statement.setDate(index, (Date) obj);
-        else if (obj instanceof Long)
-            statement.setLong(index, (Long) obj);
-        else
-            statement.setObject(index, obj);
-
+    public <T> void setValues(String key, T[] values) {
+        Set<T> set = Arrays.stream(values).collect(Collectors.toSet());
+        map.put(key, set);
     }
 }

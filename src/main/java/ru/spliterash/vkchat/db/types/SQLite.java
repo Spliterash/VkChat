@@ -30,10 +30,6 @@ public class SQLite extends AbstractBase {
         afterInit();
     }
 
-    @Override
-    protected String getCreationScript() {
-        return null;
-    }
 
     @Override
     protected Connection getConnection() throws SQLException {
@@ -43,20 +39,14 @@ public class SQLite extends AbstractBase {
     @Override
     @Language("SQLite")
     protected String getPlayerModelUpdateCreateQuery() {
-        return "INSERT INTO players (uuid, vk, nickname, selected_conversation)\n" +
-                "values (:uuid, :vk, :nickname, :selected_conversation)\n" +
-                "on conflict(uuid) do update set vk                    = :vk,\n" +
-                "                          nickname              = :nickname,\n" +
-                "                          selected_conversation = :selected_conversation";
+        return "REPLACE INTO players (uuid, vk, nickname, selected_conversation)\n" +
+                "values (:uuid, :vk, :nickname, :selected_conversation)";
     }
 
     @Override
     @Language("SQLite")
     protected String getConversationModelUpdateCreateQuery() {
-        return "INSERT INTO conversations (id, owner, title, invite_link)\n" +
-                "values (:id, :owner, :title, :link)\n" +
-                "on conflict(id) do update set owner       = :owner,\n" +
-                "                              title       = :title,\n" +
-                "                              invite_link = :link;";
+        return "REPLACE INTO conversations (id, owner, title, invite_link)\n" +
+                "values (:id, :owner, :title, :link)";
     }
 }

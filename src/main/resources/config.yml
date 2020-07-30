@@ -7,12 +7,7 @@
 # If you get exception too many requests per second, add another tokens here, if you dont get use one token
 # Please DO NOT write tokens from different groups
 token:
-  - "group token here"
-# =====================RU=====================
-# Доступен расейский, просто пиши ru, уже переведённый, да Я РУССКИЙ
-# =====================EN=====================
-# ru|en or you custom, file create auto
-lang: en
+  - "Place group token here|Сюда писать токен группы"
 # =====================RU=====================
 # Префикс с которого начинаются команды
 # =====================EN=====================
@@ -28,6 +23,18 @@ command_prefix: "/"
 # They can execute commands on server
 admins:
   - spliterash
+# =====================RU=====================
+# Если включено, будут приходить сообщения о входе или выходе игрока с сервера
+# =====================EN=====================
+# If enable, you receive message about enter/exit players
+join_message: true
+# =====================RU=====================
+# Если включено, будет писать о том что игрок умер (на банже работать не будет)
+# =====================EN=====================
+# If enable, you receive messsage about player die
+die_message: true
+
+
 
 mysql_enable: false
 mysql_host: localhost

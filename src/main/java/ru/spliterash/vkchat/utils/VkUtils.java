@@ -182,11 +182,13 @@ public class VkUtils {
     /**
      * Только в асинхронном
      */
-    public void sendPlayerPeerMessage(PlayerModel pModel, String message) {
-        for (ConversationModel model : DatabaseLoader.getBase().getPlayerMemberConversation(pModel.getUUID())) {
+    public List<ConversationModel> sendPlayerPeerMessage(PlayerModel pModel, String message) {
+        List<ConversationModel> peers = DatabaseLoader.getBase().getPlayerMemberConversation(pModel.getUUID());
+        for (ConversationModel model : peers) {
             int peerId = model.getId();
             VkChat.getInstance().sendMessage(peerId, message);
         }
+        return peers;
     }
 
     public void scanMessageIds(Set<Integer> ids, ForeignMessage message) {

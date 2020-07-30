@@ -10,7 +10,13 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import ru.spliterash.vkchat.VkChat;
+import ru.spliterash.vkchat.launchers.bukkit.listeners.BukkitDieListener;
+import ru.spliterash.vkchat.launchers.bukkit.listeners.BukkitJoinLeaveListener;
+import ru.spliterash.vkchat.launchers.bukkit.listeners.BukkitMessageListener;
+import ru.spliterash.vkchat.listeners.JoinLeaveListener;
+import ru.spliterash.vkchat.listeners.MessageListener;
 import ru.spliterash.vkchat.wrappers.*;
+import ru.spliterash.vkchat.wrappers.listener.IDieListener;
 
 import java.io.File;
 import java.util.*;
@@ -122,17 +128,20 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
     }
 
     @Override
-    public void registerListener(AbstractListener listener) {
-        Bukkit.getPluginManager().registerEvents(new BukkitListener(listener), this);
+    public void registerListener(MessageListener listener) {
+        getServer().getPluginManager().registerEvents(new BukkitMessageListener(listener), this);
     }
 
     @Override
-    public void unregisterListener(AbstractListener listener) {
-        if (listener instanceof BukkitListener) {
-            BukkitListener bukkit = (BukkitListener) listener;
-            HandlerList.unregisterAll(bukkit);
-        }
+    public void registerListener(JoinLeaveListener listener) {
+        getServer().getPluginManager().registerEvents(new BukkitJoinLeaveListener(listener), this);
     }
+
+    @Override
+    public void registerListener(IDieListener listener) {
+        getServer().getPluginManager().registerEvents(new BukkitDieListener(listener), this);
+    }
+
 
     @Override
     public void unregisterListeners() {

@@ -102,6 +102,10 @@ public class VkExecutor implements AbstractCommandExecutor {
 
     private void sendPlayerConversationList(AbstractPlayer player) {
         List<ConversationModel> list = DatabaseLoader.getBase().getPlayerMemberConversation(player.getUUID());
+        if (list.size() == 0) {
+            player.sendMessage(Lang.NO_ANY_CONVERSATION.toComponent());
+            return;
+        }
         sendPlayerConversationList(player, list);
     }
 

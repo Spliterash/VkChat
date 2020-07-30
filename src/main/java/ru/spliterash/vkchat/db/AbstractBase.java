@@ -3,17 +3,38 @@ package ru.spliterash.vkchat.db;
 import org.intellij.lang.annotations.Language;
 import ru.spliterash.vkchat.db.model.ConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
+import ru.spliterash.vkchat.db.model.ResultSetRow;
 import ru.spliterash.vkchat.db.utils.NamedParamStatement;
-import ru.spliterash.vkchat.utils.ArrayUtils;
 import ru.spliterash.vkchat.utils.StringUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.sql.Date;
+import java.util.*;
 
 public abstract class AbstractBase {
+    public List<String> getColumns(ResultSet set) throws SQLException {
+        ResultSetMetaData meta = set.getMetaData();
+        List<String> list = new ArrayList<>(meta.getColumnCount());
+        for (int i = 0; i < meta.getColumnCount(); i++) {
+            list.add(meta.getColumnName(i+1));
+        }
+        return list;
+    }
+
+    public Set<ResultSetRow> extractSet(ResultSet set) throws SQLException {
+        Set<ResultSetRow> mapButSet = Collections.newSetFromMap(new LinkedHashMap<>());
+        List<String> columns = getColumns(set);
+        while (set.next()) {
+            ResultSetRow row = new ResultSetRow();
+            for (String column : columns) {
+                row.put(column, set.getObject(column));
+            }
+            mapButSet.add(row);
+        }
+        return mapButSet;
+    }
 
     protected void afterInit() {
         try (Connection connection = getConnection()) {
@@ -29,27 +50,51 @@ public abstract class AbstractBase {
     @Language("SQL")
     protected String getCreationScript() {
         try {
-            return StringUtils.getString(getClass().getResourceAsStream(getClass().getSimpleName() + ".sql"));
+            String fileName = getClass().getSimpleName() + ".sql";
+            InputStream stream = getClass().getResourceAsStream(fileName);
+            return StringUtils.getString(stream);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    protected abstract Connection getConnection() throws SQLException;
+    public static <T> void setValue(PreparedStatement statement, int i, T obj) throws SQLException {
+        int index = i + 1;
+        if (obj instanceof String)
+            statement.setString(index, (String) obj);
+        else if (obj instanceof Double)
+            statement.setDouble(index, (double) obj);
+        else if (obj instanceof Integer)
+            statement.setInt(index, (Integer) obj);
+        else if (obj instanceof Date)
+            statement.setDate(index, (Date) obj);
+        else if (obj instanceof Long)
+            statement.setLong(index, (Long) obj);
+        else
+            statement.setObject(index, obj);
 
-    protected PreparedStatement prepare(String query, Object... args) throws SQLException {
-        try (Connection connection = getConnection()) {
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
-                for (int i = 0; i < args.length; i++) {
-                    statement.setObject(i + 1, args[i]);
-                }
-                return statement;
-            }
-        }
     }
 
-    protected ResultSet query(@Language("SQL") String query, Object... args) throws SQLException {
-        return prepare(query, args).executeQuery();
+    protected abstract Connection getConnection() throws SQLException;
+
+    protected PreparedStatement prepare(Connection connection, String query, Object... args) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement(query);
+        for (int i = 0; i < args.length; i++) {
+            setValue(statement, i, args[i]);
+        }
+        return statement;
+
+    }
+
+    protected Set<ResultSetRow> query(@Language("SQL") String query, Object... args) {
+        try (
+                Connection connection = getConnection();
+                PreparedStatement prepared = prepare(connection, query, args)
+        ) {
+            return extractSet(prepared.executeQuery());
+        } catch (SQLException exception) {
+            throw new RuntimeException(exception);
+        }
     }
 
     protected int update(NamedParamStatement statement) {
@@ -61,10 +106,15 @@ public abstract class AbstractBase {
     }
 
     protected int update(@Language("SQL") String query, Object... args) throws SQLException {
-        return prepare(query, args).executeUpdate();
+        try (
+                Connection connection = getConnection();
+                PreparedStatement prepared = prepare(connection, query, args)
+        ) {
+            return prepared.executeUpdate();
+        }
     }
 
-    private PlayerModel extractPlayer(ResultSet set) throws SQLException {
+    private PlayerModel extractPlayer(ResultSetRow set) {
         return new PlayerModel(
                 UUID.fromString(set.getString("uuid")),
                 set.getString("nickname"),
@@ -74,15 +124,14 @@ public abstract class AbstractBase {
     }
 
     public ConversationModel getConversationById(int id) {
-        try {
-            ResultSet set = query("SELECT id, owner, title, invite_link FROM conversations where id = ?", id);
-            return extractConversation(set);
-        } catch (SQLException throwables) {
-            throw new RuntimeException(throwables);
+        Set<ResultSetRow> set = query("SELECT id, owner, title, invite_link FROM conversations where id = ?", id);
+        for (ResultSetRow row : set) {
+            return extractConversation(row);
         }
+        return null;
     }
 
-    private ConversationModel extractConversation(ResultSet set) throws SQLException {
+    private ConversationModel extractConversation(ResultSetRow set) {
         return new ConversationModel(
                 set.getInt("id"),
                 UUID.fromString(set.getString("owner")),
@@ -92,30 +141,28 @@ public abstract class AbstractBase {
     }
 
     public PlayerModel getPlayerByUUID(UUID uuid) {
-        try {
-            ResultSet result = query(
-                    "SELECT P.uuid,P.nickname ,P.vk, P.selected_conversation\n" +
-                            "FROM players P\n" +
-                            "WHERE uuid = ?", uuid.toString());
-            if (result.next()) {
-                return extractPlayer(result);
-            } else
-                return null;
-        } catch (SQLException throwables) {
-            throw new RuntimeException(throwables);
+        Set<ResultSetRow> result = query(
+                "SELECT uuid,nickname ,vk, selected_conversation\n" +
+                        "FROM players\n" +
+                        "WHERE uuid = ?", uuid.toString());
+        if (result.size() > 0) {
+            for (ResultSetRow map : result) {
+                return extractPlayer(map);
+            }
         }
+        return null;
     }
 
-    public List<PlayerModel> getPlayerByVk(int... ids) {
+    public List<PlayerModel> getPlayerByVk(Integer[] ids) {
         NamedParamStatement statement = new NamedParamStatement("SELECT P.uuid,P.nickname ,P.vk, P.selected_conversation\n" +
                 "FROM players P\n" +
                 "WHERE vk in (:vk)");
         statement.setValues("vk", ids);
         try {
-            ResultSet set = query(statement);
-            List<PlayerModel> list = new ArrayList<>(ArrayUtils.setSize(set));
-            while (set.next()) {
-                list.add(extractPlayer(set));
+            Set<ResultSetRow> set = query(statement);
+            List<PlayerModel> list = new ArrayList<>();
+            for (ResultSetRow row : set) {
+                list.add(extractPlayer(row));
             }
             return list;
         } catch (SQLException throwables) {
@@ -124,14 +171,14 @@ public abstract class AbstractBase {
 
     }
 
-    private ResultSet query(NamedParamStatement statement) throws SQLException {
+    private Set<ResultSetRow> query(NamedParamStatement statement) throws SQLException {
         try (Connection connection = getConnection()) {
-            return statement.executeQuery(connection);
+            return extractSet(statement.executeQuery(connection));
         }
     }
 
     public PlayerModel getPlayerByVk(int id) {
-        List<PlayerModel> result = getPlayerByVk(new int[]{id});
+        List<PlayerModel> result = getPlayerByVk(new Integer[]{id});
         if (result.size() == 1)
             return result.get(0);
         else
@@ -139,16 +186,13 @@ public abstract class AbstractBase {
     }
 
     private List<ConversationModel> listConversation(@Language("SQL") String query, Object... args) {
-        try {
-            List<ConversationModel> list = new ArrayList<>();
-            ResultSet set = query(query, args);
-            while (set.next()) {
-                list.add(extractConversation(set));
-            }
-            return list;
-        } catch (SQLException throwables) {
-            throw new RuntimeException(throwables);
+        Set<ResultSetRow> set = query(query, args);
+        List<ConversationModel> list = new ArrayList<>();
+
+        for (ResultSetRow row : set) {
+            list.add(extractConversation(row));
         }
+        return list;
     }
 
     public List<ConversationModel> getPlayerAdminConversation(UUID player) {
@@ -196,19 +240,16 @@ public abstract class AbstractBase {
     }
 
     public List<PlayerModel> getConversationMembers(int peerId) {
-        try {
-            List<PlayerModel> list = new ArrayList<>();
-            ResultSet set = query(
-                    "SELECT P.uuid, P.nickname, P.vk, P.selected_conversation\n" +
-                            "from conversation_members CM\n" +
-                            "JOIN players P on CM.player = P.uuid where cm.conversation = ?", peerId);
-            while (set.next()) {
-                list.add(extractPlayer(set));
-            }
-            return list;
-        } catch (SQLException throwables) {
-            throw new RuntimeException(throwables);
+        Set<ResultSetRow> set = query(
+                "SELECT P.uuid, P.nickname, P.vk, P.selected_conversation\n" +
+                        "from conversation_members CM\n" +
+                        "JOIN players P on CM.player = P.uuid where cm.conversation = ?", peerId);
+        List<PlayerModel> list = new ArrayList<>();
+
+        for (ResultSetRow row : set) {
+            list.add(extractPlayer(row));
         }
+        return list;
     }
 
     public void deleteMe(ConversationModel model) {

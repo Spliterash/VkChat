@@ -1,7 +1,6 @@
 package ru.spliterash.vkchat;
 
 
-import com.vk.api.sdk.exceptions.RequiredFieldException;
 import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
 import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
 import ru.spliterash.vkchat.md_5_chat.api.chat.ComponentBuilder;
@@ -28,13 +27,13 @@ public enum Lang {
             "неизвестно"),
     USER_HOVER(
             Arrays.asList(
-                    "&7Gender: &6{gender}",
+                    "&7Gender: &6{sex}",
                     "&7City: &6{city}",
                     "&7Статус: &6{status}",
                     "&7Birthday: &6{birthday}"
             ),
             Arrays.asList(
-                    "&7Пол: {gender}",
+                    "&7Пол: {sex}",
                     "&7Город: {city}",
                     "&7Статус: {status}",
                     "&7День рождение: {birthday}"

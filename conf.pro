@@ -1,4 +1,4 @@
--libraryjars '<java.home>\lib\rt.jar'
+-libraryjars 'C:\Program Files\Java\jre1.8.0_261\lib\rt.jar'
 -printmapping 'VkChat.map'
 -keepattributes *Annotation*,SourceFile, LineNumberTable
 -dontnote

@@ -13,16 +13,16 @@ import com.vk.api.sdk.objects.users.UserFull;
 import com.vk.api.sdk.objects.users.UserXtrCounters;
 import lombok.AccessLevel;
 import lombok.Getter;
-import ru.spliterash.vkchat.db.AbstractBase;
-import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
-import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
 import org.jetbrains.annotations.NotNull;
 import ru.spliterash.vkchat.chat.ChatBuilder;
 import ru.spliterash.vkchat.chat.LinkHelper;
 import ru.spliterash.vkchat.commands.VkExecutor;
+import ru.spliterash.vkchat.db.AbstractBase;
 import ru.spliterash.vkchat.db.DatabaseLoader;
 import ru.spliterash.vkchat.db.model.ConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
+import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
+import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
 import ru.spliterash.vkchat.utils.*;
 import ru.spliterash.vkchat.vk.CallbackApiLongPoll;
 import ru.spliterash.vkchat.vk.MessageTree;
@@ -30,9 +30,7 @@ import ru.spliterash.vkchat.wrappers.AbstractConfig;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 import ru.spliterash.vkchat.wrappers.Launcher;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Consumer;
@@ -51,10 +49,8 @@ public class VkChat {
     private boolean enable = true;
     @Getter(AccessLevel.NONE)
     private final Map<Integer, UserFull> savedUsers = new HashMap<>();
-    @SuppressWarnings("FieldMayBeFinal")
-    private int globalPeer;
-    private String globalPeerUrl;
     private ConversationModel globalConversation;
+    private AbstractConfig editableConfig;
 
     public static VkApiClient getExecutor() {
         return getInstance().executor;
@@ -70,24 +66,45 @@ public class VkChat {
         this.launcher = launcher;
     }
 
-    private void start() throws ClientException, ApiException, SQLException {
+    private void start() throws ClientException, IOException {
         DatabaseLoader.reload();
         AbstractConfig config = launcher.getVkConfig();
         File langFolder = new File(launcher.getDataFolder(), "lang");
         if (!langFolder.isDirectory()) {
             langFolder.mkdir();
         }
-        String lang = config.getString("lang", "en");
+        File anotherConfig = new File(launcher.getDataFolder(), "another_config.yml");
+        String lang;
+        if (!anotherConfig.isFile()) {
+            try {
+                anotherConfig.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        editableConfig = launcher.wrapConfig(anotherConfig);
+        lang = editableConfig.getString("lang");
+        if (lang == null) {
+            lang = detectLang();
+            editableConfig.set("lang", lang);
+            editableConfig.save();
+        }
         Lang.reload(langFolder, lang);
         List<String> tokens = config.getStringList("token");
         if (tokens.size() == 0) {
-            launcher.getLogger().warning("Set config");
+            launcher.getLogger().warning("Set token");
             launcher.unload();
-            throw new RuntimeException("Token is null");
+            return;
+        }
+        String token = tokens.get(0);
+        if (token.equals("Place group token here|Сюда писать токен группы")) {
+            launcher.getLogger().warning("Set token in plugin config");
+            launcher.unload();
+            return;
         }
         int id;
         try {
-            id = VkUtils.getMyId(tokens.get(0));
+            id = VkUtils.getMyId(token);
         } catch (Exception exception) {
             launcher.unload();
             throw new RuntimeException(exception);
@@ -98,14 +115,13 @@ public class VkChat {
                         .map(t -> new GroupActor(id, t))
                         .collect(Collectors.toList())
         );
-        Integer gId = config.getInt("global_peer");
+        Integer gId = editableConfig.getInt("global_peer");
         if (gId != null)
             _setGlobalPeer(gId);
         commandPrefix = config.getString("command_prefix", "/");
 
         launcher.registerCommand("vk", new VkExecutor());
-
-        launcher.registerListener(new VkListener());
+        ListenerUtils.registerListeners(config);
         try {
             startLongPoll();
         } catch (ClientException | ApiException e) {
@@ -114,22 +130,24 @@ public class VkChat {
         }
     }
 
+    private static String detectLang() {
+        Locale locale = Locale.getDefault();
+        return locale.getLanguage();
+    }
+
     public void setGlobalPeer(int id) {
-        launcher.getVkConfig().set("global_peer", id);
+        editableConfig.set("global_peer", id);
         try {
+            editableConfig.save();
             _setGlobalPeer(id);
-        } catch (ClientException e) {
+        } catch (ClientException | IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     private void _setGlobalPeer(int id) throws ClientException {
-        globalPeer = id;
-        if (VkUtils.isConversation(id)) {
+        if (VkUtils.isConversation(id))
             globalConversation = refreshConversationUsers(id);
-
-        } else
-            globalPeerUrl = null;
     }
 
     public GroupActor getActor() {
@@ -355,8 +373,8 @@ public class VkChat {
 
     }
 
-    public void sendMessageToPlayers(int peerId, Function<ConversationModel, BaseComponent[]> getter) throws ClientException, ApiException, SQLException {
-        if (peerId == globalPeer) {
+    public void sendMessageToPlayers(int peerId, Function<ConversationModel, BaseComponent[]> getter) throws ClientException {
+        if (globalConversation != null && globalConversation.getId() == peerId) {
             for (AbstractPlayer player : launcher.getOnlinePlayers()) {
                 if (player.hasPermission("vk.use")) {
                     player.sendMessage(getter.apply(globalConversation));
@@ -407,7 +425,7 @@ public class VkChat {
         Set<Integer> conversationMembers = info.getMembers();
         //Идшники наших участников
         Set<Integer> storeLinksIds = storeLinks.stream().map(PlayerModel::getVk).collect(Collectors.toSet());
-        int[] array = ArrayUtils.mergeTwoIntCollections(conversationMembers, storeLinksIds);
+        Integer[] array = ArrayUtils.mergeTwoIntCollections(Integer.class, conversationMembers, storeLinksIds);
         List<PlayerModel> models = base.getPlayerByVk(array);
         for (Integer conversationMember : conversationMembers) {
             PlayerModel currentPlayer = models
@@ -441,7 +459,7 @@ public class VkChat {
                 .users()
                 .get(getActor())
                 .userIds(forceLoad)
-                .fields(Fields.CITY, Fields.SEX, Fields.DOMAIN, Fields.STATUS)
+                .fields(Fields.CITY, Fields.SEX, Fields.DOMAIN, Fields.STATUS, Fields.BDATE)
                 .execute()) {
             savedUsers.put(user.getId(), user);
         }
@@ -466,7 +484,7 @@ public class VkChat {
             try {
                 instance = new VkChat(launcher);
                 instance.start();
-            } catch (ClientException | ApiException | SQLException e) {
+            } catch (ClientException | IOException e) {
                 e.printStackTrace();
                 launcher.unload();
             }
