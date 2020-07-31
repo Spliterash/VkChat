@@ -41,12 +41,9 @@ public class MessageTree {
     private void walk(List<ForeignMessage> messageList, String prefix) {
         if (messageList == null)
             return;
-        Iterator<ForeignMessage> iter = messageList.iterator();
-        int i = 0;
         String color = ChatColor.GRAY.toString();
-        while (iter.hasNext()) {
-            i++;
-            ForeignMessage message = iter.next();
+        for (int i = 0; i < messageList.size(); i++) {
+            ForeignMessage message = messageList.get(i);
             BaseComponent[] messageComponents = VkUtils.buildMessage(message.getFromId(), message.getText(), null);
             if (i - 1 == messageList.size() - 1) {
                 BaseComponent[] prefixComponent = TextComponent.fromLegacyText(prefix + color + "└── ");

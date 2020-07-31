@@ -76,7 +76,7 @@ public class LinkHelper {
             code[0].setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, msg));
             components.put("{code}", code);
         }
-        player.sendMessage(ChatBuilder.compile(body, components));
+        player.sendMessage(ChatBuilder.replace(body, components));
     }
 
     private void sendConversationMessage() {
@@ -96,7 +96,7 @@ public class LinkHelper {
             createNew[0].setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Lang.CREATE_NEW_CONVERSATION_HOVER.toComponent()));
             components.put("{new}", createNew);
         }
-        player.sendMessage(ChatBuilder.compile(body, components));
+        player.sendMessage(ChatBuilder.replace(body, components));
     }
 
     private static LinkHelper getInstance(Predicate<LinkHelper> predicate) {

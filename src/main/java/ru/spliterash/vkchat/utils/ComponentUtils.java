@@ -40,4 +40,28 @@ public class ComponentUtils {
         }
         return hoverBuilder.create();
     }
+
+
+    private boolean needToDelete(BaseComponent component) {
+        if (component instanceof TextComponent) {
+            TextComponent text = (TextComponent) component;
+            if (text.getText() != null && !text.getText().isEmpty())
+                return false;
+        }
+        return component.getExtra() == null || component.getExtra().size() == 0;
+    }
+
+    public List<BaseComponent> removeEmpty(List<BaseComponent> list) {
+        for (int i = 0; i < list.size(); i++) {
+            BaseComponent baseComponent = list.get(i);
+            if (needToDelete(baseComponent)) {
+                list.remove(i);
+                i--;
+            } else if (baseComponent.getExtra() != null && baseComponent.getExtra().size() > 0) {
+                baseComponent.setExtra(removeEmpty(baseComponent.getExtra()));
+            }
+        }
+        return list;
+    }
 }
+

@@ -12,6 +12,7 @@ import lombok.experimental.UtilityClass;
 import ru.spliterash.vkchat.Lang;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.chat.ChatBuilder;
+import ru.spliterash.vkchat.chat.MatcherWrapper;
 import ru.spliterash.vkchat.db.DatabaseLoader;
 import ru.spliterash.vkchat.db.model.ConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
@@ -25,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @UtilityClass
 public class VkUtils {
@@ -147,20 +149,21 @@ public class VkUtils {
 
     public TextComponent getInviteLink(String url, String name) {
         String finalName = name == null ? "VK" : name;
-        TextComponent conversationComponent = new TextComponent(ChatBuilder.compile(
+        TextComponent conversationComponent = new TextComponent(ChatBuilder.replace(
                 Lang.CONVERSATION_COMPONENT.toString(),
                 new SimpleMapBuilder<String, BaseComponent[]>()
                         .add("{conversation}", TextComponent.fromLegacyText(finalName))
                         .getMap()
         ));
         conversationComponent.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
-        conversationComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(Lang.OPEN_URL_HOVER.toString("{conversation}", name))));
+        conversationComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(Lang.OPEN_CONVERSATION_HOVER.toString("{conversation}", name))));
         return conversationComponent;
     }
 
     public boolean isConversation(int peerId) {
         return peerId >= 2000000000;
     }
+
 
     public BaseComponent[] buildMessage(int fromId, String text, BaseComponent[] prefixComponents) {
         String messageStructure = Lang.VK_TO_MINECRAFT_CHAT_FORMAT.toString();
@@ -170,8 +173,41 @@ public class VkUtils {
         else
             replaceMap.put("{vk}", new BaseComponent[]{new TextComponent()});
         replaceMap.put("{user}", new BaseComponent[]{getSenderComponent(fromId)});
-        replaceMap.put("{text}", new BaseComponent[]{new TextComponent(text)});
-        return ChatBuilder.compile(messageStructure, replaceMap);
+        replaceMap.put("{text}", replaceVkPlaceholders(text));
+        return ChatBuilder.replace(messageStructure, replaceMap);
+    }
+
+    private final Pattern vkLinkPattern = Pattern.compile("\\[(?<vkUrl>.*?)\\|(?<name>.*?)]|(?<fullUrl>(?:(https?)://)?(?<domain>[-\\w_.]{2,}\\.[a-z]{2,4})(/\\S*)?)");
+
+    private BaseComponent[] replaceVkPlaceholders(String text) {
+        return ChatBuilder.compile(text, VkUtils::processVkTokens, vkLinkPattern);
+    }
+
+    /**
+     * Перерабатывает вкшный плейсхолдер в кликабельный майна
+     *
+     * @param matcher - Строка вида [id1234567|name] или же ссылка (https://vk.com, vk.com)
+     */
+    private BaseComponent[] processVkTokens(MatcherWrapper matcher) {
+        String vkUrlName = matcher.group("name");
+        String url, name;
+        if (vkUrlName != null) {
+            String urlEnd = matcher.group("vkUrl");
+            url = "https://vk.com/" + urlEnd;
+            name = vkUrlName;
+        } else {
+            name = matcher.group("domain");
+            url = matcher.group("fullUrl");
+        }
+        TextComponent finalComponent = new TextComponent(ChatBuilder.replace(
+                Lang.VK_PLACEHOLDER_FORMAT.toString(),
+                new SimpleMapBuilder<String, BaseComponent[]>()
+                        .add("{name}", new BaseComponent[]{new TextComponent(name)})
+                        .getMap()
+        ));
+        finalComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Lang.OPEN_URL_HOVER.toComponent("{url}", url)));
+        finalComponent.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
+        return new BaseComponent[]{finalComponent};
     }
 
     public TextComponent getSenderComponent(Integer senderId) {

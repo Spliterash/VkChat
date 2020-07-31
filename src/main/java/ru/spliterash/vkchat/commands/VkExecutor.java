@@ -72,7 +72,7 @@ public class VkExecutor implements AbstractCommandExecutor {
             TextComponent selectComponent = new TextComponent(Lang.CONVERSATION_SELECT_BUTTON_TITLE.toComponent());
             selectComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Lang.CONVERSATION_SELECT_BUTTON_HOVER.toComponent()));
             selectComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/vk select " + conversationModel.getId()));
-            player.sendMessage(ChatBuilder.compile(
+            player.sendMessage(ChatBuilder.replace(
                     body,
                     new SimpleMapBuilder<String, BaseComponent[]>()
                             .add("{vk}", vkComponent)
@@ -99,7 +99,7 @@ public class VkExecutor implements AbstractCommandExecutor {
             String msg = String.join(" ", args);
             VkChat.getInstance().sendMessage(selected.getId(), VkUtils.prepareMessage(player, msg));
             player.sendMessage(
-                    ChatBuilder.compile(Lang.MESSAGE_SEND.toString(),
+                    ChatBuilder.replace(Lang.MESSAGE_SEND.toString(),
                             new SimpleMapBuilder<String, BaseComponent[]>()
                                     .add("{conversation}", new BaseComponent[]{VkUtils.getInviteLink(selected)})
                                     .getMap()));

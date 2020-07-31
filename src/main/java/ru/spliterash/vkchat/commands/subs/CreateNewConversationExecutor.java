@@ -20,8 +20,6 @@ import ru.spliterash.vkchat.utils.ArrayUtils;
 import ru.spliterash.vkchat.utils.VkUtils;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 
-import java.sql.SQLException;
-
 public class CreateNewConversationExecutor implements SubExecutor {
     private final VkExecutor parent;
 
@@ -52,9 +50,12 @@ public class CreateNewConversationExecutor implements SubExecutor {
                 String link = VkUtils.getInviteLink(peer);
                 TextComponent component = new TextComponent(TextComponent.fromLegacyText(Lang.LINK.toString()));
                 component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, link));
-                component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Lang.CONVERSATION_OPEN_HOVER.toComponent()));
+                component.setHoverEvent(new HoverEvent(
+                        HoverEvent.Action.SHOW_TEXT,
+                        Lang.OPEN_CONVERSATION_HOVER.toComponent("{conversation}", Lang.NEW_CONVERSATION.toString()))
+                );
                 player.sendMessage(
-                        ChatBuilder.compile(
+                        ChatBuilder.replace(
                                 Lang.CONVERSATION_CREATED.toString(),
                                 ArrayUtils.createMap("{link}", new BaseComponent[]{component})
                         )
@@ -62,7 +63,7 @@ public class CreateNewConversationExecutor implements SubExecutor {
                 ConversationModel model = new ConversationModel(
                         peer,
                         playerModel.getUUID(),
-                        "[ДАННЫЕ УДАЛЕНЫ]",
+                        Lang.NEW_CONVERSATION.toString(),
                         link);
                 model.saveOrUpdate();
             } catch (ClientException | ApiException e) {

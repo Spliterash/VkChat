@@ -77,7 +77,7 @@ public class ListExecutor implements SubExecutor {
         TextComponent select = new TextComponent(Lang.CONVERSATION_SELECT_BUTTON_TITLE.toComponent());
         select.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/vk list selectMainConversation " + arg));
         BaseComponent[] conversationComponent = new BaseComponent[]{VkUtils.getInviteLink(conversation)};
-        player.sendMessage(ChatBuilder.compile(
+        player.sendMessage(ChatBuilder.replace(
                 Lang.SELECT_MAIN_CONFIRMATION.toString(),
                 new SimpleMapBuilder<String, BaseComponent[]>()
                         .add("{select}", new BaseComponent[]{select})
@@ -103,7 +103,7 @@ public class ListExecutor implements SubExecutor {
                 } else {
                     selectComponent[0] = new TextComponent();
                 }
-                player.sendMessage(ChatBuilder.compile(
+                player.sendMessage(ChatBuilder.replace(
                         Lang.CONVERSATION_LIST_ROW.toString(),
                         new SimpleMapBuilder<String, BaseComponent[]>()
                                 .add("{conversation}", peer)
@@ -136,7 +136,7 @@ public class ListExecutor implements SubExecutor {
         TextComponent delete = new TextComponent(Lang.DELETE_TITLE.toComponent());
         delete.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/vk list deleteConversation " + arg));
         BaseComponent[] conversationComponent = new BaseComponent[]{VkUtils.getInviteLink(conversation)};
-        player.sendMessage(ChatBuilder.compile(
+        player.sendMessage(ChatBuilder.replace(
                 Lang.DELETE_CONFIRMATION.toString(),
                 new SimpleMapBuilder<String, BaseComponent[]>()
                         .add("{delete}", new BaseComponent[]{delete})

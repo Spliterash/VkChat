@@ -28,7 +28,7 @@ public class LinkExecutor implements SubExecutor {
         PlayerModel link = base.getPlayerByUUID(player.getUUID());
         if (link != null) {
             VkChat.getInstance().userAction(String.valueOf(link.getVk()), (u) -> player.sendMessage(
-                    ChatBuilder.compile(
+                    ChatBuilder.replace(
                             Lang.ALREADY_LINK.toString(),
                             ArrayUtils.createMap("{user}",
                                     new BaseComponent[]{VkUtils.getUserComponent(u)})

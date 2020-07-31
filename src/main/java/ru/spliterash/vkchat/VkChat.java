@@ -327,11 +327,11 @@ public class VkChat {
         String format = Lang.VK_TO_MINECRAFT_INFO_FORMAT.toString();
         sendMessageToPlayers(peerId, conversationModel -> {
             BaseComponent[] vk = new BaseComponent[]{VkUtils.getInviteLink(conversationModel.getInviteLink(), conversationModel.getTitle())};
-            BaseComponent[] message = ChatBuilder.compile(messageStr, map);
+            BaseComponent[] message = ChatBuilder.replace(messageStr, map);
             Map<String, BaseComponent[]> formatMap = new HashMap<>();
             formatMap.put("{vk}", vk);
             formatMap.put("{message}", message);
-            return ChatBuilder.compile(format, formatMap);
+            return ChatBuilder.replace(format, formatMap);
         });
     }
 
@@ -399,7 +399,7 @@ public class VkChat {
                 return;
             }
         }
-        ConversationModel model = new ConversationModel(peerId, link.getUUID(), "[ДАННЫЕ УДАЛЕНЫ]", inviteLink);
+        ConversationModel model = new ConversationModel(peerId, link.getUUID(), Lang.NEW_CONVERSATION.toString(), inviteLink);
         model.saveOrUpdate();
         sendMessage(peerId, Lang.CONVERSATION_LINK_SUCCESS.toString());
 

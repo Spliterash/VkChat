@@ -1,11 +1,10 @@
 package ru.spliterash.vkchat;
 
 
-import com.vk.api.sdk.exceptions.RequiredFieldException;
 import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
 import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
-import ru.spliterash.vkchat.md_5_chat.api.chat.ComponentBuilder;
 import ru.spliterash.vkchat.md_5_chat.api.chat.TextComponent;
+import ru.spliterash.vkchat.utils.ComponentUtils;
 import ru.spliterash.vkchat.utils.StringUtils;
 import ru.spliterash.vkchat.wrappers.AbstractConfig;
 
@@ -88,7 +87,7 @@ public enum Lang {
                     "&b/vk main &6- Установить главную беседу, в неё приходят все сообщения"
             )
     ),
-    OPEN_URL_HOVER(
+    OPEN_CONVERSATION_HOVER(
             "&6Click me to open a &b{conversation}",
             "&6Нажми на меня чтобы открыть беседу &b{conversation}"),
     ALREADY_LINK(
@@ -98,6 +97,7 @@ public enum Lang {
             "&6For this action your account need be linked, you can link use &b/vk link",
             "&6Ваш аккаунт не привязан, вы можете привязать его с помощью команды &b/vk link"
     ),
+    VK_PLACEHOLDER_FORMAT("&n&b[&6{name}&b]"),
     CREATED_CONVERSATION("VkChat {user}"),
     OK("&aOperation completed", "&aОперация выполнена"),
     WRONG_USER("&6User does not exists", "&6Пользователя не существует"),
@@ -139,9 +139,6 @@ public enum Lang {
     CONVERSATION_CREATED(
             "&6Conversation created, to open click: &b&n{link}",
             "&6Беседа успешно создана, чтобы открыть нажмите: &b&n{link}"),
-    CONVERSATION_OPEN_HOVER(
-            "&6Press me to open conversation",
-            "&6Нажми на меня, чтобы попасть в эту беседу"),
     PLAYER_JOIN(
             "&#10133;Player {player} join to server",
             "&#10133;Игрок {player} зашёл на сервер"),
@@ -234,7 +231,19 @@ public enum Lang {
     SELECT_MAIN_CONFIRMATION(
             "&6If you click, you select new main conversation for &9{conversation}&6 click if you want &a&n{select}",
             "&6Вы точно хотите выбрать беседу &9{conversation}&6 в качестве основной беседы ? Если да то нажмите &a&n{select}"
-    );
+    ),
+    OPEN_URL_HOVER(
+            Arrays.asList(
+                    "&7Click to open url",
+                    "&6{url}"
+            ),
+            Arrays.asList(
+                    "&7Нажми чтобы открыть",
+                    "&6{url}"
+            )),
+    NEW_CONVERSATION(
+            "New conversation",
+            "Новая беседа");
     /**
      * Оригинальные переводы
      * 0 индекс - англиский
@@ -343,14 +352,11 @@ public enum Lang {
         if (isString())
             return TextComponent.fromLegacyText(toString(replace));
         else {
-            ComponentBuilder builder = new ComponentBuilder("");
             //noinspection unchecked
-            List<String> source = (List<String>) selected;
-            for (String s : source) {
-                builder.append(TextComponent.fromLegacyText(StringUtils.replace(s, replace)));
-                builder.append("\n", ComponentBuilder.FormatRetention.NONE);
-            }
-            return builder.create();
+            return ComponentUtils.join(((List<String>) selected)
+                    .stream()
+                    .map(s -> StringUtils.replace(s, replace))
+                    .collect(Collectors.toList()), "\n");
         }
     }
 
