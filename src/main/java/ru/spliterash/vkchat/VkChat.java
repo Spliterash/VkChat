@@ -67,12 +67,12 @@ public class VkChat {
 
     public void sendServerStart() {
         if (globalConversation != null)
-            new Thread(() -> VkUtils.sendGlobal(Lang.SERVER_START.toString())).start();
+            new Thread(() -> sendMessage(executor, getActor(), globalConversation.getId(), Lang.SERVER_START.toString())).start();
     }
 
     public void sendServerShutdown() {
         if (globalConversation != null)
-            new Thread(() -> VkUtils.sendGlobal(Lang.SERVER_SHUTDOWN.toString())).start();
+            new Thread(() -> sendMessage(executor, getActor(), globalConversation.getId(), Lang.SERVER_SHUTDOWN.toString())).start();
     }
 
     /**
@@ -631,12 +631,17 @@ public class VkChat {
     private static final Random random = new Random();
 
     public void sendMessage(int peer, String message) {
+        sendMessage(getExecutor(), getActor(), peer, message);
+    }
+
+    private static void sendMessage(VkApiClient client, GroupActor actor, int peer, String message) {
         try {
-            executor
+            client
                     .messages()
-                    .send(getActor())
+                    .send(actor)
                     .peerId(peer)
                     .randomId(random.nextInt())
+                    .disableMentions(true)
                     .message(message)
                     .execute();
         } catch (ApiException | ClientException e) {

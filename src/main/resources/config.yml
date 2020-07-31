@@ -32,7 +32,7 @@ admins:
   - spliterash
 # =====================RU=====================
 # Включает или выключает упоминания
-# Делает сообщения в вк кликабельными, но спамит уведомлениями
+# Делает сообщения в вк кликабельными
 # =====================EN=====================
 # Enable or disable clickable vk message (in vk, not minecraft chat)
 vk_links: true
@@ -51,8 +51,6 @@ die_message: true
 # =====================EN=====================
 # If enable, you receive messsage about server enable/disable
 server_start_shutdown: true
-
-
 
 mysql_enable: false
 mysql_host: localhost

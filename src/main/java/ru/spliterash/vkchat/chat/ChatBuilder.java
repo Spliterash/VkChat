@@ -1,7 +1,6 @@
 package ru.spliterash.vkchat.chat;
 
 import lombok.experimental.UtilityClass;
-import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
 import ru.spliterash.vkchat.md_5_chat.api.chat.ComponentBuilder;
 import ru.spliterash.vkchat.md_5_chat.api.chat.TextComponent;
@@ -71,9 +70,6 @@ public class ChatBuilder {
             builder.append(TextComponent.fromLegacyText(text.substring(endIndex)), ComponentBuilder.FormatRetention.NONE);
         }
         BaseComponent[] result = builder.create();
-        long a = System.currentTimeMillis();
-        result = ComponentUtils.removeEmpty(new ArrayList<>(Arrays.asList(result))).toArray(new BaseComponent[0]);
-        VkChat.getInstance().getLauncher().getLogger().info("Cleanup time is " + (System.currentTimeMillis() - a));
-        return result;
+        return ComponentUtils.removeEmpty(new ArrayList<>(Arrays.asList(result))).toArray(new BaseComponent[0]);
     }
 }
