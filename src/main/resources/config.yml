@@ -39,6 +39,11 @@ join_message: true
 # =====================EN=====================
 # If enable, you receive messsage about player die
 die_message: true
+# =====================RU=====================
+# Если включено, будет писать о том что сервер включился или выключился
+# =====================EN=====================
+# If enable, you receive messsage about server enable/disable
+server_start_shutdown: true
 
 
 

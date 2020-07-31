@@ -1,6 +1,7 @@
 package ru.spliterash.vkchat;
 
 
+import com.vk.api.sdk.exceptions.RequiredFieldException;
 import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
 import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
 import ru.spliterash.vkchat.md_5_chat.api.chat.ComponentBuilder;
@@ -120,6 +121,15 @@ public enum Lang {
             "Conversation setup not in progress, you can run it with &b/vk setup",
             "&6Настройка беседы не была запущена, вы можете запустить её командой &b/vk setup"
     ),
+    SERVER_START(
+
+            "&#9989;Server on",
+            "&#9989;Сервер включился"
+    ),
+    SERVER_SHUTDOWN(
+            "&#9940;Server off",
+            "&#9940;Сервер выключился"
+    ),
     SETUP_AUTODESTROY(
             "&6Conversation setup will be autoremoved, because you dont setup conversation",
             "&6Установка беседы была отменена поскольку вы ничего не сделали"),
@@ -131,14 +141,14 @@ public enum Lang {
             "&6Press me to open conversation",
             "&6Нажми на меня, чтобы попасть в эту беседу"),
     PLAYER_JOIN(
-            "Player {player} join to server",
-            "Игрок {player} зашёл на сервер"),
+            "&#10133;Player {player} join to server",
+            "&#10133;Игрок {player} зашёл на сервер"),
     PLAYER_JOIN_FIRST(
-            "Player {player} join to server first time",
-            "Игрок {player} зашёл на сервер в первый раз"),
+            "&#127881;Player {player} join to server first time",
+            "&#127881;Игрок {player} зашёл на сервер в первый раз"),
     PLAYER_EXIT(
-            "Player {player} exit",
-            "Игрок {player} вышел с сервера"),
+            "&#10134;Player {player} exit",
+            "&#10134;Игрок {player} вышел с сервера"),
     NOT_LINK_CONVERSATION(
             "This conversation does not link, please remove bot",
             "Эта беседа не связана с сервером, пожалуйста, выгоните меня, чтобы не нагружать базу"
@@ -223,8 +233,6 @@ public enum Lang {
             "&6If you click, you select new main conversation for &9{conversation}&6 click if you want &a&n{select}",
             "&6Вы точно хотите выбрать беседу &9{conversation}&6 в качестве основной беседы ? Если да то нажмите &a&n{select}"
     );
-
-
     /**
      * Оригинальные переводы
      * 0 индекс - англиский

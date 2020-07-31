@@ -25,4 +25,5 @@ CREATE TABLE IF NOT EXISTS conversation_members
     FOREIGN KEY ([conversation]) REFERENCES conversations (id) on delete cascade,
     FOREIGN KEY ([player]) REFERENCES players (uuid) on delete cascade
 );
+-- Почему то эта херня не работает
 PRAGMA foreign_keys = ON;

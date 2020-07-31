@@ -244,4 +244,10 @@ public class VkUtils {
     public TextComponent getInviteLink(ConversationModel model) {
         return getInviteLink(model.getInviteLink(), model.getTitle());
     }
+
+    public void sendGlobal(String text) {
+        ConversationModel peer = VkChat.getInstance().getGlobalConversation();
+        if (peer != null)
+            VkChat.getInstance().sendMessage(peer.getId(), text);
+    }
 }

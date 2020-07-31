@@ -20,12 +20,6 @@ public class ListenerUtils {
         return !sender.hasPermission("vk.use");
     }
 
-    public void sendGlobal(String text) {
-        ConversationModel peer = VkChat.getInstance().getGlobalConversation();
-        if (peer != null)
-            VkChat.getInstance().sendMessage(peer.getId(), text);
-    }
-
     public void processMessage(AbstractPlayer player, String message) {
         VkChat.getInstance().getLauncher().runTaskAsync(() -> {
             PlayerModel pModel = DatabaseLoader.getBase().getPlayerByUUID(player.getUUID());
@@ -36,7 +30,7 @@ public class ListenerUtils {
                 list = VkUtils.sendPlayerPeerMessage(pModel, msg);
             }
             if (list == null || list.stream().noneMatch(l -> l.getId() == VkChat.getInstance().getGlobalConversation().getId()))
-                sendGlobal(msg);
+                VkUtils.sendGlobal(msg);
         });
 
     }

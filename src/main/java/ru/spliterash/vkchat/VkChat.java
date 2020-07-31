@@ -57,9 +57,19 @@ public class VkChat {
     private ConversationModel globalConversation;
     private AbstractConfig editableConfig;
     private boolean vkLinks;
+    private boolean serverEnableDisable;
 
     public static VkApiClient getExecutor() {
         return getInstance().executor;
+    }
+
+
+    public void sendServerStart() {
+        new Thread(() -> VkUtils.sendGlobal(Lang.SERVER_START.toString()));
+    }
+
+    public void sendServerShutdown() {
+        new Thread(() -> VkUtils.sendGlobal(Lang.SERVER_SHUTDOWN.toString()));
     }
 
     /**
@@ -90,6 +100,7 @@ public class VkChat {
             }
         }
         vkLinks = config.getBoolean("vk_links", true);
+        serverEnableDisable = config.getBoolean("server_start_shutdown", true);
         editableConfig = launcher.wrapConfig(anotherConfig);
         lang = editableConfig.getString("lang");
         if (lang == null) {
@@ -235,7 +246,7 @@ public class VkChat {
                 if (VkUtils.isConversation(message.getPeerId()))
                     sendUserTextMessage(message);
             } else if (text.startsWith(commandPrefix)) {
-                if(sender==null)
+                if (sender == null)
                     return;
                 if (!isAdmin(sender)) {
                     sendMessage(message.getPeerId(), Lang.NO_PEX.toPlainText());
@@ -251,7 +262,7 @@ public class VkChat {
                     launcher.runTaskAsync(() -> sendMessage(message.getPeerId(), commandReply));
                 }));
             } else if (text.startsWith("verify ")) {
-                if(sender==null)
+                if (sender == null)
                     return;
                 String code = text.substring(7);
                 verifyPeer(code, sender, message.getPeerId());
