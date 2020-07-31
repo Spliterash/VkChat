@@ -33,7 +33,6 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
         saveDefaultConfig();
         vkConfig = new BukkitConfig(new File(getDataFolder(), "config.yml"));
         VkChat.onEnable(this);
-        VkChat.getInstance().sendServerStart();
     }
 
     @Getter
@@ -41,8 +40,7 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
 
     @Override
     public void onDisable() {
-        VkChat.getInstance().sendServerShutdown();
-        VkChat.onDisable();
+        VkChat.onDisable(true);
     }
 
 

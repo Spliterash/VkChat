@@ -3,7 +3,6 @@ package ru.spliterash.vkchat.utils;
 import com.google.gson.JsonObject;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
-import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.groups.GroupFull;
@@ -16,10 +15,16 @@ import ru.spliterash.vkchat.chat.ChatBuilder;
 import ru.spliterash.vkchat.db.DatabaseLoader;
 import ru.spliterash.vkchat.db.model.ConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
-import ru.spliterash.vkchat.md_5_chat.api.chat.*;
+import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
+import ru.spliterash.vkchat.md_5_chat.api.chat.ClickEvent;
+import ru.spliterash.vkchat.md_5_chat.api.chat.HoverEvent;
+import ru.spliterash.vkchat.md_5_chat.api.chat.TextComponent;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @UtilityClass
 public class VkUtils {
@@ -57,12 +62,13 @@ public class VkUtils {
     public int createNewConversation() throws ClientException, ApiException {
         VkChat vk = VkChat.getInstance();
         VkApiClient executor = VkChat.getExecutor();
-        //Костыль, потому что в SDK нет груп актора, уже сообщил в вк, а пока что так
-        return executor
+        int id = executor
                 .messages()
-                .createChat(new UserActor(null, vk.getActor().getAccessToken()))
+                .createChat(vk.getActor())
+                .userIds()
+                .title("VkChat")
                 .execute();
-
+        return id + 2000000000;
     }
 
     public String getInviteLink(int peerId) throws ClientException, ApiException {
@@ -250,4 +256,19 @@ public class VkUtils {
         if (peer != null)
             VkChat.getInstance().sendMessage(peer.getId(), text);
     }
+    //TODO Как в апи добавят метод для выдачи админки
+   /* public void checkOwner(Integer peerId, Integer fromId) {
+        VkChat.getInstance().getLauncher().runTaskAsync(() -> {
+            AbstractBase base = DatabaseLoader.getBase();
+            ConversationModel model = base.getConversationById(peerId);
+            if(model==null)
+                return;
+            PlayerModel player = base.getPlayerByVk(fromId);
+            if(player==null)
+                return;
+            if(model.getOwner()==player.getUUID()){
+                grantAdmin(peerId,fromId);
+            }
+        });
+    }*/
 }

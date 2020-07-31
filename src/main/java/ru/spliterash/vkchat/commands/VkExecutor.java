@@ -62,7 +62,11 @@ public class VkExecutor implements AbstractCommandExecutor {
 
     public void sendPlayerConversationList(AbstractPlayer player, List<ConversationModel> playerConversations) {
         player.sendMessage(Lang.CONVERSATION_SELECT_TITLE.toComponent());
+        ConversationModel global = VkChat.getInstance().getGlobalConversation();
+        int id = global != null ? global.getId() : -1;
         for (ConversationModel conversationModel : playerConversations) {
+            if (conversationModel.getId() == id)
+                continue;
             String body = Lang.CONVERSATION_SELECT_ROW.toString();
             BaseComponent[] vkComponent = new BaseComponent[]{VkUtils.getInviteLink(conversationModel.getInviteLink(), conversationModel.getTitle())};
             TextComponent selectComponent = new TextComponent(Lang.CONVERSATION_SELECT_BUTTON_TITLE.toComponent());
@@ -91,13 +95,16 @@ public class VkExecutor implements AbstractCommandExecutor {
             sendPlayerConversationList(player);
             return;
         }
-        String msg = String.join(" ", args);
-        VkChat.getInstance().sendMessage(selected.getId(), VkUtils.prepareMessage(player, msg));
-        player.sendMessage(
-                ChatBuilder.compile(Lang.MESSAGE_SEND.toString(),
-                        new SimpleMapBuilder<String, BaseComponent[]>()
-                                .add("{conversation}", new BaseComponent[]{VkUtils.getInviteLink(selected)})
-                                .getMap()));
+        VkChat.getInstance().getLauncher().runTaskAsync(() -> {
+            String msg = String.join(" ", args);
+            VkChat.getInstance().sendMessage(selected.getId(), VkUtils.prepareMessage(player, msg));
+            player.sendMessage(
+                    ChatBuilder.compile(Lang.MESSAGE_SEND.toString(),
+                            new SimpleMapBuilder<String, BaseComponent[]>()
+                                    .add("{conversation}", new BaseComponent[]{VkUtils.getInviteLink(selected)})
+                                    .getMap()));
+        });
+
     }
 
     private void sendPlayerConversationList(AbstractPlayer player) {

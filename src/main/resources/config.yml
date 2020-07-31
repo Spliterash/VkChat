@@ -13,6 +13,13 @@ token:
 # =====================EN=====================
 # Commands starts with:
 command_prefix: "/"
+# =====================RU=====================
+# Отправлять только те сообщения которые начинаются с
+# Если используете плагин на чат, то сюда можно написать "!" чтобы не слало локальные сообщения
+# =====================EN=====================
+# Send only messages starting with
+# If you are using a chat plugin, you can write "!" to not send local messages
+message_start: ""
 # Id or domains
 # =====================RU=====================
 # Список админов

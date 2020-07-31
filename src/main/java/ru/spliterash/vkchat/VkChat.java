@@ -58,6 +58,7 @@ public class VkChat {
     private AbstractConfig editableConfig;
     private boolean vkLinks;
     private boolean serverEnableDisable;
+    private String messageStart;
 
     public static VkApiClient getExecutor() {
         return getInstance().executor;
@@ -65,11 +66,13 @@ public class VkChat {
 
 
     public void sendServerStart() {
-        new Thread(() -> VkUtils.sendGlobal(Lang.SERVER_START.toString()));
+        if (globalConversation != null)
+            new Thread(() -> VkUtils.sendGlobal(Lang.SERVER_START.toString())).start();
     }
 
     public void sendServerShutdown() {
-        new Thread(() -> VkUtils.sendGlobal(Lang.SERVER_SHUTDOWN.toString()));
+        if (globalConversation != null)
+            new Thread(() -> VkUtils.sendGlobal(Lang.SERVER_SHUTDOWN.toString())).start();
     }
 
     /**
@@ -83,7 +86,7 @@ public class VkChat {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void start() throws ClientException, IOException {
+    private void start(boolean serverStart) throws ClientException, IOException {
         DatabaseLoader.reload();
         AbstractConfig config = launcher.getVkConfig();
         File langFolder = new File(launcher.getDataFolder(), "lang");
@@ -101,6 +104,7 @@ public class VkChat {
         }
         vkLinks = config.getBoolean("vk_links", true);
         serverEnableDisable = config.getBoolean("server_start_shutdown", true);
+        messageStart = config.getString("message_start", "");
         editableConfig = launcher.wrapConfig(anotherConfig);
         lang = editableConfig.getString("lang");
         if (lang == null) {
@@ -141,6 +145,8 @@ public class VkChat {
 
         launcher.registerCommand("vk", new VkExecutor());
         ListenerUtils.registerListeners(config);
+        if (serverStart)
+            sendServerStart();
         try {
             startLongPoll();
         } catch (ClientException | ApiException e) {
@@ -296,6 +302,8 @@ public class VkChat {
                 );
                 break;
             case CHAT_INVITE_USER_BY_LINK:
+                //Как только, так сразу
+                //VkUtils. checkOwner(message.getPeerId(),message.getFromId());
                 sendActionMessage(
                         message.getPeerId(),
                         Lang.CONVERSATION_INVITE_BY_URL.toString(),
@@ -535,7 +543,7 @@ public class VkChat {
         launcher.runTaskAsync(() -> {
             try {
                 instance = new VkChat(launcher);
-                instance.start();
+                instance.start(true);
             } catch (ClientException | IOException e) {
                 e.printStackTrace();
                 launcher.unload();
@@ -543,8 +551,10 @@ public class VkChat {
         });
     }
 
-    public static void onDisable() {
+    public static void onDisable(boolean serverDisable) {
         if (instance != null) {
+            if (serverDisable)
+                VkChat.getInstance().sendServerShutdown();
             instance.disable();
             instance = null;
         }

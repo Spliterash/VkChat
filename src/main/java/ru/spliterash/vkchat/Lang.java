@@ -98,6 +98,7 @@ public enum Lang {
             "&6For this action your account need be linked, you can link use &b/vk link",
             "&6Ваш аккаунт не привязан, вы можете привязать его с помощью команды &b/vk link"
     ),
+    CREATED_CONVERSATION("VkChat {user}"),
     OK("&aOperation completed", "&aОперация выполнена"),
     WRONG_USER("&6User does not exists", "&6Пользователя не существует"),
     SETUP_START(
@@ -105,8 +106,9 @@ public enum Lang {
                     "and give it read permissions, and then enter &b{code}&r&a(clickable)&6. " +
                     "If you are too lazy, click &b&n{new}&r&6 and the conversation will be created automatically",
             "&6Для установки беседы пригласите в существующую беседу бота и выдайте " +
-                    "ему права на чтение, а после этого введите &b&n{code}&r&a(кликабельно)&6. " +
-                    "Если вам лень, нажмите &b&n{new}&r&6 и беседа будет создана автоматически"),
+                    "ему админку(необходимо для получения списка участников), а после этого введите &b&n{code}&r&a(кликабельно)&6. " +
+                    "Если вам лень, нажмите &b&n{new}&r&6 и беседа будет создана автоматически" +
+                    "&c(не рекомендуется, так как vk не даёт возможности выдавать админку в беседе)"),
     NO_PEX("&cNo perms, sry", "&cУвы, но у тебя недостаточно прав"),
     VERIFY_CODE_HOVER(
             "&6Click and press CTRL + A, after CTRL + C to copy code",
@@ -135,8 +137,8 @@ public enum Lang {
             "&6Установка беседы была отменена поскольку вы ничего не сделали"),
     LINK("[URL]", "[Ссылка]"),
     CONVERSATION_CREATED(
-            "&6Conversation created, to open click: &b{link}",
-            "&6Беседа успешно создана, чтобы открыть нажмите: &6{link}"),
+            "&6Conversation created, to open click: &b&n{link}",
+            "&6Беседа успешно создана, чтобы открыть нажмите: &b&n{link}"),
     CONVERSATION_OPEN_HOVER(
             "&6Press me to open conversation",
             "&6Нажми на меня, чтобы попасть в эту беседу"),

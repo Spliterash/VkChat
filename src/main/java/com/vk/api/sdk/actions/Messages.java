@@ -87,7 +87,7 @@ public class Messages extends AbstractAction {
      * @param actor vk actor
      * @return query
      */
-    public MessagesCreateChatQuery createChat(UserActor actor) {
+    public MessagesCreateChatQuery createChat(GroupActor actor) {
         return new MessagesCreateChatQuery(getClient(), actor);
     }
 
