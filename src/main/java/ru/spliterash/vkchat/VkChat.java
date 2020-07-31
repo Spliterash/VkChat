@@ -56,6 +56,7 @@ public class VkChat {
     private final Map<Integer, GroupFull> savedGroups = new HashMap<>();
     private ConversationModel globalConversation;
     private AbstractConfig editableConfig;
+    private boolean vkLinks;
 
     public static VkApiClient getExecutor() {
         return getInstance().executor;
@@ -88,6 +89,7 @@ public class VkChat {
                 e.printStackTrace();
             }
         }
+        vkLinks = config.getBoolean("vk_links", true);
         editableConfig = launcher.wrapConfig(anotherConfig);
         lang = editableConfig.getString("lang");
         if (lang == null) {
@@ -221,19 +223,20 @@ public class VkChat {
         if (message.getFromId() != null)
             sender = getCachedUserById(message.getFromId());
         else
+            //Если сендер группа
             sender = null;
         try {
             if (message.getAction() != null) {
                 MessageAction action = message.getAction();
                 processAction(message, action);
-            } else if (sender == null) {
-                throw new Exception("Null sender, how");
             } else if (text == null) {
                 //FIXME Если будет зависать, надо будет обернуть в асинхрон
                 // launcher.runTaskAsync(()->{})
                 if (VkUtils.isConversation(message.getPeerId()))
                     sendUserTextMessage(message);
             } else if (text.startsWith(commandPrefix)) {
+                if(sender==null)
+                    return;
                 if (!isAdmin(sender)) {
                     sendMessage(message.getPeerId(), Lang.NO_PEX.toPlainText());
                     return;
@@ -248,6 +251,8 @@ public class VkChat {
                     launcher.runTaskAsync(() -> sendMessage(message.getPeerId(), commandReply));
                 }));
             } else if (text.startsWith("verify ")) {
+                if(sender==null)
+                    return;
                 String code = text.substring(7);
                 verifyPeer(code, sender, message.getPeerId());
             } else if (text.startsWith("link ")) {

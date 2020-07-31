@@ -219,7 +219,10 @@ public class VkUtils {
     }
 
     public String getPlayerToVk(PlayerModel model) {
-        return String.format("[id%d|%s]", model.getVk(), model.getNickname());
+        if (VkChat.getInstance().isVkLinks())
+            return String.format("[id%d|%s]", model.getVk(), model.getNickname());
+        else
+            return model.getNickname();
     }
 
     public String formatUser(UserFull user) {
