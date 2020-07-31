@@ -76,7 +76,7 @@ public class ListExecutor implements SubExecutor {
             return;
         TextComponent select = new TextComponent(Lang.CONVERSATION_SELECT_BUTTON_TITLE.toComponent());
         select.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/vk list selectMainConversation " + arg));
-        BaseComponent[] conversationComponent = VkUtils.getInviteLink(conversation);
+        BaseComponent[] conversationComponent = new BaseComponent[]{VkUtils.getInviteLink(conversation)};
         player.sendMessage(ChatBuilder.compile(
                 Lang.SELECT_MAIN_CONFIRMATION.toString(),
                 new SimpleMapBuilder<String, BaseComponent[]>()
@@ -91,7 +91,7 @@ public class ListExecutor implements SubExecutor {
         if (list.size() > 0) {
             player.sendMessage(Lang.CONVERSATION_LIST_TITLE.toComponent());
             for (ConversationModel model : list) {
-                BaseComponent[] peer = VkUtils.getInviteLink(model);
+                BaseComponent[] peer = new BaseComponent[]{VkUtils.getInviteLink(model)};
                 TextComponent delete = new TextComponent(Lang.DELETE_TITLE.toComponent());
                 delete.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/vk list preDeleteConversation " + model.getId()));
                 delete.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Lang.DELETE_CONVERSATION_HOVER.toComponent()));
@@ -135,7 +135,7 @@ public class ListExecutor implements SubExecutor {
             return;
         TextComponent delete = new TextComponent(Lang.DELETE_TITLE.toComponent());
         delete.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/vk list deleteConversation " + arg));
-        BaseComponent[] conversationComponent = VkUtils.getInviteLink(conversation);
+        BaseComponent[] conversationComponent = new BaseComponent[]{VkUtils.getInviteLink(conversation)};
         player.sendMessage(ChatBuilder.compile(
                 Lang.DELETE_CONFIRMATION.toString(),
                 new SimpleMapBuilder<String, BaseComponent[]>()

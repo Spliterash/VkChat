@@ -59,9 +59,9 @@ public class ArrayUtils {
     public void replaceOrRemove(List<String> list, String key, String value) {
         for (int i = 0; i < list.size(); i++) {
             String element = list.get(i);
-            if (element.contains(key))
+            if (!element.contains(key))
                 continue;
-            if (value != null) {
+            if (value != null && !value.isEmpty()) {
                 list.set(i, element.replace(key, value));
             } else {
                 list.remove(i);
@@ -72,24 +72,35 @@ public class ArrayUtils {
     }
 
     public void replaceOrRemove(List<String> list, Map<String, String> replaceMap) {
-        Iterator<Map.Entry<String, String>> iter = replaceMap.entrySet().iterator();
-        while (iter.hasNext()) {
-            Map.Entry<String, String> next = iter.next();
-            String value = next.getValue();
-            if (value == null || value.isEmpty())
-                iter.remove();
-        }
-        //Удаляем всё чо неюзается
-        list.removeIf(listElement -> replaceMap
-                .keySet()
-                .stream()
-                .noneMatch(listElement::contains));
         for (int i = 0; i < list.size(); i++) {
-            String str = list.get(i);
+            String element = list.get(i);
+            boolean found = false;
+            String newString = element;
+            boolean contains = false;
             for (Map.Entry<String, String> entry : replaceMap.entrySet()) {
-                str = str.replace(entry.getKey(),entry.getValue());
+                String key = entry.getKey();
+                //Есть ли в этой строке вообще плейсхолдеры
+                if (!element.contains(key))
+                    continue;
+                String value = entry.getValue();
+                contains = true;
+                if (value == null || value.isEmpty()) {
+                    newString = newString.replace(entry.getKey(), "");
+                    continue;
+                }
+                //Уже не удаляем
+                found = true;
+                newString = newString.replace(entry.getKey(), entry.getValue());
             }
-            list.set(i,str);
+            if (!contains)
+                continue;
+            if (!found) {
+                list.remove(i);
+                i--;
+            } else {
+                list.set(i, newString);
+            }
+
         }
     }
 

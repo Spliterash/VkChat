@@ -6,6 +6,7 @@ import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
+import com.vk.api.sdk.objects.groups.GroupFull;
 import com.vk.api.sdk.objects.messages.ForeignMessage;
 import com.vk.api.sdk.objects.users.UserFull;
 import lombok.experimental.UtilityClass;
@@ -15,12 +16,10 @@ import ru.spliterash.vkchat.chat.ChatBuilder;
 import ru.spliterash.vkchat.db.DatabaseLoader;
 import ru.spliterash.vkchat.db.model.ConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
-import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
 import ru.spliterash.vkchat.md_5_chat.api.chat.*;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @UtilityClass
 public class VkUtils {
@@ -78,24 +77,26 @@ public class VkUtils {
                 .getLink();
     }
 
+    public TextComponent getGroupComponent(GroupFull group) {
+        if (group == null) {
+            return ComponentUtils.getNullComponent();
+        }
+        String description = group.getDescription();
+        List<String> list = Lang.GROUP_HOVER.toList();
+        ArrayUtils.replaceOrRemove(list, "{description}", description);
+        BaseComponent[] hover = ComponentUtils.join(list, "\n");
+        TextComponent groupComponent = new TextComponent(group.getName());
+        groupComponent.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://vk.com/club" + group.getId()));
+        groupComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover));
+        return groupComponent;
+    }
+
     public TextComponent getUserComponent(UserFull user) {
         if (user == null) {
-            TextComponent component = new TextComponent(ChatColor.RED + "ERROR");
-            component.setHoverEvent(
-                    new HoverEvent(
-                            HoverEvent.Action.SHOW_TEXT,
-                            TextComponent.fromLegacyText(
-                                    ChatColor.RED + "User not found, sry\nStacktrace here: \n" +
-                                            Arrays
-                                                    .stream(Thread.currentThread().getStackTrace())
-                                                    .map(s -> s.getClassName() + " in method " + s.getMethodName() + " on line " + s.getLineNumber())
-                                                    .collect(Collectors.joining("\n"))
-                            )
-                    ));
-            return component;
+            return ComponentUtils.getNullComponent();
         }
         String title = formatUser(user);
-        ComponentBuilder hoverBuilder = new ComponentBuilder("");
+        BaseComponent[] hover;
         {
             String sex, city, status, birthday;
             switch (user.getSex()) {
@@ -128,35 +129,27 @@ public class VkUtils {
             replaceMap.put("{status}", status);
             replaceMap.put("{birthday}", birthday);
             ArrayUtils.replaceOrRemove(list, replaceMap);
-            for (int i = 0; i < list.size(); i++) {
-                String current = list.get(i);
-                hoverBuilder.append(TextComponent.fromLegacyText(current), ComponentBuilder.FormatRetention.NONE);
-                if (i < list.size() - 1) {
-                    hoverBuilder.append("\n");
-                }
-            }
+            hover = ComponentUtils.join(list, "\n");
         }
+
         TextComponent component = new TextComponent(TextComponent.fromLegacyText(title));
-        component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverBuilder.create()));
+        component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover));
+        component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://vk.com/id" + user.getId()));
         return component;
     }
 
 
-    public BaseComponent[] getInviteLink(String url) {
-        return getInviteLink(url, null);
-    }
-
-    public BaseComponent[] getInviteLink(String url, String name) {
-        ComponentBuilder builder = new ComponentBuilder("");
-        String componentText;
-        if (name == null)
-            componentText = Lang.CONVERSATION_COMPONENT.toString();
-        else
-            componentText = name;
-        builder.append(TextComponent.fromLegacyText(componentText));
-        builder.event(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
-        builder.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(Lang.OPEN_URL_HOVER.toString())));
-        return builder.create();
+    public TextComponent getInviteLink(String url, String name) {
+        String finalName = name == null ? "VK" : name;
+        TextComponent conversationComponent = new TextComponent(ChatBuilder.compile(
+                Lang.CONVERSATION_COMPONENT.toString(),
+                new SimpleMapBuilder<String, BaseComponent[]>()
+                        .add("{conversation}", TextComponent.fromLegacyText(finalName))
+                        .getMap()
+        ));
+        conversationComponent.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
+        conversationComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(Lang.OPEN_URL_HOVER.toString("{conversation}", name))));
+        return conversationComponent;
     }
 
     public boolean isConversation(int peerId) {
@@ -170,13 +163,24 @@ public class VkUtils {
             replaceMap.put("{vk}", prefixComponents);
         else
             replaceMap.put("{vk}", new BaseComponent[]{new TextComponent()});
-        replaceMap.put("{user}", new BaseComponent[]{getUserComponent(fromId)});
+        replaceMap.put("{user}", new BaseComponent[]{getSenderComponent(fromId)});
         replaceMap.put("{text}", new BaseComponent[]{new TextComponent(text)});
         return ChatBuilder.compile(messageStructure, replaceMap);
     }
 
+    public TextComponent getSenderComponent(Integer senderId) {
+        if (isGroup(senderId))
+            return getGroupComponent(senderId);
+        else
+            return getUserComponent(senderId);
+    }
+
     public TextComponent getUserComponent(Integer user) {
         return getUserComponent(VkChat.getInstance().getCachedUserById(user));
+    }
+
+    public TextComponent getGroupComponent(Integer group) {
+        return getGroupComponent(VkChat.getInstance().getCachedGroupById(group));
     }
 
     /**
@@ -189,6 +193,10 @@ public class VkUtils {
             VkChat.getInstance().sendMessage(peerId, message);
         }
         return peers;
+    }
+
+    public boolean isGroup(int id) {
+        return id < 0;
     }
 
     public void scanMessageIds(Set<Integer> ids, ForeignMessage message) {
@@ -214,23 +222,12 @@ public class VkUtils {
         return String.format("[id%d|%s]", model.getVk(), model.getNickname());
     }
 
-    public String getPlayerToVk(int userId) throws ClientException, ApiException {
-        UserFull cached = VkChat.getInstance().getCachedUserById(userId, true);
-        return getPlayerToVk(cached);
-    }
-
     public String formatUser(UserFull user) {
-        return Lang.USER_FORMAT.toString("{first_name}", user.getFirstName(), "{last_name}", user.getLastName());
-    }
-
-    private String getPlayerToVk(UserFull user) {
         PlayerModel link = DatabaseLoader.getBase().getPlayerByVk(user.getId());
-        if (link != null) {
-            return getPlayerToVk(link);
-        } else {
-            String format = formatUser(user);
-            return String.format("[id%d|%s]", user.getId(), format);
-        }
+        if (link != null)
+            return link.getNickname();
+        else
+            return Lang.USER_FORMAT.toString("{first_name}", user.getFirstName(), "{last_name}", user.getLastName());
     }
 
     public String prepareMessage(AbstractPlayer sender, String playerMessage) {
@@ -241,7 +238,7 @@ public class VkUtils {
                 );
     }
 
-    public BaseComponent[] getInviteLink(ConversationModel model) {
+    public TextComponent getInviteLink(ConversationModel model) {
         return getInviteLink(model.getInviteLink(), model.getTitle());
     }
 }

@@ -5,6 +5,7 @@ import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
+import com.vk.api.sdk.objects.groups.GroupFull;
 import com.vk.api.sdk.objects.messages.ForeignMessage;
 import com.vk.api.sdk.objects.messages.Message;
 import com.vk.api.sdk.objects.messages.MessageAction;
@@ -30,7 +31,10 @@ import ru.spliterash.vkchat.wrappers.AbstractConfig;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 import ru.spliterash.vkchat.wrappers.Launcher;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Consumer;
@@ -49,6 +53,7 @@ public class VkChat {
     private boolean enable = true;
     @Getter(AccessLevel.NONE)
     private final Map<Integer, UserFull> savedUsers = new HashMap<>();
+    private final Map<Integer, GroupFull> savedGroups = new HashMap<>();
     private ConversationModel globalConversation;
     private AbstractConfig editableConfig;
 
@@ -66,6 +71,7 @@ public class VkChat {
         this.launcher = launcher;
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void start() throws ClientException, IOException {
         DatabaseLoader.reload();
         AbstractConfig config = launcher.getVkConfig();
@@ -257,15 +263,15 @@ public class VkChat {
     }
 
 
-    private void processAction(Message message, MessageAction action) throws ClientException, ApiException, SQLException {
+    private void processAction(Message message, MessageAction action) throws ClientException {
         switch (action.getType()) {
             case CHAT_INVITE_USER:
                 sendActionMessage(
                         message.getPeerId(),
                         Lang.CONVERSATION_INVITE.toString(),
                         new SimpleMapBuilder<String, BaseComponent[]>()
-                                .add("{inviter}", new BaseComponent[]{VkUtils.getUserComponent(message.getFromId())})
-                                .add("{invited}", new BaseComponent[]{VkUtils.getUserComponent(action.getMemberId())})
+                                .add("{inviter}", new BaseComponent[]{VkUtils.getSenderComponent(message.getFromId())})
+                                .add("{invited}", new BaseComponent[]{VkUtils.getSenderComponent(action.getMemberId())})
                                 .getMap()
 
 
@@ -276,7 +282,7 @@ public class VkChat {
                         message.getPeerId(),
                         Lang.CONVERSATION_INVITE_BY_URL.toString(),
                         new SimpleMapBuilder<String, BaseComponent[]>()
-                                .add("{user}", new BaseComponent[]{VkUtils.getUserComponent(message.getFromId())})
+                                .add("{user}", new BaseComponent[]{VkUtils.getSenderComponent(message.getFromId())})
                                 .getMap());
                 break;
             case CHAT_KICK_USER:
@@ -284,17 +290,17 @@ public class VkChat {
                         message.getPeerId(),
                         Lang.CONVERSATION_KICK.toString(),
                         new SimpleMapBuilder<String, BaseComponent[]>()
-                                .add("{user_1}", new BaseComponent[]{VkUtils.getUserComponent(message.getFromId())})
-                                .add("{user_2}", new BaseComponent[]{VkUtils.getUserComponent(action.getMemberId())})
+                                .add("{user_1}", new BaseComponent[]{VkUtils.getSenderComponent(message.getFromId())})
+                                .add("{user_2}", new BaseComponent[]{VkUtils.getSenderComponent(action.getMemberId())})
                                 .getMap());
                 break;
         }
     }
 
-    private void sendActionMessage(Integer peerId, String messageStr, Map<String, BaseComponent[]> map) throws ClientException, ApiException, SQLException {
+    private void sendActionMessage(Integer peerId, String messageStr, Map<String, BaseComponent[]> map) throws ClientException {
         String format = Lang.VK_TO_MINECRAFT_INFO_FORMAT.toString();
         sendMessageToPlayers(peerId, conversationModel -> {
-            BaseComponent[] vk = VkUtils.getInviteLink(conversationModel.getInviteLink(), conversationModel.getTitle());
+            BaseComponent[] vk = new BaseComponent[]{VkUtils.getInviteLink(conversationModel.getInviteLink(), conversationModel.getTitle())};
             BaseComponent[] message = ChatBuilder.compile(messageStr, map);
             Map<String, BaseComponent[]> formatMap = new HashMap<>();
             formatMap.put("{vk}", vk);
@@ -335,7 +341,7 @@ public class VkChat {
         return setup;
     }
 
-    private void verifyPeer(String code, UserFull sender, Integer peerId) throws SQLException, ClientException, ApiException {
+    private void verifyPeer(String code, UserFull sender, Integer peerId) throws SQLException, ClientException {
         LinkHelper setup = checkLink(code, sender.getId());
         if (setup == null)
             return;
@@ -395,7 +401,7 @@ public class VkChat {
         }
     }
 
-    private void sendUserTextMessage(Message message) throws ClientException, ApiException, SQLException {
+    private void sendUserTextMessage(Message message) throws ClientException {
         int peer = message.getPeerId();
         sendMessageToPlayers(
                 peer,
@@ -454,6 +460,38 @@ public class VkChat {
         return currentConversation;
     }
 
+    public void loadUsersAndBots(Set<Integer> forceLoad) throws ClientException, ApiException {
+        Set<Integer> users = new HashSet<>();
+        Set<Integer> groups = new HashSet<>();
+        for (Integer id : forceLoad) {
+            if (VkUtils.isGroup(id))
+                groups.add(id);
+            else
+                users.add(id);
+        }
+        if (users.size() > 0)
+            loadUsers(users
+                    .stream()
+                    .map(Object::toString)
+                    .toArray(String[]::new));
+        if (groups.size() > 0)
+            loadGroups(users
+                    .stream()
+                    .map(Object::toString)
+                    .toArray(String[]::new));
+    }
+
+    private void loadGroups(String... groups) throws ClientException, ApiException {
+        for (GroupFull groupFull : executor
+                .groups()
+                .getById(getActor())
+                .groupIds(groups)
+                .fields(com.vk.api.sdk.objects.groups.Fields.DESCRIPTION)
+                .execute()) {
+            savedGroups.put(groupFull.getId() * -1, groupFull);
+        }
+    }
+
     public void loadUsers(String... forceLoad) throws ClientException, ApiException {
         for (UserXtrCounters user : executor
                 .users()
@@ -468,13 +506,9 @@ public class VkChat {
     private void loadWithChecks(Set<Integer> needLoad) throws ClientException, ApiException {
         //Удаляем тех кто загружен
         needLoad.removeAll(savedUsers.keySet());
+        needLoad.removeAll(savedGroups.keySet());
         if (needLoad.size() > 0) {
-            loadUsers(
-                    needLoad
-                            .stream()
-                            .map(Object::toString)
-                            .toArray(String[]::new)
-            );
+            loadUsersAndBots(needLoad);
         }
     }
 
@@ -582,4 +616,7 @@ public class VkChat {
         }
     }
 
+    public GroupFull getCachedGroupById(Integer group) {
+        return savedGroups.get(group);
+    }
 }

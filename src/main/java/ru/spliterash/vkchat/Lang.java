@@ -25,24 +25,35 @@ public enum Lang {
     UNKNOWN(
             "unknown",
             "неизвестно"),
+    GROUP_HOVER(
+            Arrays.asList(
+                    "&7Description: &a{description}",
+                    "&6Click to open group page"
+            ),
+            Arrays.asList(
+                    "&7Описание: &a{description}",
+                    "&6Нажми чтобы открыть страницу группы"
+            )),
     USER_HOVER(
             Arrays.asList(
                     "&7Gender: &6{sex}",
                     "&7City: &6{city}",
                     "&7Статус: &6{status}",
-                    "&7Birthday: &6{birthday}"
+                    "&7Birthday: &6{birthday}",
+                    "&6Click to open VK page"
             ),
             Arrays.asList(
-                    "&7Пол: {sex}",
-                    "&7Город: {city}",
-                    "&7Статус: {status}",
-                    "&7День рождение: {birthday}"
+                    "&7Пол: &b{sex}",
+                    "&7Город: &b{city}",
+                    "&7Статус: &b{status}",
+                    "&7День рождение: &b{birthday}",
+                    "&6Нажми чтобы открыть страницу ВК"
             )
     ),
     USER_FORMAT("{first_name} {last_name}"),
-    CONVERSATION_COMPONENT("[VK]"),
-    VK_TO_MINECRAFT_CHAT_FORMAT("&7[&9{vk}&7]&a{user}&e: &f{text}"),
-    VK_TO_MINECRAFT_INFO_FORMAT("&[&9{vk}&7] &a{message}"),
+    CONVERSATION_COMPONENT("&7[&9{conversation}&7]"),
+    VK_TO_MINECRAFT_CHAT_FORMAT("{vk}&a{user}&e: &f{text}"),
+    VK_TO_MINECRAFT_INFO_FORMAT("{vk} &a{message}"),
     MINECRAFT_TO_VK_FORMAT("{user}: {message}"),
     MALE(
             "Male",
@@ -77,8 +88,8 @@ public enum Lang {
             )
     ),
     OPEN_URL_HOVER(
-            "&6Click me to open a &bvk.com&6 conversation",
-            "&6Нажми на меня чтобы открыть беседу &bvk.com"),
+            "&6Click me to open a &b{conversation}",
+            "&6Нажми на меня чтобы открыть беседу &b{conversation}"),
     ALREADY_LINK(
             "&6You are already link your account to &a{user}",
             "&6Вы уже привязали свой аккаунт к &a{user}"),
@@ -214,7 +225,7 @@ public enum Lang {
     );
 
 
-    /** 
+    /**
      * Оригинальные переводы
      * 0 индекс - англиский
      * 1 индекс - русский
