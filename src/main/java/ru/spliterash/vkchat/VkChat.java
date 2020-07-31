@@ -123,7 +123,7 @@ public class VkChat {
         );
         Integer gId = editableConfig.getInt("global_peer");
         if (gId != null)
-            _setGlobalPeer(gId);
+            _setGlobalConversation(gId);
         commandPrefix = config.getString("command_prefix", "/");
 
         launcher.registerCommand("vk", new VkExecutor());
@@ -141,18 +141,20 @@ public class VkChat {
         return locale.getLanguage();
     }
 
-    public void setGlobalPeer(int id) {
+    public void setGlobalConversation(Integer id) {
         editableConfig.set("global_peer", id);
         try {
             editableConfig.save();
-            _setGlobalPeer(id);
+            _setGlobalConversation(id);
         } catch (ClientException | IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void _setGlobalPeer(int id) throws ClientException {
-        if (VkUtils.isConversation(id))
+    private void _setGlobalConversation(Integer id) throws ClientException {
+        if (id == null)
+            globalConversation = null;
+        else if (VkUtils.isConversation(id))
             globalConversation = refreshConversationUsers(id);
     }
 

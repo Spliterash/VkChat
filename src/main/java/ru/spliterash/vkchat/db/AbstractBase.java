@@ -18,7 +18,7 @@ public abstract class AbstractBase {
         ResultSetMetaData meta = set.getMetaData();
         List<String> list = new ArrayList<>(meta.getColumnCount());
         for (int i = 0; i < meta.getColumnCount(); i++) {
-            list.add(meta.getColumnName(i+1));
+            list.add(meta.getColumnName(i + 1));
         }
         return list;
     }
@@ -233,7 +233,10 @@ public abstract class AbstractBase {
 
     public void deleteMe(PlayerModel model) {
         try {
-            update("DELETE FROM players where uuid = ?", model.getUUID().toString());
+            String uuid = model.getUUID().toString();
+            update("DELETE FROM players where uuid = ?", uuid);
+            update("DELETE FROM conversations where owner = ?", uuid);
+            update("DELETE FROM conversation_members where player = ?", uuid);
         } catch (SQLException throwables) {
             throw new RuntimeException(throwables);
         }
@@ -254,7 +257,10 @@ public abstract class AbstractBase {
 
     public void deleteMe(ConversationModel model) {
         try {
-            update("DELETE FROM conversations where id = ?", model.getId());
+            int id = model.getId();
+            update("DELETE FROM conversations where id = ?", id);
+            update("DELETE FROM conversation_members where conversation = ?", id);
+            update("UPDATE players set selected_conversation = null where selected_conversation = ?", id);
         } catch (SQLException throwables) {
             throw new RuntimeException(throwables);
         }

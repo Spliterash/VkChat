@@ -60,7 +60,7 @@ public class ListExecutor implements SubExecutor {
             return;
         VkChat.getInstance().getLauncher().runTaskAsync(() -> {
             try {
-                VkChat.getInstance().setGlobalPeer(conversation.getId());
+                VkChat.getInstance().setGlobalConversation(conversation.getId());
                 player.sendMessage(Lang.OK.toComponent());
             } catch (Exception ex) {
                 ex.printStackTrace();
