@@ -49,6 +49,7 @@ subprojects {
 }
 
 dependencies {
+//    compileOnly fileTree('jars')
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compileOnly 'com.google.code.gson:gson:2.8.0'
 //    compile 'org.apache.httpcomponents:httpmime:4.5.8'
@@ -79,12 +80,11 @@ evaluationDependsOnChildren()
 
 buildscript {
     repositories {
-        mavenLocal()
-        jcenter()
-        google()
+        flatDir dirs: "$System.env.PROGUARD_HOME/lib"
+
     }
     dependencies {
-        classpath 'com.guardsquare:proguard-gradle:7.0.0'
+        classpath ':proguard:'
     }
 }
 

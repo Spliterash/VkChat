@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by tsivarev on 21.07.16.
@@ -66,7 +67,7 @@ public abstract class ApiRequest<T> {
             }
         }
 
-        throw exception;
+        throw Objects.requireNonNull(exception);
     }
 
     private T executeWithoutRetry() throws ClientException, ApiException {
