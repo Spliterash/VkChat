@@ -51,7 +51,7 @@ public abstract class AbstractBase {
     protected String getCreationScript() {
         try {
             String fileName = getClass().getSimpleName() + ".sql";
-            InputStream stream = getClass().getResourceAsStream(fileName);
+            InputStream stream = getClass().getClassLoader().getResourceAsStream("db/" + fileName);
             return StringUtils.getString(stream);
         } catch (IOException e) {
             throw new RuntimeException(e);

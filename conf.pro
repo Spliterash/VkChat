@@ -10,7 +10,8 @@
 # Когда буду тестить, обязательно надо раскоментировать
 # -addconfigurationdebugging
 -whyareyoukeeping class com.vk.api.sdk.objects.widgets.**
-
+# Свалить всё в одну кучу
+-repackageclasses ru.spliterash.vkchat
 
 # Мои лаунчеры
 -keep class ** extends ru.spliterash.vkchat.wrappers.Launcher {
