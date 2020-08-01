@@ -1,37 +1,28 @@
 -libraryjars 'C:\Program Files\Java\jre1.8.0_261\lib\rt.jar'
 -printmapping 'VkChat.map'
--keepattributes *Annotation*,SourceFile, LineNumberTable
+-keepattributes *Annotation*,SourceFile,LineNumberTable,Signature
 #-dontnote
 -dontwarn org.slf4j.**
 -dontwarn javax.**
 -dontwarn org.apache.**
 
-
 -overloadaggressively
 # Для тестов
-#-dontobfuscate
+-dontobfuscate
 # Когда буду тестить, обязательно надо раскоментировать
 -addconfigurationdebugging
-#-whyareyoukeeping class com.vk.api.sdk.exceptions.**
+# -whyareyoukeeping class com.vk.api.sdk.exceptions.**
 # Свалить всё в одну кучу
--repackageclasses ru.spliterash.vkchat
-
+# -repackageclasses ru.spliterash.vkchat
+-allowaccessmodification
+# Отрубаем оптимизацию
 # Мои лаунчеры
 -keep class ** extends ru.spliterash.vkchat.wrappers.Launcher {
     public <methods>;
 }
-
-# Не трогаем Gson
--keepclassmembernames class * {
-    @com.google.gson.annotations.SerializedName <fields>;
-}
 # Не трогаем мой код
- -keepclasseswithmembers,allowobfuscation class ru.spliterash.** {
+ -keep,includecode,allowobfuscation class ru.spliterash.** {
     <methods>;
-}
-# Не трогаем енумный Gson ??
--keepclassmembernames enum * {
-    @com.google.gson.annotations.SerializedName <fields>;
 }
 
 # Сохраняем имена енумоф
@@ -54,4 +45,20 @@
 # Нативные методы само собой
 -keepclasseswithmembers,includedescriptorclasses,allowshrinking class * {
     native <methods>;
+}
+
+
+# Правила для GSON
+# Prevent proguard from stripping interface information from TypeAdapter, TypeAdapterFactory,
+# JsonSerializer, JsonDeserializer instances (so they can be used in @JsonAdapter)
+-keep,allowobfuscation class * extends com.google.gson.TypeAdapter
+-keep,allowobfuscation class * implements com.google.gson.TypeAdapterFactory
+-keep,allowobfuscation class * implements com.google.gson.JsonSerializer
+-keep,allowobfuscation class * implements com.google.gson.JsonDeserializer
+
+
+# Надо переделать так, чтобы удаляло неюзаемые переменные
+# Методы то удаляет
+-keepclassmembers,allowshrinking,allowobfuscation class * {
+  @com.google.gson.annotations.SerializedName <fields>;
 }
