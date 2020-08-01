@@ -73,8 +73,9 @@ task createFatJar(type: Jar) {
     exclude('META-INF', 'META-INF/**')
     with jar
 }
+//Следующий код идёт после инициализации сабмодулей
 evaluationDependsOnChildren()
-import proguard.gradle.ProGuardTask
+
 
 buildscript {
     repositories {
@@ -115,6 +116,12 @@ List<File> getProGuardDependencies() {
         a.getFile()
     }
 }
+
+task copyDependencyes(type: Copy) {
+    from(getProGuardDependencies()) into new File(rootDir, 'dependencies')
+}
+
+import proguard.gradle.ProGuardTask
 
 task proguard(type: ProGuardTask, dependsOn: createFatJar) {
     def libs = getProGuardDependencies()

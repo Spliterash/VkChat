@@ -7,7 +7,8 @@
 -dontwarn org.apache.**
 # Для тестов
 -dontobfuscate
-
+# Когда буду тестить, обязательно надо раскоментировать
+# -addconfigurationdebugging
 -whyareyoukeeping class com.vk.api.sdk.objects.widgets.**
 
 
