@@ -1,6 +1,7 @@
 package ru.spliterash.vkchat.db;
 
 import org.intellij.lang.annotations.Language;
+import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.db.model.ConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
 import ru.spliterash.vkchat.db.model.ResultSetRow;
@@ -14,6 +15,12 @@ import java.sql.Date;
 import java.util.*;
 
 public abstract class AbstractBase {
+    private final String name;
+
+    protected AbstractBase(String name) {
+        this.name = name;
+    }
+
     public List<String> getColumns(ResultSet set) throws SQLException {
         ResultSetMetaData meta = set.getMetaData();
         List<String> list = new ArrayList<>(meta.getColumnCount());
@@ -50,8 +57,9 @@ public abstract class AbstractBase {
     @Language("SQL")
     protected String getCreationScript() {
         try {
-            String fileName = getClass().getSimpleName() + ".sql";
-            InputStream stream = getClass().getClassLoader().getResourceAsStream("db/" + fileName);
+            String fileName = name + ".sql";
+            String path = "db/" + fileName;
+            InputStream stream = getClass().getClassLoader().getResourceAsStream(path);
             return StringUtils.getString(stream);
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -10,6 +10,6 @@ public class DieListener implements IDieListener {
     public void onDie(AbstractPlayer player, String deathMessage) {
         if (noHasPerms(player))
             return;
-        processMessage(player, "{player}: " + deathMessage);
+        processMessage(player, deathMessage.replace(player.getName(), "{player}"));
     }
 }

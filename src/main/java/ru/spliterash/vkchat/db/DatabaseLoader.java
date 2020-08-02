@@ -1,6 +1,5 @@
 package ru.spliterash.vkchat.db;
 
-import lombok.Getter;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.db.types.MySQL;
 import ru.spliterash.vkchat.db.types.SQLite;

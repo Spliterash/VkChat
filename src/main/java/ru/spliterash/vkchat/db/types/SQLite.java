@@ -13,6 +13,7 @@ public class SQLite extends AbstractBase {
     private final File file;
 
     public SQLite(File file) {
+        super("SQLite");
         this.file = file;
         if (!file.exists()) {
             try {

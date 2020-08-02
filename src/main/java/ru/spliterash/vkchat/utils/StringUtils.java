@@ -70,7 +70,7 @@ public class StringUtils {
         final char[] buffer = new char[bufferSize];
         final StringBuilder out = new StringBuilder();
         try (Reader in = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
-            for (; ; ) {
+            while (true) {
                 int rsz = in.read(buffer, 0, buffer.length);
                 if (rsz < 0)
                     break;

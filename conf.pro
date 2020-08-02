@@ -5,28 +5,37 @@
 -dontwarn org.slf4j.**
 -dontwarn javax.**
 -dontwarn org.apache.**
-
+-optimizationpasses 5
 -overloadaggressively
 # Для тестов
--dontobfuscate
+#-dontobfuscate
 # Когда буду тестить, обязательно надо раскоментировать
 -addconfigurationdebugging
 # -whyareyoukeeping class com.vk.api.sdk.exceptions.**
 # Свалить всё в одну кучу
-# -repackageclasses ru.spliterash.vkchat
+-repackageclasses ru.spliterash.vkchat
 -allowaccessmodification
 # Отрубаем оптимизацию
 # Мои лаунчеры
 -keep class ** extends ru.spliterash.vkchat.wrappers.Launcher {
     public <methods>;
 }
-# Не трогаем мой код
- -keep,includecode,allowobfuscation class ru.spliterash.** {
-    <methods>;
+# Сохраняем все мои методы, но разрешаем запутывание
+-keepclassmembers,allowobfuscation class ru.spliterash.** {
+   <methods>;
 }
+
+
+-keep class sun.misc.Unsafe { *; }
 
 # Сохраняем имена енумоф
 -keepclassmembernames enum  * {
+    <fields>;
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+# Ещё раз на всякий случай
+-keepclassmembers class * extends java.lang.Enum {
     <fields>;
     public static **[] values();
     public static ** valueOf(java.lang.String);
@@ -55,7 +64,6 @@
 -keep,allowobfuscation class * implements com.google.gson.TypeAdapterFactory
 -keep,allowobfuscation class * implements com.google.gson.JsonSerializer
 -keep,allowobfuscation class * implements com.google.gson.JsonDeserializer
-
 
 # Надо переделать так, чтобы удаляло неюзаемые переменные
 # Методы то удаляет
