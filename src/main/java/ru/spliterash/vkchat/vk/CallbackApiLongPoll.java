@@ -12,8 +12,6 @@ import com.vk.api.sdk.objects.callback.longpoll.responses.GetLongPollEventsRespo
 import com.vk.api.sdk.objects.callback.messages.CallbackMessage;
 import com.vk.api.sdk.objects.groups.LongPollServer;
 import com.vk.api.sdk.objects.messages.Message;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;

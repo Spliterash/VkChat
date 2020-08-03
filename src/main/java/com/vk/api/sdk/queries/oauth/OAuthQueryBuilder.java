@@ -10,19 +10,19 @@ import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.exceptions.OAuthException;
 import com.vk.api.sdk.objects.oauth.Error;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import ru.spliterash.vkchat.VkChat;
 
 
 import java.io.StringReader;
 import java.lang.reflect.Type;
+import java.util.logging.Logger;
 
 /**
  * Created by tsivarev on 14.08.16.
  */
 public abstract class OAuthQueryBuilder<T, R> extends AbstractQueryBuilder<T, R> {
 
-    private static final Logger LOG = LogManager.getLogger(OAuthQueryBuilder.class);
+    private static final Logger LOG = VkChat.getLogger();
 
     public OAuthQueryBuilder(VkApiClient client, String endpoint, String method, Type type) {
         super(client, endpoint, method, type);
@@ -39,19 +39,19 @@ public abstract class OAuthQueryBuilder<T, R> extends AbstractQueryBuilder<T, R>
             try {
                 error = getGson().fromJson(json, Error.class);
             } catch (JsonSyntaxException e) {
-                LOG.error("Invalid JSON: " + textResponse, e);
+                LOG.warning("Invalid JSON: " + textResponse);
                 throw new ClientException("Can't parse json response");
             }
 
             OAuthException exception = new OAuthException(error.getError(), error.getErrorDescription(), error.getRedirectUri());
-            LOG.error("API error", exception);
+            LOG.warning("API error");
             throw exception;
         }
 
         try {
             return getGson().fromJson(json, getResponseClass());
         } catch (JsonSyntaxException e) {
-            LOG.error("Invalid JSON: " + textResponse, e);
+            LOG.warning("Invalid JSON: " + textResponse);
             throw new ClientException("Can't parse json response");
         }
     }

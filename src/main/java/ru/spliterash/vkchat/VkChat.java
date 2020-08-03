@@ -39,6 +39,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Getter
@@ -46,7 +47,7 @@ public class VkChat {
     @Getter
     private static VkChat instance;
     private final Launcher launcher;
-    private final VkApiClient executor = new VkApiClient(HttpTransportClient.getInstance());
+    private final VkApiClient executor;
     @Getter(AccessLevel.NONE)
     private PeekList<GroupActor> actors;
     private String commandPrefix;
@@ -63,6 +64,14 @@ public class VkChat {
 
     public static VkApiClient getExecutor() {
         return getInstance().executor;
+    }
+
+    public static Logger getLogger() {
+        if (instance != null)
+            return instance.getLauncher().getLogger();
+        else {
+            return Logger.getAnonymousLogger();
+        }
     }
 
 
@@ -84,6 +93,7 @@ public class VkChat {
      */
     private VkChat(@NotNull Launcher launcher) {
         this.launcher = launcher;
+        this.executor = new VkApiClient(HttpTransportClient.getInstance());
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -647,8 +657,8 @@ public class VkChat {
                     .disableMentions(true)
                     .message(message)
                     .execute();
-        } catch (ApiException | ClientException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

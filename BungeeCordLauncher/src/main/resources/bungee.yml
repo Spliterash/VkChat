@@ -1,0 +1,5 @@
+name: VkChat
+main: ru.spliterash.vkchat.launchers.bungee.BungeePlugin
+version: @version@
+author: Spliterash
+commands:

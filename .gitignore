@@ -71,7 +71,6 @@ fabric.properties
 *.rar
 
 # ProGuard
-ProGuard/VkChat.map
 ProGuard/pro.log
 ProGuard/*.jar
 

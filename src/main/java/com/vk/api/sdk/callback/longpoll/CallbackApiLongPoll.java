@@ -10,12 +10,13 @@ import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.exceptions.LongPollServerKeyExpiredException;
 import com.vk.api.sdk.objects.callback.longpoll.responses.GetLongPollEventsResponse;
 import com.vk.api.sdk.objects.groups.LongPollServer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import ru.spliterash.vkchat.VkChat;
+
+import java.util.logging.Logger;
 
 public class CallbackApiLongPoll extends CallbackApi {
 
-    private static final Logger LOG = LogManager.getLogger(CallbackApiLongPoll.class);
+    private static final Logger LOG = VkChat.getLogger();
 
     private static final int DEFAULT_WAIT = 10;
 

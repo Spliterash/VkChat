@@ -10,16 +10,13 @@
 # Для тестов
 #-dontobfuscate
 # Когда буду тестить, обязательно надо раскоментировать
--addconfigurationdebugging
+#-addconfigurationdebugging
 # -whyareyoukeeping class com.vk.api.sdk.exceptions.**
 # Свалить всё в одну кучу
 -repackageclasses ru.spliterash.vkchat
 -allowaccessmodification
-# Отрубаем оптимизацию
 # Мои лаунчеры
--keep class ** extends ru.spliterash.vkchat.wrappers.Launcher {
-    public <methods>;
-}
+-keep class * extends ru.spliterash.vkchat.wrappers.Launcher
 # Сохраняем все мои методы, но разрешаем запутывание
 -keepclassmembers,allowobfuscation class ru.spliterash.** {
    <methods>;

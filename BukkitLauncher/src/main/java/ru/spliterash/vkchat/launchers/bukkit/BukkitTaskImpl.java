@@ -16,8 +16,4 @@ public class BukkitTaskImpl implements AbstractTask {
         runnable.cancel();
     }
 
-    @Override
-    public boolean isCancelled() {
-        return runnable.isCancelled();
-    }
 }

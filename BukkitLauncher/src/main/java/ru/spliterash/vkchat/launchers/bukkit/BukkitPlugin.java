@@ -13,10 +13,10 @@ import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.launchers.bukkit.listeners.BukkitDieListener;
 import ru.spliterash.vkchat.launchers.bukkit.listeners.BukkitJoinLeaveListener;
 import ru.spliterash.vkchat.launchers.bukkit.listeners.BukkitMessageListener;
-import ru.spliterash.vkchat.listeners.JoinLeaveListener;
-import ru.spliterash.vkchat.listeners.MessageListener;
 import ru.spliterash.vkchat.wrappers.*;
 import ru.spliterash.vkchat.wrappers.listener.IDieListener;
+import ru.spliterash.vkchat.wrappers.listener.IJoinLeaveListener;
+import ru.spliterash.vkchat.wrappers.listener.IMessageListener;
 
 import java.io.File;
 import java.util.*;
@@ -31,7 +31,7 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
     public void onEnable() {
         instance = this;
         saveDefaultConfig();
-        vkConfig = new BukkitConfig(new File(getDataFolder(), "config.yml"));
+        vkConfig = wrapConfig(new File(getDataFolder(), "config.yml"));
         VkChat.onEnable(this);
     }
 
@@ -127,12 +127,12 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
     }
 
     @Override
-    public void registerListener(MessageListener listener) {
+    public void registerListener(IMessageListener listener) {
         getServer().getPluginManager().registerEvents(new BukkitMessageListener(listener), this);
     }
 
     @Override
-    public void registerListener(JoinLeaveListener listener) {
+    public void registerListener(IJoinLeaveListener listener) {
         getServer().getPluginManager().registerEvents(new BukkitJoinLeaveListener(listener), this);
     }
 

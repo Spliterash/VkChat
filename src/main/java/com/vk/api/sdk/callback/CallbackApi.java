@@ -13,13 +13,13 @@ import com.vk.api.sdk.objects.video.Video;
 import com.vk.api.sdk.objects.wall.WallComment;
 import com.vk.api.sdk.objects.wall.Wallpost;
 import com.vk.api.sdk.queries.oauth.OAuthQueryBuilder;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import ru.spliterash.vkchat.VkChat;
 
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Created by Anton Tsivarev on 12.09.16.
@@ -27,7 +27,7 @@ import java.util.Map;
 @SuppressWarnings("unused")
 public class CallbackApi {
 
-    private static final Logger LOG = LogManager.getLogger(OAuthQueryBuilder.class);
+    private static final Logger LOG = VkChat.getLogger();
     private static final String CALLBACK_EVENT_MESSAGE_NEW = "message_new";
     private static final String CALLBACK_EVENT_MESSAGE_REPLY = "message_reply";
     private static final String CALLBACK_EVENT_MESSAGE_ALLOW = "message_allow";
@@ -455,7 +455,7 @@ public class CallbackApi {
 
         Type typeOfClass = CALLBACK_TYPES.get(type);
         if (typeOfClass == null) {
-            LOG.warn("Unsupported callback event", type);
+            LOG.warning("Unsupported callback event " + type);
             return false;
         }
 
@@ -615,7 +615,7 @@ public class CallbackApi {
                 break;
 
             default:
-                LOG.warn("Unsupported callback event", type);
+                LOG.warning("Unsupported callback event "+type);
                 return false;
 
         }

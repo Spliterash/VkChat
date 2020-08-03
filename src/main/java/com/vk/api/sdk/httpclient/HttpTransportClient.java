@@ -2,8 +2,8 @@ package com.vk.api.sdk.httpclient;
 
 import com.vk.api.sdk.client.ClientResponse;
 import com.vk.api.sdk.client.TransportClient;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.Getter;
+import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.utils.StringUtils;
 
 import java.io.File;
@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class HttpTransportClient implements TransportClient {
@@ -23,12 +24,9 @@ public class HttpTransportClient implements TransportClient {
     private static final int DEFAULT_RETRY_ATTEMPTS_NETWORK_ERROR_COUNT = 3;
     private static final int FULL_CONNECTION_TIMEOUT_S = 60;
     private static final int SOCKET_TIMEOUT_MS = FULL_CONNECTION_TIMEOUT_S * 1000;
-
+    @Getter
     private static final HttpTransportClient instance = new HttpTransportClient();
 
-    public static HttpTransportClient getInstance() {
-        return instance;
-    }
 
     private static HttpURLConnection getConnection(String url) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
@@ -45,8 +43,7 @@ public class HttpTransportClient implements TransportClient {
                 connection.getResponseCode();
                 return;
             } catch (IOException ex) {
-                ex.printStackTrace();
-                //NOTHING
+                VkChat.getLogger().warning(ex.getLocalizedMessage());
             }
         }
         throw new RuntimeException("Retry reached");

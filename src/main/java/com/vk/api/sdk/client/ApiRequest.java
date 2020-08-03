@@ -7,21 +7,21 @@ import com.vk.api.sdk.exceptions.ApiServerException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.exceptions.ExceptionMapper;
 import com.vk.api.sdk.objects.base.Error;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import ru.spliterash.vkchat.VkChat;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 /**
  * Created by tsivarev on 21.07.16.
  */
 public abstract class ApiRequest<T> {
 
-    private static final Logger LOG = LogManager.getLogger(ApiRequest.class);
+    private static final Logger LOG = VkChat.getLogger();
 
     private final TransportClient client;
 
@@ -81,13 +81,12 @@ public abstract class ApiRequest<T> {
             try {
                 error = gson.fromJson(errorElement, Error.class);
             } catch (JsonSyntaxException e) {
-                LOG.error("Invalid JSON: " + textResponse, e);
                 throw new ClientException("Can't parse json response");
             }
 
             ApiException exception = ExceptionMapper.parseException(error);
 
-            LOG.error("API error", exception);
+            LOG.warning("API error");
             throw exception;
         }
 
@@ -99,7 +98,7 @@ public abstract class ApiRequest<T> {
         try {
             return gson.fromJson(response, responseClass);
         } catch (JsonSyntaxException e) {
-            LOG.error("Invalid JSON: " + textResponse, e);
+            LOG.warning("Invalid JSON: " + textResponse);
             throw new ClientException("Can't parse json response");
         }
     }
@@ -109,7 +108,7 @@ public abstract class ApiRequest<T> {
         try {
             response = client.post(url, getBody());
         } catch (IOException e) {
-            LOG.error("Problems with request: " + url, e);
+            LOG.warning("Problems with request: " + url);
             throw new ClientException("I/O exception");
         }
 
@@ -136,7 +135,7 @@ public abstract class ApiRequest<T> {
         try {
             return client.post(url, getBody());
         } catch (IOException e) {
-            LOG.error("Problems with request: " + url, e);
+            LOG.warning("Problems with request: " + url);
             throw new ClientException("I/O exception");
         }
     }

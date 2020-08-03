@@ -11,8 +11,7 @@ import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.exceptions.LongPollServerKeyExpiredException;
 import com.vk.api.sdk.exceptions.LongPollServerTsException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import ru.spliterash.vkchat.VkChat;
 
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
@@ -22,11 +21,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public abstract class LongPollQueryBuilder<T, R> extends ApiRequest<R> {
 
-    private static final Logger LOG = LogManager.getLogger(LongPollQueryBuilder.class);
+    private static final Logger LOG = VkChat.getLogger();
     private static final Integer RETRY_ATTEMPTS = 3;
 
     private static final int INCORRECT_TS_VALUE_ERROR_CODE = 1;
@@ -106,7 +106,7 @@ public abstract class LongPollQueryBuilder<T, R> extends ApiRequest<R> {
         try {
             return getGson().fromJson(json, getResponseClass());
         } catch (JsonSyntaxException e) {
-            LOG.error("Invalid JSON: " + textResponse, e);
+            LOG.warning("Invalid JSON: " + textResponse);
             throw new ClientException("Can't parse json response");
         }
     }

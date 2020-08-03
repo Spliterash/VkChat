@@ -10,17 +10,17 @@ import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.exceptions.UploadException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import ru.spliterash.vkchat.VkChat;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Type;
+import java.util.logging.Logger;
 
 public abstract class UploadQueryBuilder<T, R> extends ApiRequest<R> {
 
-    private static final Logger LOG = LogManager.getLogger(UploadQueryBuilder.class);
+    private static final Logger LOG = VkChat.getLogger();
 
     private final String filename;
 
@@ -46,14 +46,14 @@ public abstract class UploadQueryBuilder<T, R> extends ApiRequest<R> {
 
         if (json.has("error")) {
             UploadException uploadException = new UploadException(0, textResponse, "");
-            LOG.error("API error", uploadException);
+            LOG.warning("API error");
             throw uploadException;
         }
 
         try {
             return getGson().fromJson(json, getResponseClass());
         } catch (JsonSyntaxException e) {
-            LOG.error("Invalid JSON: " + textResponse, e);
+            LOG.warning("Invalid JSON: " + textResponse);
             throw new ClientException("Can't parse json response");
         }
     }
@@ -69,12 +69,12 @@ public abstract class UploadQueryBuilder<T, R> extends ApiRequest<R> {
                 response = getClient().post(getUrl());
             }
         } catch (IOException e) {
-            LOG.error("Problems with request: " + getUrl(), e);
+            LOG.warning("Problems with request: " + getUrl());
             throw new ClientException("I/O exception");
         }
 
         if (response.getStatusCode() != 200) {
-            LOG.error("Invalid HTTP status " + response.getStatusCode() + " from " + getUrl());
+            LOG.warning("Invalid HTTP status " + response.getStatusCode() + " from " + getUrl());
             throw new ClientException("Internal API server error");
         }
 

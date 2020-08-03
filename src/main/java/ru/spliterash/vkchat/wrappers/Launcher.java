@@ -1,9 +1,9 @@
 package ru.spliterash.vkchat.wrappers;
 
-import ru.spliterash.vkchat.listeners.JoinLeaveListener;
-import ru.spliterash.vkchat.listeners.MessageListener;
 import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
 import ru.spliterash.vkchat.wrappers.listener.IDieListener;
+import ru.spliterash.vkchat.wrappers.listener.IJoinLeaveListener;
+import ru.spliterash.vkchat.wrappers.listener.IMessageListener;
 
 import java.io.File;
 import java.util.Collection;
@@ -55,9 +55,9 @@ public interface Launcher {
 
     boolean isPrimaryThread();
 
-    void registerListener(MessageListener listener);
+    void registerListener(IMessageListener listener);
 
-    void registerListener(JoinLeaveListener listener);
+    void registerListener(IJoinLeaveListener listener);
 
     void registerListener(IDieListener listener);
 
