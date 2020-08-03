@@ -22,7 +22,7 @@ public class DatabaseLoader {
     }
 
     private DatabaseLoader() {
-        AbstractConfig config = VkChat.getInstance().getLauncher().getVkConfig();
+        AbstractConfig config = VkChat.getInstance().getLauncher().getMainConfig();
         try {
             if (config.getBoolean("mysql_enable", false)) {
                 base = new MySQL(

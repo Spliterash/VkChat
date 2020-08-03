@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -43,7 +44,14 @@ public class HttpTransportClient implements TransportClient {
                 connection.getResponseCode();
                 return;
             } catch (IOException ex) {
-                VkChat.getLogger().warning(ex.getLocalizedMessage());
+                Logger log = VkChat.getLogger();
+                log.warning(ex.getLocalizedMessage());
+                for (Map.Entry<String, List<String>> entry : connection.getRequestProperties().entrySet()) {
+                    log.info("----------" + entry.getKey() + ": ");
+                    for (String s : entry.getValue()) {
+                        log.info(s);
+                    }
+                }
             }
         }
         throw new RuntimeException("Retry reached");
@@ -66,6 +74,7 @@ public class HttpTransportClient implements TransportClient {
         HttpURLConnection connection = getConnection(url);
         connection.setRequestMethod("GET");
         call(connection);
+
         return getResponse(connection);
     }
 

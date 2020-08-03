@@ -8,7 +8,7 @@
 -optimizationpasses 5
 -overloadaggressively
 # Для тестов
-#-dontobfuscate
+-dontobfuscate
 # Когда буду тестить, обязательно надо раскоментировать
 #-addconfigurationdebugging
 # -whyareyoukeeping class com.vk.api.sdk.exceptions.**

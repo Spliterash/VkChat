@@ -32,7 +32,7 @@ public class BungeePlugin extends Plugin implements Launcher {
         instance = this;
         saveDefaultConfig();
         vkConfig = wrapConfig(new File(getDataFolder(), "config.yml"));
-        getProxy().getPluginManager().registerListener(this,new TabCompleteListener());
+        getProxy().getPluginManager().registerListener(this, new TabCompleteListener());
         VkChat.onEnable(this);
     }
 
@@ -70,7 +70,7 @@ public class BungeePlugin extends Plugin implements Launcher {
     }
 
     @Override
-    public AbstractConfig getVkConfig() {
+    public AbstractConfig getMainConfig() {
         return vkConfig;
     }
 
@@ -90,7 +90,9 @@ public class BungeePlugin extends Plugin implements Launcher {
 
     @Override
     public void unload() {
-        //NOTHING because im dont know how to unload bungee plugin
+        getProxy().getPluginManager().unregisterListeners(this);
+        getProxy().getPluginManager().unregisterCommands(this);
+        //Just unregister all, because bungee does not have unload
     }
 
     @Override
@@ -172,6 +174,6 @@ public class BungeePlugin extends Plugin implements Launcher {
 
     @Override
     public void executeCommand(String sender, String command, Consumer<String[]> response) {
-        getProxy().getPluginManager().dispatchCommand(new BungeeCommandSender(sender,response),command);
+        getProxy().getPluginManager().dispatchCommand(new BungeeCommandSender(sender, response), command);
     }
 }

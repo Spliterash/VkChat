@@ -15,7 +15,7 @@ public interface Launcher {
 
     Logger getLogger();
 
-    AbstractConfig getVkConfig();
+    AbstractConfig getMainConfig();
 
     AbstractConfig wrapConfig(File file);
 
@@ -64,4 +64,9 @@ public interface Launcher {
     void unregisterListeners();
 
     void executeCommand(String sender, String command, Consumer<String[]> response);
+
+
+    default void dropAnvil(AbstractPlayer abstractPlayer, boolean storm) {
+        //NOTHING
+    }
 }
