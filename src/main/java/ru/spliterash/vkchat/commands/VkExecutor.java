@@ -53,7 +53,7 @@ public class VkExecutor implements AbstractCommandExecutor {
                     boolean storm = args.length == 3;
                     if (p != null) {
                         launcher.dropAnvil(p, storm);
-                        sender.sendMessage(Lang.OK.toPlainText());
+                        sender.sendMessage(Lang.OK.toComponent());
                     }
                 }
             } else {
@@ -176,9 +176,9 @@ public class VkExecutor implements AbstractCommandExecutor {
                     variants.add("link");
                 } else {
                     variants.add("unlink");
-                    variants.add("list");
                     if (sender.hasPermission("vk.setup")) {
                         variants.add("setup");
+                        variants.add("list");
                     }
                 }
             }

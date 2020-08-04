@@ -47,6 +47,16 @@ public class LinkHelper {
         }
     }
 
+    public static LinkHelper checkLink(String code, int peerId) {
+        LinkHelper setup = getSetup(code);
+        if (setup == null) {
+            VkChat.getInstance().sendMessage(peerId, Lang.WRONG_CODE.toString());
+            return null;
+        }
+        setup.destroy();
+        return setup;
+    }
+
     public PlayerModel getPlayerModel() throws SQLException {
         return DatabaseLoader.getBase().getPlayerByUUID(player.getUUID());
     }

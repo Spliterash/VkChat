@@ -285,7 +285,7 @@ public class VkChat {
                 if (sender == null)
                     return;
                 String code = text.substring(7);
-                verifyPeer(code, sender, message.getPeerId());
+                verifyPeer(code, message.getPeerId());
             } else if (text.startsWith("link ")) {
                 String code = text.substring(5);
                 linkUser(code, sender, message.getPeerId());
@@ -351,7 +351,7 @@ public class VkChat {
 
 
     private void linkUser(String code, UserFull sender, int peerId) throws SQLException {
-        LinkHelper setup = checkLink(code, peerId);
+        LinkHelper setup = LinkHelper.checkLink(code, peerId);
         if (setup == null)
             return;
         PlayerModel link = setup.getPlayerModel();
@@ -371,18 +371,8 @@ public class VkChat {
         sendMessage(peerId, Lang.USER_LINK_SUCCESS.toString());
     }
 
-    private LinkHelper checkLink(String code, int peerId) {
-        LinkHelper setup = LinkHelper.getSetup(code);
-        if (setup == null) {
-            sendMessage(peerId, Lang.WRONG_CODE.toString());
-            return null;
-        }
-        setup.destroy();
-        return setup;
-    }
-
-    private void verifyPeer(String code, UserFull sender, Integer peerId) throws SQLException, ClientException {
-        LinkHelper setup = checkLink(code, sender.getId());
+    private void verifyPeer(String code, Integer peerId) throws SQLException, ClientException {
+        LinkHelper setup = LinkHelper.checkLink(code, peerId);
         if (setup == null)
             return;
         PlayerModel link = setup.getPlayerModel();
