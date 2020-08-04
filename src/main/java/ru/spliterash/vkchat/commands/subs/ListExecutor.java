@@ -14,7 +14,7 @@ import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
 import ru.spliterash.vkchat.md_5_chat.api.chat.ClickEvent;
 import ru.spliterash.vkchat.md_5_chat.api.chat.HoverEvent;
 import ru.spliterash.vkchat.md_5_chat.api.chat.TextComponent;
-import ru.spliterash.vkchat.utils.SimpleMapBuilder;
+import ru.spliterash.vkchat.objects.SimpleMapBuilder;
 import ru.spliterash.vkchat.utils.VkUtils;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 

@@ -14,6 +14,6 @@ public class MessageListener implements IMessageListener {
             return;
         VkChat inst = VkChat.getInstance();
         if (inst.getGlobalConversation() != null && playerMessage.startsWith(VkChat.getInstance().getMessageStart()))
-            inst.getLauncher().runTaskAsync(() -> VkUtils.sendGlobal(VkUtils.prepareMessage(sender, playerMessage)));
+            VkUtils.sendGlobal(VkUtils.prepareMessage(sender, playerMessage));
     }
 }

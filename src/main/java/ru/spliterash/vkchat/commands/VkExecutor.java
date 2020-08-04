@@ -14,7 +14,7 @@ import ru.spliterash.vkchat.md_5_chat.api.chat.ClickEvent;
 import ru.spliterash.vkchat.md_5_chat.api.chat.HoverEvent;
 import ru.spliterash.vkchat.md_5_chat.api.chat.TextComponent;
 import ru.spliterash.vkchat.utils.ArrayUtils;
-import ru.spliterash.vkchat.utils.SimpleMapBuilder;
+import ru.spliterash.vkchat.objects.SimpleMapBuilder;
 import ru.spliterash.vkchat.utils.VkUtils;
 import ru.spliterash.vkchat.wrappers.AbstractCommandExecutor;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
@@ -112,15 +112,14 @@ public class VkExecutor implements AbstractCommandExecutor {
             sendPlayerConversationList(player);
             return;
         }
-        VkChat.getInstance().getLauncher().runTaskAsync(() -> {
-            String msg = String.join(" ", args);
-            VkChat.getInstance().sendMessage(selected.getId(), VkUtils.prepareMessage(player, msg));
-            player.sendMessage(
-                    ChatBuilder.replace(Lang.MESSAGE_SEND.toString(),
-                            new SimpleMapBuilder<String, BaseComponent[]>()
-                                    .add("{conversation}", new BaseComponent[]{VkUtils.getInviteLink(selected)})
-                                    .getMap()));
-        });
+        String msg = String.join(" ", args);
+        VkChat.getInstance().sendMessage(selected.getId(), VkUtils.prepareMessage(player, msg));
+        player.sendMessage(
+                ChatBuilder.replace(Lang.MESSAGE_SEND.toString(),
+                        new SimpleMapBuilder<String, BaseComponent[]>()
+                                .add("{conversation}", new BaseComponent[]{VkUtils.getInviteLink(selected)})
+                                .getMap()));
+
 
     }
 

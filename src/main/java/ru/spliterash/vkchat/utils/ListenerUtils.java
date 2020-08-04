@@ -21,18 +21,15 @@ public class ListenerUtils {
     }
 
     public void processMessage(AbstractPlayer player, String message) {
-        VkChat.getInstance().getLauncher().runTaskAsync(() -> {
-            PlayerModel pModel = DatabaseLoader.getBase().getPlayerByUUID(player.getUUID());
-            List<ConversationModel> list = null;
-            String vkName = VkUtils.getPlayerToVk(player);
-            String msg = message.replace("{player}", vkName);
-            if (pModel != null) {
-                list = VkUtils.sendPlayerPeerMessage(pModel, msg);
-            }
-            if (list == null || list.stream().noneMatch(l -> l.getId() == VkChat.getInstance().getGlobalConversation().getId()))
-                VkUtils.sendGlobal(msg);
-        });
-
+        PlayerModel pModel = DatabaseLoader.getBase().getPlayerByUUID(player.getUUID());
+        List<ConversationModel> list = null;
+        String vkName = VkUtils.getPlayerToVk(player);
+        String msg = message.replace("{player}", vkName);
+        if (pModel != null) {
+            list = VkUtils.sendPlayerPeerMessage(pModel, msg);
+        }
+        if (list == null || list.stream().noneMatch(l -> l.getId() == VkChat.getInstance().getGlobalConversation().getId()))
+            VkUtils.sendGlobal(msg);
     }
 
     public void registerListeners(AbstractConfig config) {

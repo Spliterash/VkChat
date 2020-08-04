@@ -1,4 +1,4 @@
-package ru.spliterash.vkchat.utils;
+package ru.spliterash.vkchat.objects;
 
 import com.google.gson.JsonElement;
 import com.google.gson.annotations.SerializedName;

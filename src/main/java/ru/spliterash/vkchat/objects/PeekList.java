@@ -1,4 +1,4 @@
-package ru.spliterash.vkchat.utils;
+package ru.spliterash.vkchat.objects;
 
 import lombok.Getter;
 

@@ -24,6 +24,10 @@ import ru.spliterash.vkchat.db.model.ConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
 import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
 import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
+import ru.spliterash.vkchat.objects.ConversationInfo;
+import ru.spliterash.vkchat.objects.PeekList;
+import ru.spliterash.vkchat.objects.SendingMessage;
+import ru.spliterash.vkchat.objects.SimpleMapBuilder;
 import ru.spliterash.vkchat.utils.*;
 import ru.spliterash.vkchat.vk.CallbackApiLongPoll;
 import ru.spliterash.vkchat.vk.MessageTree;
@@ -279,7 +283,7 @@ public class VkChat {
                         commandReply = Lang.CONSOLE_COMMAND.toString();
                     else
                         commandReply = ChatColor.stripColor(String.join("\n", s));
-                    launcher.runTaskAsync(() -> sendMessage(message.getPeerId(), commandReply));
+                    sendMessage(message.getPeerId(), commandReply);
                 }));
             } else if (text.startsWith("verify ")) {
                 if (sender == null)
@@ -547,6 +551,7 @@ public class VkChat {
         launcher.runTaskAsync(() -> {
             try {
                 instance = new VkChat(launcher);
+                SendingMessage.start();
                 instance.start(true);
             } catch (ClientException | IOException e) {
                 e.printStackTrace();
@@ -566,6 +571,9 @@ public class VkChat {
 
     private void disable() {
         getLauncher().unregisterListeners();
+        for (Runnable runnable : SendingMessage.shutdown()) {
+            runnable.run();
+        }
         enable = false;
     }
 
@@ -634,8 +642,15 @@ public class VkChat {
      */
     private static final Random random = new Random();
 
-    public void sendMessage(int peer, String message) {
+    public void sendMessageRightNow(int peer, String message) {
         sendMessage(getExecutor(), getActor(), peer, message);
+    }
+
+    /**
+     * Теперь можно вызывать в SYNC!!!!
+     */
+    public void sendMessage(int peer, String message) {
+        SendingMessage.send(peer, message);
     }
 
     private static void sendMessage(VkApiClient client, GroupActor actor, int peer, String message) {
