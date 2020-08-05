@@ -52,7 +52,9 @@ public enum Lang {
     ),
     USER_FORMAT("{first_name} {last_name}"),
     CONVERSATION_COMPONENT("&7[&9{conversation}&7]"),
-    VK_TO_MINECRAFT_CHAT_FORMAT("{vk}&a{user}&e: &f{text}"),
+    USER_LINK_FORMAT("&6&n{name}"),
+    VK_TO_MINECRAFT_CHAT_FORMAT("{vk}&a{user}&e: &f{text} {attachments}"),
+    ATTACHMENT_FORMAT("&b[&6{name}&b]"),
     VK_TO_MINECRAFT_INFO_FORMAT("{vk} &a{message}"),
     MINECRAFT_TO_VK_FORMAT("{user}: {message}"),
     MALE(
@@ -97,7 +99,6 @@ public enum Lang {
             "&6For this action your account need be linked, you can link use &b/vk link",
             "&6Ваш аккаунт не привязан, вы можете привязать его с помощью команды &b/vk link"
     ),
-    VK_PLACEHOLDER_FORMAT("&n&b[&6{name}&b]"),
     CREATED_CONVERSATION("VkChat {user}"),
     OK("&aOperation completed", "&aОперация выполнена"),
     WRONG_USER("&6User does not exists", "&6Пользователя не существует"),
@@ -243,7 +244,31 @@ public enum Lang {
             )),
     NEW_CONVERSATION(
             "New conversation",
-            "Новая беседа");
+            "Новая беседа"),
+    WALL_POST(
+            "Wall post",
+            "Запись на стене"),
+    AUDIO_ATTACHMENT(
+            "Audio",
+            "Аудио"),
+    PHOTO_ATTACHMENT(
+            "Photo",
+            "Картинка"),
+    UNSUPORTED_ATTACHMENT(
+            "Attachment",
+            "Приложение"),
+    STICKER_ATTACHMENT(
+            "Sticker",
+            "Стикер"),
+    VIDEO_ATTACHMENT(
+            "Video",
+            "Видео"),
+    NO_URL(
+            "&7Can't get url for this",
+            "&7Невозможно получить ссылку"),
+    AUDIO_MESSAGE(
+            "Audio message",
+            "Голосовуха");
     /**
      * Оригинальные переводы
      * 0 индекс - англиский

@@ -1,5 +1,6 @@
 package ru.spliterash.vkchat.utils;
 
+import com.vk.api.sdk.objects.photos.PhotoSizes;
 import lombok.experimental.UtilityClass;
 
 import java.lang.reflect.Array;
@@ -104,4 +105,10 @@ public class ArrayUtils {
         }
     }
 
+    public <T> T getLastElement(List<T> list) {
+        if (list.size() == 0)
+            return null;
+        else
+            return list.get(list.size() - 1);
+    }
 }

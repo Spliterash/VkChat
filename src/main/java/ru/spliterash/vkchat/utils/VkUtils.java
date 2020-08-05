@@ -5,9 +5,15 @@ import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
+import com.vk.api.sdk.objects.base.Image;
 import com.vk.api.sdk.objects.groups.GroupFull;
 import com.vk.api.sdk.objects.messages.ForeignMessage;
+import com.vk.api.sdk.objects.messages.MessageAttachment;
+import com.vk.api.sdk.objects.photos.Photo;
+import com.vk.api.sdk.objects.photos.PhotoSizes;
 import com.vk.api.sdk.objects.users.UserFull;
+import com.vk.api.sdk.objects.video.Video;
+import com.vk.api.sdk.objects.wall.WallpostFull;
 import lombok.experimental.UtilityClass;
 import ru.spliterash.vkchat.Lang;
 import ru.spliterash.vkchat.VkChat;
@@ -16,17 +22,12 @@ import ru.spliterash.vkchat.chat.MatcherWrapper;
 import ru.spliterash.vkchat.db.DatabaseLoader;
 import ru.spliterash.vkchat.db.model.ConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
-import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
-import ru.spliterash.vkchat.md_5_chat.api.chat.ClickEvent;
-import ru.spliterash.vkchat.md_5_chat.api.chat.HoverEvent;
-import ru.spliterash.vkchat.md_5_chat.api.chat.TextComponent;
+import ru.spliterash.vkchat.md_5_chat.api.chat.*;
 import ru.spliterash.vkchat.objects.SimpleMapBuilder;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 @UtilityClass
@@ -166,7 +167,7 @@ public class VkUtils {
     }
 
 
-    public BaseComponent[] buildMessage(int fromId, String text, BaseComponent[] prefixComponents) {
+    public BaseComponent[] buildMessage(int fromId, String text, List<MessageAttachment> attachments, BaseComponent[] prefixComponents) {
         String messageStructure = Lang.VK_TO_MINECRAFT_CHAT_FORMAT.toString();
         Map<String, BaseComponent[]> replaceMap = new HashMap<>();
         if (prefixComponents != null && prefixComponents.length > 0)
@@ -175,7 +176,87 @@ public class VkUtils {
             replaceMap.put("{vk}", new BaseComponent[]{new TextComponent()});
         replaceMap.put("{user}", new BaseComponent[]{getSenderComponent(fromId)});
         replaceMap.put("{text}", replaceVkPlaceholders(text));
+        replaceMap.put("{attachments}", getMessageAttachments(attachments));
         return ChatBuilder.replace(messageStructure, replaceMap);
+    }
+
+    private BaseComponent[] getMessageAttachments(List<MessageAttachment> attachmentList) {
+        if (attachmentList == null || attachmentList.size() == 0)
+            return new BaseComponent[0];
+        String format = Lang.ATTACHMENT_FORMAT.toString();
+        ComponentBuilder builder = new ComponentBuilder("");
+        for (MessageAttachment attachment : attachmentList) {
+            String componentName;
+            String componentUrl;
+            switch (attachment.getType()) {
+                case LINK:
+                    componentName = attachment.getLink().getTitle();
+                    componentUrl = attachment.getLink().getUrl().toExternalForm();
+                    break;
+                case DOC:
+                    componentName = attachment.getDoc().getTitle();
+                    componentUrl = attachment.getDoc().getUrl().toExternalForm();
+                    break;
+                case WALL:
+                    WallpostFull post = attachment.getWall();
+                    componentName = Lang.WALL_POST.toString();
+                    componentUrl = "https://vk.com/wall" + post.getFromId() + "_" + post.getId();
+                    break;
+                case AUDIO:
+                    componentName = Lang.AUDIO_ATTACHMENT.toString();
+                    componentUrl = attachment.getAudio().getUrl();
+                    break;
+                case PHOTO:
+                    componentName = Lang.PHOTO_ATTACHMENT.toString();
+                    componentUrl = Optional
+                            .ofNullable(ArrayUtils.getLastElement(attachment.getPhoto().getSizes()))
+                            .map(PhotoSizes::getUrl)
+                            .map(Object::toString)
+                            .orElse(null);
+                    break;
+                case STICKER:
+                    componentName = Lang.STICKER_ATTACHMENT.toString();
+                    componentUrl = Optional
+                            .ofNullable(ArrayUtils.getLastElement(attachment.getSticker().getImages()))
+                            .map(Image::getUrl)
+                            .map(Object::toString)
+                            .orElse(null);
+                    break;
+                case VIDEO:
+                    componentName = Lang.VIDEO_ATTACHMENT.toString();
+                    Video video = attachment.getVideo();
+                    componentUrl = "https://vk.com/video" + video.getOwnerId() + "_" + video.getId();
+                    break;
+                case AUDIO_MESSAGE:
+                    componentName = Lang.AUDIO_MESSAGE.toString();
+                    componentUrl = attachment.getAudioMessage().getLinkMp3().toExternalForm();
+                    break;
+                default:
+                    componentName = Lang.UNSUPORTED_ATTACHMENT.toString();
+                    componentUrl = null;
+            }
+            TextComponent attachmentComponent = new TextComponent(ChatBuilder.replace(
+                    format, new SimpleMapBuilder<String, BaseComponent[]>()
+                            .add("{name}", new BaseComponent[]{new TextComponent(componentName)})
+                            .getMap()
+            ));
+            if (componentUrl != null && !componentUrl.isEmpty()) {
+                attachmentComponent.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, componentUrl));
+                attachmentComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Lang.OPEN_URL_HOVER.toComponent("{url}", componentUrl)));
+            } else {
+                attachmentComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Lang.NO_URL.toComponent()));
+            }
+            builder.append(attachmentComponent, ComponentBuilder.FormatRetention.NONE);
+        }
+        return builder.create();
+    }
+
+    private String getPhotoUrl(Photo photo) {
+        PhotoSizes last = ArrayUtils.getLastElement(photo.getSizes());
+        if (last != null)
+            return last.getUrl().toExternalForm();
+        else
+            return null;
     }
 
     private final Pattern vkLinkPattern = Pattern.compile("\\[(?<vkUrl>.*?)\\|(?<name>.*?)]|(?<fullUrl>(?:(https?)://)?(?<domain>[-\\w_.]{2,}\\.[a-z]{2,4})(/\\S*)?)");
@@ -201,7 +282,7 @@ public class VkUtils {
             url = matcher.group("fullUrl");
         }
         TextComponent finalComponent = new TextComponent(ChatBuilder.replace(
-                Lang.VK_PLACEHOLDER_FORMAT.toString(),
+                Lang.USER_LINK_FORMAT.toString(),
                 new SimpleMapBuilder<String, BaseComponent[]>()
                         .add("{name}", new BaseComponent[]{new TextComponent(name)})
                         .getMap()

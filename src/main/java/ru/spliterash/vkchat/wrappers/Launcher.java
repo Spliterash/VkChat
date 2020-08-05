@@ -69,4 +69,6 @@ public interface Launcher {
     default void dropAnvil(AbstractPlayer abstractPlayer, boolean storm) {
         //NOTHING
     }
+
+    boolean isEnable();
 }

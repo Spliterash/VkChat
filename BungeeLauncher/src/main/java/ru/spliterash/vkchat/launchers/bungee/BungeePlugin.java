@@ -87,11 +87,12 @@ public class BungeePlugin extends Plugin implements Launcher {
     public void runTaskAsync(Runnable runnable) {
         getProxy().getScheduler().runAsync(this, runnable);
     }
-
+    private boolean enable = true;
     @Override
     public void unload() {
         getProxy().getPluginManager().unregisterListeners(this);
         getProxy().getPluginManager().unregisterCommands(this);
+        enable = false;
         //Just unregister all, because bungee does not have unload
     }
 
@@ -175,5 +176,10 @@ public class BungeePlugin extends Plugin implements Launcher {
     @Override
     public void executeCommand(String sender, String command, Consumer<String[]> response) {
         getProxy().getPluginManager().dispatchCommand(new BungeeCommandSender(sender, response), command);
+    }
+
+    @Override
+    public boolean isEnable() {
+        return enable;
     }
 }

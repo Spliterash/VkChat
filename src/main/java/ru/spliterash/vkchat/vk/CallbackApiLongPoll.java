@@ -12,6 +12,7 @@ import com.vk.api.sdk.objects.callback.longpoll.responses.GetLongPollEventsRespo
 import com.vk.api.sdk.objects.callback.messages.CallbackMessage;
 import com.vk.api.sdk.objects.groups.LongPollServer;
 import com.vk.api.sdk.objects.messages.Message;
+import ru.spliterash.vkchat.VkChat;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -53,9 +54,15 @@ public abstract class CallbackApiLongPoll {
             for (JsonObject json : eventsResponse.getUpdates()) {
                 String type = json.get("type").getAsString();
                 if (type.equals("message_new")) {
-                    CallbackMessage<Message> message = gson.fromJson(json, messageNew);
-                    Message msg = message.getObject();
-                    messages.add(msg);
+                    try {
+                        CallbackMessage<Message> message = gson.fromJson(json, messageNew);
+                        Message msg = message.getObject();
+                        messages.add(msg);
+                    } catch (Exception ex) {
+                        VkChat.getLogger().info("Server response: "+json.toString());
+                        ex.printStackTrace();
+                        return;
+                    }
                 }
             }
             if (messages.size() > 0)

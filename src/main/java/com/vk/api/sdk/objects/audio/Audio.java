@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import com.vk.api.sdk.objects.Validable;
 import com.vk.api.sdk.objects.annotations.Required;
+import lombok.Getter;
+
 import java.net.URL;
 import java.util.Objects;
 
@@ -35,8 +37,9 @@ public class Audio implements Validable {
     /**
      * URL of mp3 file
      */
+    @Getter
     @SerializedName("url")
-    private URL url;
+    private String url;
 
     /**
      * Duration in seconds
@@ -93,15 +96,6 @@ public class Audio implements Validable {
 
     public Audio setTitle(String title) {
         this.title = title;
-        return this;
-    }
-
-    public URL getUrl() {
-        return url;
-    }
-
-    public Audio setUrl(URL url) {
-        this.url = url;
         return this;
     }
 

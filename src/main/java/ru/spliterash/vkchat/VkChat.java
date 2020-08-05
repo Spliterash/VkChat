@@ -26,7 +26,7 @@ import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
 import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
 import ru.spliterash.vkchat.objects.ConversationInfo;
 import ru.spliterash.vkchat.objects.PeekList;
-import ru.spliterash.vkchat.objects.SendingMessage;
+import ru.spliterash.vkchat.messages.SendingMessage;
 import ru.spliterash.vkchat.objects.SimpleMapBuilder;
 import ru.spliterash.vkchat.utils.*;
 import ru.spliterash.vkchat.vk.CallbackApiLongPoll;
@@ -228,7 +228,7 @@ public class VkChat {
                 }
             }
         };
-        while (enable) {
+        while (enable && launcher.isEnable()) {
             poll.check();
         }
     }

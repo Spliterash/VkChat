@@ -3,16 +3,15 @@ package com.vk.api.sdk.callback;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import com.vk.api.sdk.objects.callback.messages.CallbackMessage;
 import com.vk.api.sdk.objects.audio.Audio;
 import com.vk.api.sdk.objects.board.TopicComment;
 import com.vk.api.sdk.objects.callback.*;
+import com.vk.api.sdk.objects.callback.messages.CallbackMessage;
 import com.vk.api.sdk.objects.messages.Message;
 import com.vk.api.sdk.objects.photos.Photo;
 import com.vk.api.sdk.objects.video.Video;
 import com.vk.api.sdk.objects.wall.WallComment;
 import com.vk.api.sdk.objects.wall.Wallpost;
-import com.vk.api.sdk.queries.oauth.OAuthQueryBuilder;
 import ru.spliterash.vkchat.VkChat;
 
 import java.lang.reflect.Type;

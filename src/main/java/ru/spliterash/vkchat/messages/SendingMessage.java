@@ -1,4 +1,4 @@
-package ru.spliterash.vkchat.objects;
+package ru.spliterash.vkchat.messages;
 
 import lombok.Synchronized;
 import ru.spliterash.vkchat.VkChat;

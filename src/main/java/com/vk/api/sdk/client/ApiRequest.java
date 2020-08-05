@@ -109,6 +109,7 @@ public abstract class ApiRequest<T> {
             response = client.post(url, getBody());
         } catch (IOException e) {
             LOG.warning("Problems with request: " + url);
+            e.printStackTrace();
             throw new ClientException("I/O exception");
         }
 

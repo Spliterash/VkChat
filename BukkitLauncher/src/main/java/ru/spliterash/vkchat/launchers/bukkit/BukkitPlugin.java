@@ -165,16 +165,19 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
         }
     }
+
     private AnvilListener anvilListener;
+
     @Override
     public void dropAnvil(AbstractPlayer abstractPlayer, boolean storm) {
-        if(anvilListener==null){
+        if (anvilListener == null) {
             anvilListener = new AnvilListener();
-            Bukkit.getPluginManager().registerEvents(anvilListener,this);
+            Bukkit.getPluginManager().registerEvents(anvilListener, this);
         }
         Player player = ((BukkitPlayer) abstractPlayer).getPlayer();
         if (storm) new BukkitRunnable() {
             int i = 0;
+
             @Override
             public void run() {
                 AnvilUtils.dropAnvil(player);
@@ -186,5 +189,10 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
         }.runTaskTimer(this, 0, 25);
         else
             AnvilUtils.dropAnvil(player);
+    }
+
+    @Override
+    public boolean isEnable() {
+        return super.isEnabled();
     }
 }
