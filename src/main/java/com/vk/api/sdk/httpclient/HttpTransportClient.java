@@ -33,7 +33,7 @@ public class HttpTransportClient implements TransportClient {
     private static final HttpTransportClient instance = new HttpTransportClient();
 
     static {
-        CookieManager.setDefault(new CookieHandler() {
+        CookieHandler empty = new CookieHandler() {
             @Override
             public Map<String, List<String>> get(URI uri, Map<String, List<String>> requestHeaders) {
                 return Collections.emptyMap();
@@ -41,7 +41,20 @@ public class HttpTransportClient implements TransportClient {
 
             @Override
             public void put(URI uri, Map<String, List<String>> responseHeaders) {
-                    //NOTHING
+                //NOTHING
+            }
+        };
+        CookieManager.setDefault(empty);
+        CookieHandler.setDefault(empty);
+        ResponseCache.setDefault(new ResponseCache() {
+            @Override
+            public CacheResponse get(URI uri, String rqstMethod, Map<String, List<String>> rqstHeaders) {
+                return null;
+            }
+
+            @Override
+            public CacheRequest put(URI uri, URLConnection conn) {
+                return null;
             }
         });
     }
@@ -121,7 +134,6 @@ public class HttpTransportClient implements TransportClient {
         MessageHeader request = getRequest(delegate);
         Logger log = VkChat.getLogger();
         log.info("-------" + "Request to url: " + url + "-------");
-        log.info("[CONTENT]: " + body);
         for (Map.Entry<String, List<String>> entry : request.getHeaders().entrySet()) {
             String logStr = entry.getKey() + ": ";
             List<String> list = entry.getValue();
