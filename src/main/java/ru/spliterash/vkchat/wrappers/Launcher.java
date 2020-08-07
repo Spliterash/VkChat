@@ -65,10 +65,5 @@ public interface Launcher {
 
     void executeCommand(String sender, String command, Consumer<String[]> response);
 
-
-    default void dropAnvil(AbstractPlayer abstractPlayer, boolean storm) {
-        //NOTHING
-    }
-
     boolean isEnable();
 }

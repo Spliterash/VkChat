@@ -5,19 +5,14 @@ import com.vk.api.sdk.client.TransportClient;
 import lombok.Getter;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.utils.StringUtils;
-import sun.net.www.MessageHeader;
-import sun.net.www.protocol.https.DelegateHttpsURLConnection;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
-import java.net.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class HttpTransportClient implements TransportClient {
@@ -31,33 +26,6 @@ public class HttpTransportClient implements TransportClient {
     private static final int SOCKET_TIMEOUT_MS = FULL_CONNECTION_TIMEOUT_S * 1000;
     @Getter
     private static final HttpTransportClient instance = new HttpTransportClient();
-
-    static {
-        CookieHandler empty = new CookieHandler() {
-            @Override
-            public Map<String, List<String>> get(URI uri, Map<String, List<String>> requestHeaders) {
-                return Collections.emptyMap();
-            }
-
-            @Override
-            public void put(URI uri, Map<String, List<String>> responseHeaders) {
-                //NOTHING
-            }
-        };
-        CookieManager.setDefault(empty);
-        CookieHandler.setDefault(empty);
-        ResponseCache.setDefault(new ResponseCache() {
-            @Override
-            public CacheResponse get(URI uri, String rqstMethod, Map<String, List<String>> rqstHeaders) {
-                return null;
-            }
-
-            @Override
-            public CacheRequest put(URI uri, URLConnection conn) {
-                return null;
-            }
-        });
-    }
 
     private static HttpURLConnection getConnection(String url) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
@@ -102,26 +70,6 @@ public class HttpTransportClient implements TransportClient {
         return getResponse(connection);
     }
 
-    private DelegateHttpsURLConnection getDelegate(HttpURLConnection connection) {
-        try {
-            Field f = connection.getClass().getDeclaredField("delegate");
-            f.setAccessible(true);
-            return (DelegateHttpsURLConnection) f.get(connection);
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public MessageHeader getRequest(DelegateHttpsURLConnection delegate) {
-        try {
-            Field field = sun.net.www.protocol.http.HttpURLConnection.class.getDeclaredField("requests");
-            field.setAccessible(true);
-            return (MessageHeader) field.get(delegate);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Override
     public ClientResponse post(String url, String body) throws IOException {
         HttpURLConnection connection = getConnection(url);
@@ -130,23 +78,6 @@ public class HttpTransportClient implements TransportClient {
         OutputStream stream = connection.getOutputStream();
         stream.write(body.getBytes(StandardCharsets.UTF_8));
         call(connection);
-        DelegateHttpsURLConnection delegate = getDelegate(connection);
-        MessageHeader request = getRequest(delegate);
-        Logger log = VkChat.getLogger();
-        log.info("-------" + "Request to url: " + url + "-------");
-        for (Map.Entry<String, List<String>> entry : request.getHeaders().entrySet()) {
-            String logStr = entry.getKey() + ": ";
-            List<String> list = entry.getValue();
-            if (list.size() == 1)
-                log.info(logStr + list.get(0));
-            else {
-                log.info(": {");
-                for (String s : list) {
-                    log.info("    " + s);
-                }
-                log.info("}");
-            }
-        }
         return getResponse(connection);
     }
 

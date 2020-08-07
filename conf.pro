@@ -19,10 +19,8 @@
 
 # Мои лаунчеры
 -keep class * extends ru.spliterash.vkchat.wrappers.Launcher
-# Сохраняем все мои методы, но разрешаем запутывание
--keepclassmembers,allowobfuscation class ru.spliterash.** {
-   <methods>;
-}
+# Сохраняем всё моё, разрешая запутывание
+-keepclassmembers,allowobfuscation class ru.spliterash.** { *; }
 
 
 -keep class sun.misc.Unsafe { *; }

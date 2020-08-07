@@ -8,11 +8,8 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import ru.spliterash.vkchat.VkChat;
-import ru.spliterash.vkchat.launchers.bukkit.anvil.AnvilListener;
-import ru.spliterash.vkchat.launchers.bukkit.anvil.AnvilUtils;
 import ru.spliterash.vkchat.launchers.bukkit.listeners.BukkitDieListener;
 import ru.spliterash.vkchat.launchers.bukkit.listeners.BukkitJoinLeaveListener;
 import ru.spliterash.vkchat.launchers.bukkit.listeners.BukkitMessageListener;
@@ -164,31 +161,6 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
             response.accept(null);
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
         }
-    }
-
-    private AnvilListener anvilListener;
-
-    @Override
-    public void dropAnvil(AbstractPlayer abstractPlayer, boolean storm) {
-        if (anvilListener == null) {
-            anvilListener = new AnvilListener();
-            Bukkit.getPluginManager().registerEvents(anvilListener, this);
-        }
-        Player player = ((BukkitPlayer) abstractPlayer).getPlayer();
-        if (storm) new BukkitRunnable() {
-            int i = 0;
-
-            @Override
-            public void run() {
-                AnvilUtils.dropAnvil(player);
-                if (player.isDead())
-                    cancel();
-                if (i++ > 15)
-                    cancel();
-            }
-        }.runTaskTimer(this, 0, 25);
-        else
-            AnvilUtils.dropAnvil(player);
     }
 
     @Override

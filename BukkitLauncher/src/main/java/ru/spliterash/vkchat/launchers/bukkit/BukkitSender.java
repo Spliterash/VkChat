@@ -26,15 +26,12 @@ public class BukkitSender implements AbstractSender {
         return sender.hasPermission(pex);
     }
 
-    /**
-     * Да кривовато, а как по другому ?
-     */
     @Override
-    public void sendMessage(BaseComponent... json) {
-        String raw = ComponentSerializer.toString(json);
-        net.md_5.bungee.api.chat.BaseComponent[] bukkitComponents = net.md_5.bungee.chat.ComponentSerializer.parse(raw);
+    public void sendJsonMessage(String json) {
+        net.md_5.bungee.api.chat.BaseComponent[] bukkitComponents = net.md_5.bungee.chat.ComponentSerializer.parse(json);
         sender.spigot().sendMessage(bukkitComponents);
     }
+
 
     @Override
     public boolean equals(Object o) {

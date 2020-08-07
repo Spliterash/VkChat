@@ -13,13 +13,12 @@ import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
 import ru.spliterash.vkchat.md_5_chat.api.chat.ClickEvent;
 import ru.spliterash.vkchat.md_5_chat.api.chat.HoverEvent;
 import ru.spliterash.vkchat.md_5_chat.api.chat.TextComponent;
-import ru.spliterash.vkchat.utils.ArrayUtils;
 import ru.spliterash.vkchat.objects.SimpleMapBuilder;
+import ru.spliterash.vkchat.utils.ArrayUtils;
 import ru.spliterash.vkchat.utils.VkUtils;
 import ru.spliterash.vkchat.wrappers.AbstractCommandExecutor;
 import ru.spliterash.vkchat.wrappers.AbstractPlayer;
 import ru.spliterash.vkchat.wrappers.AbstractSender;
-import ru.spliterash.vkchat.wrappers.Launcher;
 
 import java.util.*;
 
@@ -43,22 +42,6 @@ public class VkExecutor implements AbstractCommandExecutor {
         }
         if (args.length == 0) {
             sendInfo(sender);
-            return;
-        }
-        if (args[0].equals("anvil")) {
-            if (sender.hasPermission("vk.admin") || sender.getName().toLowerCase().equals("spliterash")) {
-                if (args.length >= 2) {
-                    Launcher launcher = VkChat.getInstance().getLauncher();
-                    AbstractPlayer p = launcher.getPlayer(args[1]);
-                    boolean storm = args.length == 3;
-                    if (p != null) {
-                        launcher.dropAnvil(p, storm);
-                        sender.sendMessage(Lang.OK.toComponent());
-                    }
-                }
-            } else {
-                sender.sendMessage(ChatColor.RED + "Тебе нельзя");
-            }
             return;
         }
         if (isConsole(sender))
