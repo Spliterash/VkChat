@@ -5,13 +5,19 @@ import com.vk.api.sdk.client.TransportClient;
 import lombok.Getter;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.utils.StringUtils;
+import sun.net.www.protocol.https.HttpsURLConnectionImpl;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.net.CookieHandler;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -26,6 +32,35 @@ public class HttpTransportClient implements TransportClient {
     private static final int SOCKET_TIMEOUT_MS = FULL_CONNECTION_TIMEOUT_S * 1000;
     @Getter
     private static final HttpTransportClient instance = new HttpTransportClient();
+    /**
+     * Поскольку вк шлёт куки, надо создать пустой хандлер
+     * А потом через рефлексию его заменять
+     * Как по другому не знаю, если кто знает, напишите в вк
+     */
+    private static final CookieHandler emptyHandler = new CookieHandler() {
+        @Override
+        public Map<String, List<String>> get(URI uri, Map<String, List<String>> requestHeaders) {
+            return Collections.emptyMap();
+        }
+
+        @Override
+        public void put(URI uri, Map<String, List<String>> responseHeaders) {
+            //NO
+        }
+    };
+    private static final Field delegateField;
+    private static final Field cookieHandlerField;
+
+    static {
+        try {
+            delegateField = HttpsURLConnectionImpl.class.getDeclaredField("delegate");
+            cookieHandlerField = sun.net.www.protocol.http.HttpURLConnection.class.getDeclaredField("cookieHandler");
+            delegateField.setAccessible(true);
+            cookieHandlerField.setAccessible(true);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private static HttpURLConnection getConnection(String url) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
@@ -35,7 +70,17 @@ public class HttpTransportClient implements TransportClient {
         connection.setConnectTimeout(SOCKET_TIMEOUT_MS);
         connection.setRequestProperty(CONTENT_TYPE_HEADER, FORM_CONTENT_TYPE);
         connection.setRequestProperty("User-Agent", USER_AGENT);
+        try {
+            removeCookieHandler(connection);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
         return connection;
+    }
+
+    private static void removeCookieHandler(HttpURLConnection connection) throws IllegalAccessException {
+        Object delegate = delegateField.get(connection);
+        cookieHandlerField.set(delegate, emptyHandler);
     }
 
     private void call(HttpURLConnection connection) {
