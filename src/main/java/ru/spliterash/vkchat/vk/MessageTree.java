@@ -2,10 +2,8 @@ package ru.spliterash.vkchat.vk;
 
 import com.vk.api.sdk.objects.messages.ForeignMessage;
 import com.vk.api.sdk.objects.messages.Message;
-import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
 import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
-import ru.spliterash.vkchat.md_5_chat.api.chat.ComponentBuilder;
 import ru.spliterash.vkchat.md_5_chat.api.chat.TextComponent;
 import ru.spliterash.vkchat.utils.ArrayUtils;
 import ru.spliterash.vkchat.utils.VkUtils;
@@ -19,7 +17,7 @@ public class MessageTree {
 
     public MessageTree(Message message, BaseComponent... prefix) {
         print = new ArrayList<>(message.getFwdMessages().size() + 1);
-        print.add(VkUtils.buildMessage(message.getFromId(), message.getText(),message.getAttachments() ,prefix));
+        print.add(VkUtils.buildMessage(message.getFromId(), message.getText(), message.getAttachments(), prefix));
         if (message.getFwdMessages().size() > 0)
             walk(message.getFwdMessages(), "");
         else if (message.getReplyMessage() != null) {
@@ -27,15 +25,8 @@ public class MessageTree {
         }
     }
 
-    public BaseComponent[] getAll() {
-        ComponentBuilder builder = new ComponentBuilder("");
-        for (int i = 0; i < print.size(); i++) {
-            BaseComponent[] component = print.get(i);
-            if (i > 0 && i <= print.size() - 1)
-                builder.append("\n", ComponentBuilder.FormatRetention.NONE);
-            builder.append(component, ComponentBuilder.FormatRetention.NONE);
-        }
-        return builder.create();
+    public List<BaseComponent[]> getAll() {
+        return print;
     }
 
     private void walk(List<ForeignMessage> messageList, String prefix) {

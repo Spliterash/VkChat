@@ -149,10 +149,6 @@ public enum Lang {
     PLAYER_EXIT(
             "&#10134;Player {player} exit",
             "&#10134;Игрок {player} вышел с сервера"),
-    NOT_LINK_CONVERSATION(
-            "This conversation does not link, please remove bot",
-            "Эта беседа не связана с сервером, пожалуйста, выгоните меня, чтобы не нагружать базу"
-    ),
     CONSOLE_COMMAND(
             "This command can be input only from console, so none output",
             "Данная команда может быть выполнена только в консоли, поэтому невозможно прислать результат сюда"

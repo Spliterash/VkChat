@@ -28,7 +28,14 @@ public class ListenerUtils {
         if (pModel != null) {
             list = VkUtils.sendPlayerPeerMessage(pModel, msg);
         }
-        if (list == null || list.stream().noneMatch(l -> l.getId() == VkChat.getInstance().getGlobalConversation().getId()))
+
+        if (VkChat.getInstance().getGlobalConversation() != null && (list == null || list
+                .stream()
+                .noneMatch(l -> l.getId() == VkChat
+                        .getInstance()
+                        .getGlobalConversation()
+                        .getId())
+        ))
             VkUtils.sendGlobal(msg);
     }
 

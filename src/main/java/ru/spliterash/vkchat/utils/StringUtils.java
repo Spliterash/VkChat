@@ -3,8 +3,6 @@ package ru.spliterash.vkchat.utils;
 import lombok.experimental.UtilityClass;
 import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
 import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
-import ru.spliterash.vkchat.md_5_chat.api.chat.ComponentBuilder;
-import ru.spliterash.vkchat.md_5_chat.api.chat.TextComponent;
 import ru.spliterash.vkchat.md_5_chat.chat.ComponentSerializer;
 
 import java.io.IOException;
@@ -12,7 +10,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;

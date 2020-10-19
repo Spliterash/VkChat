@@ -4,6 +4,8 @@ import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
 import ru.spliterash.vkchat.md_5_chat.api.chat.TextComponent;
 import ru.spliterash.vkchat.md_5_chat.chat.ComponentSerializer;
 
+import java.util.List;
+
 public interface AbstractSender {
     String getName();
 
@@ -18,5 +20,9 @@ public interface AbstractSender {
 
     default void sendMessage(String string) {
         sendMessage(TextComponent.fromLegacyText(string));
+    }
+
+    default void sendMessage(List<BaseComponent[]> messages) {
+        messages.forEach(this::sendMessage);
     }
 }

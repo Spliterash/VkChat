@@ -27,7 +27,7 @@ public class VkExecutor implements AbstractCommandExecutor {
 
     public VkExecutor() {
         executors.put("list", new ListExecutor(this));
-        executors.put("createNewConversation", new CreateNewConversationExecutor(this));
+        executors.put("createNewConversation".toLowerCase(), new CreateNewConversationExecutor(this));
         executors.put("select", new SelectExecutor(this));
         executors.put("link", new LinkExecutor(this));
         executors.put("unlink", new UnLinkExecutor(this));
@@ -118,14 +118,8 @@ public class VkExecutor implements AbstractCommandExecutor {
     private SubExecutor getExecutor(String[] args) {
         if (args.length == 0)
             return null;
-        return this
-                .executors
-                .entrySet()
-                .stream()
-                .filter(e -> e.getKey().toLowerCase().equals(args[0].toLowerCase()))
-                .map(Map.Entry::getValue)
-                .findFirst()
-                .orElse(null);
+        return this.executors.get(args[0].toLowerCase());
+
     }
 
     private boolean isConsole(AbstractSender sender) {

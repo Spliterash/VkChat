@@ -24,11 +24,13 @@ import ru.spliterash.vkchat.db.model.ConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
 import ru.spliterash.vkchat.md_5_chat.api.ChatColor;
 import ru.spliterash.vkchat.md_5_chat.api.chat.BaseComponent;
+import ru.spliterash.vkchat.messages.SendingMessage;
 import ru.spliterash.vkchat.objects.ConversationInfo;
 import ru.spliterash.vkchat.objects.PeekList;
-import ru.spliterash.vkchat.messages.SendingMessage;
 import ru.spliterash.vkchat.objects.SimpleMapBuilder;
-import ru.spliterash.vkchat.utils.*;
+import ru.spliterash.vkchat.utils.ArrayUtils;
+import ru.spliterash.vkchat.utils.ListenerUtils;
+import ru.spliterash.vkchat.utils.VkUtils;
 import ru.spliterash.vkchat.vk.CallbackApiLongPoll;
 import ru.spliterash.vkchat.vk.MessageTree;
 import ru.spliterash.vkchat.wrappers.AbstractConfig;
@@ -48,23 +50,38 @@ import java.util.stream.Collectors;
 
 @Getter
 public class VkChat {
+    /**
+     * Не вызывайте в основном потоке, а то зависнет
+     */
+    private static final Random random = new Random();
     @Getter
     private static VkChat instance;
     private final Launcher launcher;
     private final VkApiClient executor;
     @Getter(AccessLevel.NONE)
+    private final Map<Integer, UserFull> savedUsers = new HashMap<>();
+    private final Map<Integer, GroupFull> savedGroups = new HashMap<>();
+    @Getter(AccessLevel.NONE)
     private PeekList<GroupActor> actors;
     private String commandPrefix;
     private boolean enable = true;
-    @Getter(AccessLevel.NONE)
-    private final Map<Integer, UserFull> savedUsers = new HashMap<>();
-    private final Map<Integer, GroupFull> savedGroups = new HashMap<>();
     private ConversationModel globalConversation;
     private AbstractConfig editableConfig;
     private boolean vkLinks;
     private boolean serverEnableDisable;
     private String messageStart;
     private List<String> admins;
+
+    /**
+     * Создаёт новый инстанц плагина
+     *
+     * @param launcher Лаунчер, который запускает собсна, может быть спигот, банжа или Sponge
+     *                 Можете вообще свой написать, если есть на что
+     */
+    private VkChat(@NotNull Launcher launcher) {
+        this.launcher = launcher;
+        this.executor = new VkApiClient(HttpTransportClient.getInstance());
+    }
 
     public static VkApiClient getExecutor() {
         return getInstance().executor;
@@ -78,6 +95,47 @@ public class VkChat {
         }
     }
 
+    private static String detectLang() {
+        Locale locale = Locale.getDefault();
+        return locale.getLanguage();
+    }
+
+    public static void onEnable(Launcher launcher) {
+        launcher.runTaskAsync(() -> {
+            try {
+                instance = new VkChat(launcher);
+                SendingMessage.start();
+                instance.start(true);
+            } catch (ClientException | IOException e) {
+                e.printStackTrace();
+                launcher.unload();
+            }
+        });
+    }
+
+    public static void onDisable(boolean serverDisable) {
+        if (instance != null) {
+            if (serverDisable)
+                VkChat.getInstance().sendServerShutdown();
+            instance.disable();
+            instance = null;
+        }
+    }
+
+    private static void sendMessage(VkApiClient client, GroupActor actor, int peer, String message) {
+        try {
+            client
+                    .messages()
+                    .send(actor)
+                    .peerId(peer)
+                    .randomId(random.nextInt())
+                    .disableMentions(true)
+                    .message(message)
+                    .execute();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public void sendServerStart() {
         if (globalConversation != null)
@@ -87,17 +145,6 @@ public class VkChat {
     public void sendServerShutdown() {
         if (globalConversation != null)
             new Thread(() -> sendMessage(executor, getActor(), globalConversation.getId(), Lang.SERVER_SHUTDOWN.toString())).start();
-    }
-
-    /**
-     * Создаёт новый инстанц плагина
-     *
-     * @param launcher Лаунчер, который запускает собсна, может быть спигот, банжа или Sponge
-     *                 Можете вообще свой написать, если есть на что
-     */
-    private VkChat(@NotNull Launcher launcher) {
-        this.launcher = launcher;
-        this.executor = new VkApiClient(HttpTransportClient.getInstance());
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -171,11 +218,6 @@ public class VkChat {
             e.printStackTrace();
             launcher.unload();
         }
-    }
-
-    private static String detectLang() {
-        Locale locale = Locale.getDefault();
-        return locale.getLanguage();
     }
 
     public void setGlobalConversation(Integer id) {
@@ -265,7 +307,7 @@ public class VkChat {
                 MessageAction action = message.getAction();
                 processAction(message, action);
             } else if (text == null) {
-                //FIXME Если будет зависать, надо будет обернуть в асинхрон
+                //Если будет зависать, надо обернуть в асинхрон
                 // launcher.runTaskAsync(()->{})
                 if (VkUtils.isConversation(message.getPeerId()))
                     sendUserTextMessage(message);
@@ -304,7 +346,6 @@ public class VkChat {
         }
     }
 
-
     private void processAction(Message message, MessageAction action) throws ClientException {
         switch (action.getType()) {
             case CHAT_INVITE_USER:
@@ -321,6 +362,7 @@ public class VkChat {
                 break;
             case CHAT_INVITE_USER_BY_LINK:
                 //Как только, так сразу
+                //Вк апи не даёт выдавать админку
                 //VkUtils. checkOwner(message.getPeerId(),message.getFromId());
                 sendActionMessage(
                         message.getPeerId(),
@@ -349,10 +391,9 @@ public class VkChat {
             Map<String, BaseComponent[]> formatMap = new HashMap<>();
             formatMap.put("{vk}", vk);
             formatMap.put("{message}", message);
-            return ChatBuilder.replace(format, formatMap);
+            return Collections.singletonList(ChatBuilder.replace(format, formatMap));
         });
     }
-
 
     private void linkUser(String code, UserFull sender, int peerId) throws SQLException {
         LinkHelper setup = LinkHelper.checkLink(code, peerId);
@@ -413,7 +454,7 @@ public class VkChat {
 
     }
 
-    public void sendMessageToPlayers(int peerId, Function<ConversationModel, BaseComponent[]> getter) throws ClientException {
+    public void sendMessageToPlayers(int peerId, Function<ConversationModel, List<BaseComponent[]>> getter) throws ClientException {
         if (globalConversation != null && globalConversation.getId() == peerId) {
             for (AbstractPlayer player : launcher.getOnlinePlayers()) {
                 if (player.hasPermission("vk.use")) {
@@ -424,7 +465,7 @@ public class VkChat {
             ConversationModel conversation = refreshConversationUsers(peerId);
             if (conversation != null) {
                 List<PlayerModel> list = DatabaseLoader.getBase().getConversationMembers(peerId);
-                BaseComponent[] msg = getter.apply(conversation);
+                List<BaseComponent[]> msg = getter.apply(conversation);
                 for (PlayerModel model : list) {
                     AbstractPlayer player = model.getOnlinePlayer();
                     if (player != null && player.hasPermission("vk.use"))
@@ -443,13 +484,11 @@ public class VkChat {
 
     }
 
-
     public ConversationModel refreshConversationUsers(int conversationId) throws ClientException {
         AbstractBase base = DatabaseLoader.getBase();
         ConversationModel currentConversation = base.getConversationById(conversationId);
 
         if (currentConversation == null) {
-            sendMessage(conversationId, Lang.NOT_LINK_CONVERSATION.toString());
             return null;
         }
         //Участники которые находятся в беседе в нашей БД
@@ -546,29 +585,6 @@ public class VkChat {
         }
     }
 
-
-    public static void onEnable(Launcher launcher) {
-        launcher.runTaskAsync(() -> {
-            try {
-                instance = new VkChat(launcher);
-                SendingMessage.start();
-                instance.start(true);
-            } catch (ClientException | IOException e) {
-                e.printStackTrace();
-                launcher.unload();
-            }
-        });
-    }
-
-    public static void onDisable(boolean serverDisable) {
-        if (instance != null) {
-            if (serverDisable)
-                VkChat.getInstance().sendServerShutdown();
-            instance.disable();
-            instance = null;
-        }
-    }
-
     private void disable() {
         getLauncher().unregisterListeners();
         for (Runnable runnable : SendingMessage.shutdown()) {
@@ -636,12 +652,6 @@ public class VkChat {
         }
     }
 
-
-    /**
-     * Не вызывайте в основном потоке, а то зависнет
-     */
-    private static final Random random = new Random();
-
     public void sendMessageRightNow(int peer, String message) {
         sendMessage(getExecutor(), getActor(), peer, message);
     }
@@ -651,21 +661,6 @@ public class VkChat {
      */
     public void sendMessage(int peer, String message) {
         SendingMessage.send(peer, message);
-    }
-
-    private static void sendMessage(VkApiClient client, GroupActor actor, int peer, String message) {
-        try {
-            client
-                    .messages()
-                    .send(actor)
-                    .peerId(peer)
-                    .randomId(random.nextInt())
-                    .disableMentions(true)
-                    .message(message)
-                    .execute();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public GroupFull getCachedGroupById(Integer group) {
