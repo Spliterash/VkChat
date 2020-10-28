@@ -1,7 +1,6 @@
 package ru.spliterash.vkchat.db;
 
 import org.intellij.lang.annotations.Language;
-import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.db.model.ConversationModel;
 import ru.spliterash.vkchat.db.model.PlayerModel;
 import ru.spliterash.vkchat.db.model.ResultSetRow;
@@ -10,8 +9,8 @@ import ru.spliterash.vkchat.utils.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.*;
 import java.sql.Date;
+import java.sql.*;
 import java.util.*;
 
 public abstract class AbstractBase {
@@ -19,6 +18,23 @@ public abstract class AbstractBase {
 
     protected AbstractBase(String name) {
         this.name = name;
+    }
+
+    public static <T> void setValue(PreparedStatement statement, int i, T obj) throws SQLException {
+        int index = i + 1;
+        if (obj instanceof String)
+            statement.setString(index, (String) obj);
+        else if (obj instanceof Double)
+            statement.setDouble(index, (double) obj);
+        else if (obj instanceof Integer)
+            statement.setInt(index, (Integer) obj);
+        else if (obj instanceof Date)
+            statement.setDate(index, (Date) obj);
+        else if (obj instanceof Long)
+            statement.setLong(index, (Long) obj);
+        else
+            statement.setObject(index, obj);
+
     }
 
     public List<String> getColumns(ResultSet set) throws SQLException {
@@ -47,7 +63,8 @@ public abstract class AbstractBase {
         try (Connection connection = getConnection()) {
             Statement statement = connection.createStatement();
             for (String s : getCreationScript().split(";")) {
-                statement.executeUpdate(s);
+                if (StringUtils.isNotEmpty(s))
+                    statement.executeUpdate(s);
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -64,23 +81,6 @@ public abstract class AbstractBase {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public static <T> void setValue(PreparedStatement statement, int i, T obj) throws SQLException {
-        int index = i + 1;
-        if (obj instanceof String)
-            statement.setString(index, (String) obj);
-        else if (obj instanceof Double)
-            statement.setDouble(index, (double) obj);
-        else if (obj instanceof Integer)
-            statement.setInt(index, (Integer) obj);
-        else if (obj instanceof Date)
-            statement.setDate(index, (Date) obj);
-        else if (obj instanceof Long)
-            statement.setLong(index, (Long) obj);
-        else
-            statement.setObject(index, obj);
-
     }
 
     protected abstract Connection getConnection() throws SQLException;
@@ -220,7 +220,7 @@ public abstract class AbstractBase {
 
     public void updateOrSaveMePls(PlayerModel model) {
         NamedParamStatement statement = new NamedParamStatement(getPlayerModelUpdateCreateQuery());
-        statement.setValue("uuid", model.getUUID());
+        statement.setValue("uuid", model.getUUID().toString());
         statement.setValue("vk", model.getVk());
         statement.setValue("nickname", model.getNickname());
         statement.setValue("selected_conversation", model.getSelectedConversation());
@@ -233,7 +233,7 @@ public abstract class AbstractBase {
         NamedParamStatement statement = new NamedParamStatement(getConversationModelUpdateCreateQuery());
         statement.setValue("id", model.getId());
         statement.setValue("link", model.getInviteLink());
-        statement.setValue("owner", model.getOwner());
+        statement.setValue("owner", model.getOwner().toString());
         statement.setValue("title", model.getTitle());
         update(statement);
     }
@@ -276,7 +276,7 @@ public abstract class AbstractBase {
 
     public void addMember(PlayerModel player, ConversationModel conversation) {
         try {
-            update("INSERT INTO conversation_members (player, conversation) values (?,?)", player.getUUID(), conversation.getId());
+            update("INSERT INTO conversation_members (player, conversation) values (?,?)", player.getUUID().toString(), conversation.getId());
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -284,7 +284,7 @@ public abstract class AbstractBase {
 
     public void removeMember(PlayerModel player, ConversationModel conversation) {
         try {
-            update("DELETE FROM conversation_members WHERE player = ? AND  conversation = ?", player.getUUID(), conversation.getId());
+            update("DELETE FROM conversation_members WHERE player = ? AND  conversation = ?", player.getUUID().toString(), conversation.getId());
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }

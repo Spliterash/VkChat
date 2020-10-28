@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 
 @UtilityClass
 public class StringUtils {
+    private final String AB = "0123456789";
+
     public List<String> t(List<String> list) {
         return list
                 .stream()
@@ -26,9 +28,6 @@ public class StringUtils {
     public String t(String str) {
         return ChatColor.translateAlternateColorCodes('&', str);
     }
-
-    private final String AB = "0123456789";
-
 
     public String generateRandomDigitString(int length) {
         Random rnd = new Random();
@@ -58,8 +57,12 @@ public class StringUtils {
 
     }
 
+    public boolean isBlankString(String string) {
+        return string == null || string.trim().isEmpty();
+    }
+
     public boolean isNotEmpty(String value) {
-        return value != null && value.isEmpty();
+        return !isBlankString(value);
     }
 
     public String getString(InputStream stream) throws IOException {
