@@ -257,6 +257,7 @@ public class VkChat {
                 .groups()
                 .setLongPollSettings(actor, actor.getGroupId())
                 .apiVersion(executor.getVersion())
+                .enabled(true)
                 .messageNew(true)
                 .execute();
         CallbackApiLongPoll poll = new CallbackApiLongPoll(executor, actor, 25) {
