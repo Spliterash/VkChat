@@ -372,7 +372,7 @@ public class VkUtils {
     public void sendGlobal(String text) {
         ConversationModel peer = VkChat.getInstance().getGlobalConversation();
         if (peer != null)
-            VkChat.getInstance().sendMessage(peer.getId(), text);
+            VkChat.getInstance().sendMessage(peer.getId(), ChatColor.stripColor(text));
     }
     //TODO Как в апи добавят метод для выдачи админки
    /* public void checkOwner(Integer peerId, Integer fromId) {
