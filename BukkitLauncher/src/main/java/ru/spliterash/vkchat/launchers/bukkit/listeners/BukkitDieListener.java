@@ -19,6 +19,6 @@ public class BukkitDieListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onMessage(PlayerDeathEvent e) {
-        listener.onDie((AbstractPlayer) BukkitPlugin.wrapSender(e.getEntity()), ChatColor.stripColor(e.getDeathMessage()));
+        listener.onDie((AbstractPlayer) BukkitPlugin.wrapSender(e.getEntity()), e.getDeathMessage());
     }
 }

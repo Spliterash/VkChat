@@ -123,17 +123,20 @@ public class VkChat {
     }
 
     private static void sendMessage(VkApiClient client, GroupActor actor, int peer, String message) {
-        try {
-            client
-                    .messages()
-                    .send(actor)
-                    .peerId(peer)
-                    .randomId(random.nextInt())
-                    .disableMentions(true)
-                    .message(message)
-                    .execute();
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (message != null) {
+            message = ChatColor.stripColor(message);
+            try {
+                client
+                        .messages()
+                        .send(actor)
+                        .peerId(peer)
+                        .randomId(random.nextInt())
+                        .disableMentions(true)
+                        .message(message)
+                        .execute();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -330,7 +333,7 @@ public class VkChat {
                     if (s == null || s.length == 0)
                         commandReply = Lang.CONSOLE_COMMAND.toString();
                     else
-                        commandReply = ChatColor.stripColor(String.join("\n", s));
+                        commandReply = String.join("\n", s);
                     sendMessage(message.getPeerId(), commandReply);
                 }));
             } else if (text.startsWith("verify ")) {
