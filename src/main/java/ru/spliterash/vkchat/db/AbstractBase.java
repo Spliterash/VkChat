@@ -25,7 +25,7 @@ public abstract class AbstractBase {
         if (obj instanceof String)
             statement.setString(index, (String) obj);
         else if (obj instanceof Double)
-            statement.setDouble(index, (double) obj);
+            statement.setDouble(index, (Double) obj);
         else if (obj instanceof Integer)
             statement.setInt(index, (Integer) obj);
         else if (obj instanceof Date)

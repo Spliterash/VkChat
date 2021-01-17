@@ -244,7 +244,12 @@ public class VkChat {
     public boolean isAdmin(UserFull id) {
         return getAdmins()
                 .stream()
-                .anyMatch(s -> id.getId().toString().equals(s) || id.getDomain().equals(s));
+                .anyMatch(s ->
+                        id.getId()
+                                .toString()
+                                .equals(s) ||
+                        id.getDomain()
+                                .equals(s));
     }
 
     private List<String> getAdmins() {
