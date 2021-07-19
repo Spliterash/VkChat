@@ -55,7 +55,7 @@ public class VkUtils {
         if (result.get("type").getAsString().equals("group")) {
             return result.get("id").getAsInt();
         } else
-            throw new RuntimeException("Token is not group token\n" + result.toString());
+            throw new RuntimeException("Token is not group token\n" + result);
     }
 
     /**
@@ -188,53 +188,57 @@ public class VkUtils {
         for (MessageAttachment attachment : attachmentList) {
             String componentName;
             String componentUrl;
-            switch (attachment.getType()) {
-                case LINK:
-                    componentName = attachment.getLink().getTitle();
-                    componentUrl = attachment.getLink().getUrl().toExternalForm();
-                    break;
-                case DOC:
-                    componentName = attachment.getDoc().getTitle();
-                    componentUrl = attachment.getDoc().getUrl().toExternalForm();
-                    break;
-                case WALL:
-                    WallpostFull post = attachment.getWall();
-                    componentName = Lang.WALL_POST.toString();
-                    componentUrl = "https://vk.com/wall" + post.getFromId() + "_" + post.getId();
-                    break;
-                case AUDIO:
-                    componentName = Lang.AUDIO_ATTACHMENT.toString();
-                    componentUrl = attachment.getAudio().getUrl();
-                    break;
-                case PHOTO:
-                    componentName = Lang.PHOTO_ATTACHMENT.toString();
-                    componentUrl = Optional
-                            .ofNullable(ArrayUtils.getLastElement(attachment.getPhoto().getSizes()))
-                            .map(PhotoSizes::getUrl)
-                            .map(Object::toString)
-                            .orElse(null);
-                    break;
-                case STICKER:
-                    componentName = Lang.STICKER_ATTACHMENT.toString();
-                    componentUrl = Optional
-                            .ofNullable(ArrayUtils.getLastElement(attachment.getSticker().getImages()))
-                            .map(Image::getUrl)
-                            .map(Object::toString)
-                            .orElse(null);
-                    break;
-                case VIDEO:
-                    componentName = Lang.VIDEO_ATTACHMENT.toString();
-                    Video video = attachment.getVideo();
-                    componentUrl = "https://vk.com/video" + video.getOwnerId() + "_" + video.getId();
-                    break;
-                case AUDIO_MESSAGE:
-                    componentName = Lang.AUDIO_MESSAGE.toString();
-                    componentUrl = attachment.getAudioMessage().getLinkMp3().toExternalForm();
-                    break;
-                default:
-                    componentName = Lang.UNSUPORTED_ATTACHMENT.toString();
-                    componentUrl = null;
-            }
+            if (attachment.getType() == null) {
+                componentName = Lang.UNSUPORTED_ATTACHMENT.toString();
+                componentUrl = null;
+            } else
+                switch (attachment.getType()) {
+                    case LINK:
+                        componentName = attachment.getLink().getTitle();
+                        componentUrl = attachment.getLink().getUrl().toExternalForm();
+                        break;
+                    case DOC:
+                        componentName = attachment.getDoc().getTitle();
+                        componentUrl = attachment.getDoc().getUrl().toExternalForm();
+                        break;
+                    case WALL:
+                        WallpostFull post = attachment.getWall();
+                        componentName = Lang.WALL_POST.toString();
+                        componentUrl = "https://vk.com/wall" + post.getFromId() + "_" + post.getId();
+                        break;
+                    case AUDIO:
+                        componentName = Lang.AUDIO_ATTACHMENT.toString();
+                        componentUrl = attachment.getAudio().getUrl();
+                        break;
+                    case PHOTO:
+                        componentName = Lang.PHOTO_ATTACHMENT.toString();
+                        componentUrl = Optional
+                                .ofNullable(ArrayUtils.getLastElement(attachment.getPhoto().getSizes()))
+                                .map(PhotoSizes::getUrl)
+                                .map(Object::toString)
+                                .orElse(null);
+                        break;
+                    case STICKER:
+                        componentName = Lang.STICKER_ATTACHMENT.toString();
+                        componentUrl = Optional
+                                .ofNullable(ArrayUtils.getLastElement(attachment.getSticker().getImages()))
+                                .map(Image::getUrl)
+                                .map(Object::toString)
+                                .orElse(null);
+                        break;
+                    case VIDEO:
+                        componentName = Lang.VIDEO_ATTACHMENT.toString();
+                        Video video = attachment.getVideo();
+                        componentUrl = "https://vk.com/video" + video.getOwnerId() + "_" + video.getId();
+                        break;
+                    case AUDIO_MESSAGE:
+                        componentName = Lang.AUDIO_MESSAGE.toString();
+                        componentUrl = attachment.getAudioMessage().getLinkMp3().toExternalForm();
+                        break;
+                    default:
+                        componentName = Lang.UNSUPORTED_ATTACHMENT.toString();
+                        componentUrl = null;
+                }
             TextComponent attachmentComponent = new TextComponent(ChatBuilder.replace(
                     format, new SimpleMapBuilder<String, BaseComponent[]>()
                             .add("{name}", new BaseComponent[]{new TextComponent(componentName)})

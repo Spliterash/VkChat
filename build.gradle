@@ -51,6 +51,7 @@ subprojects {
 dependencies {
     compileOnly 'com.google.code.gson:gson:2.8.0'
 }
+
 String jarName = 'VkChat'
 File jarFolder = file("$rootDir/jars/")
 task createFatJar(type: Jar) {
@@ -68,61 +69,4 @@ task createFatJar(type: Jar) {
     }
     exclude('META-INF', 'META-INF/**')
     with jar
-}
-//Следующий код идёт после инициализации сабмодулей
-evaluationDependsOnChildren()
-
-
-buildscript {
-    repositories {
-        flatDir dirs: "$System.env.PROGUARD_HOME/lib"
-
-    }
-    dependencies {
-        classpath ':proguard:'
-    }
-}
-
-List<File> getProGuardDependencies() {
-    File libFolder = new File(rootProject.getProjectDir(), "libs")
-    delete libFolder
-    Set<ResolvedArtifact> compileOnly = new HashSet<>()
-    Set<ResolvedArtifact> runTime = new HashSet<>()
-    allprojects.each { pro ->
-        pro.configurations.compileOnly.resolvedConfiguration.resolvedArtifacts.each {
-            compileOnly.add(it)
-        }
-        pro.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each {
-            runTime.add(it)
-        }
-    }
-    compileOnly.removeIf({ a ->
-        if (a.id.componentIdentifier.displayName.contains("project :")) {
-            return true
-        } else {
-            return runTime
-                    .stream()
-                    .anyMatch({ rA ->
-                        a.name == rA.name
-                    })
-        }
-    })
-    return compileOnly.collect { a ->
-        a.getFile()
-    }
-}
-
-task copyDependencyes(type: Copy) {
-    from(getProGuardDependencies()) into new File(rootDir, 'dependencies')
-}
-
-import proguard.gradle.ProGuardTask
-
-task proguard(type: ProGuardTask, dependsOn: createFatJar) {
-    def libs = getProGuardDependencies()
-    println(libs)
-    configuration("conf.pro")
-    libraryjars libs
-    injars new File(jarFolder, jarName + ".jar")
-    outjars new File(jarFolder, jarName + "-minifed.jar")
 }

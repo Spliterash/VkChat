@@ -251,8 +251,8 @@ public class VkChat {
                         id.getId()
                                 .toString()
                                 .equals(s) ||
-                        id.getDomain()
-                                .equals(s));
+                                id.getDomain()
+                                        .equals(s));
     }
 
     private List<String> getAdmins() {
@@ -336,12 +336,12 @@ public class VkChat {
                         commandReply = String.join("\n", s);
                     sendMessage(message.getPeerId(), commandReply);
                 }));
-            } else if (text.startsWith("verify ")) {
+            } else if (text.toLowerCase().startsWith("verify ")) {
                 if (sender == null)
                     return;
                 String code = text.substring(7);
                 verifyPeer(code, message.getPeerId());
-            } else if (text.startsWith("link ")) {
+            } else if (text.toLowerCase().startsWith("link ")) {
                 String code = text.substring(5);
                 linkUser(code, sender, message.getPeerId());
             } else if (VkUtils.isConversation(message.getPeerId())) {

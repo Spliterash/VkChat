@@ -1,25 +1,5 @@
-import groovy.transform.Field
-
 rootProject.name = 'VkChat'
-@Field
-String[] blacklist = ['src', 'build']
 
-void includeFolder(File mainFolder) {
-    for (File folder : mainFolder.listFiles(new FileFilter() {
-        @Override
-        boolean accept(File pathname) {
-            return pathname.isDirectory()
-        }
-    })) {
-        File gradleFile = new File(folder, "build.gradle")
-        if (gradleFile.isFile()) {
-            include(folder.getName())
-        }
-        if (!folder.getName().startsWith(".") && !blacklist.contains(folder.getName()))
-            includeFolder(folder)
-
-    }
-}
-
-includeFolder(rootProject.getProjectDir())
-
+include "BungeeLauncher"
+include "BukkitLauncher"
+include "SpongeLauncher"
