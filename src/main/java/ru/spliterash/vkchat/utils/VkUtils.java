@@ -143,8 +143,10 @@ public class VkUtils {
         }
 
         TextComponent component = new TextComponent(TextComponent.fromLegacyText(title));
-        component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover));
-        component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://vk.com/id" + user.getId()));
+        if (VkChat.getInstance().isVkLinks()) {
+            component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover));
+            component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://vk.com/id" + user.getId()));
+        }
         return component;
     }
 

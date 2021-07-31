@@ -10,6 +10,7 @@
 *.map
 .idea/*
 .idea
+.run
 ProGuard/
 dependencies/
 # Gradle and Maven with auto-import
