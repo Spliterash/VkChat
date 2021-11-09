@@ -1,10 +1,12 @@
--libraryjars 'C:\Program Files\Java\jre1.8.0_271\lib\rt.jar'
+-libraryjars 'C:\Program Files\Java\jre1.8.0_301\lib\rt.jar'
 -printmapping 'VkChat.map'
 -keepattributes *Annotation*,SourceFile,LineNumberTable,Signature
 #-dontnote
 -dontwarn org.slf4j.**
 -dontwarn javax.**
 -dontwarn org.apache.**
+-dontwarn **
+
 -optimizationpasses 5
 -overloadaggressively
 # Для тестов
@@ -21,7 +23,7 @@
 -keep class * extends ru.spliterash.vkchat.wrappers.Launcher
 # Сохраняем всё моё, разрешая запутывание
 -keepclassmembers,allowobfuscation class ru.spliterash.** { *; }
-
+-keep class com.vk.api.sdk.httpclient.** { *; }
 
 -keep class sun.misc.Unsafe { *; }
 

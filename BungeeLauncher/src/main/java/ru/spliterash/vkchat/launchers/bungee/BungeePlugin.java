@@ -4,6 +4,7 @@ import lombok.Getter;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
+import ru.spliterash.vkchat.HttpClientFactory;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.launchers.bungee.listeners.BungeeJoinLeaveLister;
 import ru.spliterash.vkchat.launchers.bungee.listeners.BungeeMessageListener;
@@ -33,7 +34,7 @@ public class BungeePlugin extends Plugin implements Launcher {
         saveDefaultConfig();
         vkConfig = wrapConfig(new File(getDataFolder(), "config.yml"));
         getProxy().getPluginManager().registerListener(this, new TabCompleteListener());
-        VkChat.onEnable(this);
+        VkChat.onEnable(this, HttpClientFactory.get());
     }
 
     @Override

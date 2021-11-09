@@ -12,7 +12,6 @@ import ru.spliterash.vkchat.VkChat;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Type;
-import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
 
@@ -117,13 +116,12 @@ public abstract class ApiRequest<T> {
             throw new ClientException("Internal API server error. Wrong status code: " + response.getStatusCode() + ". Content: " + response.getContent());
         }
 
-        Map<String, String> headers = response.getHeaders();
+        String contentType = response.getHeader("Content-Type");
 
-        if (!headers.containsKey("Content-Type")) {
+        if (contentType == null) {
             throw new ClientException("No content type header");
         }
 
-        String contentType = headers.get("Content-Type");
 
         if (!contentType.contains("application/json") && !contentType.contains("text/javascript")) {
             throw new ClientException("Invalid content type");

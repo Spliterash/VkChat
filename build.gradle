@@ -1,5 +1,8 @@
 // Настройки для всех проектов
+
+
 import org.apache.tools.ant.filters.ReplaceTokens
+import proguard.gradle.ProGuardTask
 
 allprojects {
 
@@ -18,7 +21,7 @@ allprojects {
     }
 
     group = 'ru.spliterash'
-    version = '3.0.5'
+    version = '3.0.6'
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
@@ -32,9 +35,6 @@ allprojects {
 }
 
 subprojects {
-    dependencies {
-        compileOnly parent
-    }
     jar {
         from {
             def projectClasses = configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
@@ -49,26 +49,32 @@ subprojects {
 }
 
 dependencies {
+    compile project(":http:shared")
     compileOnly 'com.google.code.gson:gson:2.8.0'
 }
 String jarName = 'VkChat'
 File jarFolder = file("$rootDir/jars/")
 task createFatJar(type: Jar) {
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
     dependsOn allprojects.build
     destinationDirectory = jarFolder
     archiveFileName = jarName + ".jar"
     from {
-        def projectClasses = configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-        def subProject = subprojects.collect { p ->
+        return allprojects.collect { p ->
             p.jar.outputs.files.getFiles().collect {
                 it.isDirectory() ? it : zipTree(it)
             }
         }
-        return projectClasses + subProject
     }
     exclude('META-INF', 'META-INF/**')
     with jar
 }
+build {
+    dependsOn ":http:jdk11:build"
+    dependsOn ":http:jdk8:build"
+}
+
+
 //Следующий код идёт после инициализации сабмодулей
 evaluationDependsOnChildren()
 
@@ -116,7 +122,6 @@ task copyDependencyes(type: Copy) {
     from(getProGuardDependencies()) into new File(rootDir, 'dependencies')
 }
 
-import proguard.gradle.ProGuardTask
 
 task proguard(type: ProGuardTask, dependsOn: createFatJar) {
     def libs = getProGuardDependencies()

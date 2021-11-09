@@ -1,10 +1,10 @@
 package ru.spliterash.vkchat;
 
+import com.vk.api.sdk.client.TransportClient;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
-import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.groups.GroupFull;
 import com.vk.api.sdk.objects.messages.ForeignMessage;
 import com.vk.api.sdk.objects.messages.Message;
@@ -78,9 +78,9 @@ public class VkChat {
      * @param launcher Лаунчер, который запускает собсна, может быть спигот, банжа или Sponge
      *                 Можете вообще свой написать, если есть на что
      */
-    private VkChat(@NotNull Launcher launcher) {
+    private VkChat(@NotNull Launcher launcher, TransportClient client) {
         this.launcher = launcher;
-        this.executor = new VkApiClient(HttpTransportClient.getInstance());
+        this.executor = new VkApiClient(client);
     }
 
     public static VkApiClient getExecutor() {
@@ -100,10 +100,10 @@ public class VkChat {
         return locale.getLanguage();
     }
 
-    public static void onEnable(Launcher launcher) {
+    public static void onEnable(Launcher launcher, TransportClient client) {
         launcher.runTaskAsync(() -> {
             try {
-                instance = new VkChat(launcher);
+                instance = new VkChat(launcher, client);
                 SendingMessage.start();
                 instance.start(true);
             } catch (ClientException | IOException e) {

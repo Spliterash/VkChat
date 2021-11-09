@@ -5,5 +5,8 @@ repositories {
     }
 }
 dependencies {
+    compile rootProject
+    compile project(":http")
+
     compileOnly 'org.spongepowered:spongeapi:7.2.0'
 }

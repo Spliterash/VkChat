@@ -1,0 +1,9 @@
+def shared = project(":http:shared");
+(allprojects.findAll() - shared).each {
+    it.dependencies {
+        compile shared
+    }
+}
+
+dependencies {
+}

@@ -1,7 +1,6 @@
 package ru.spliterash.vkchat.launchers.sponge;
 
 import com.google.inject.Inject;
-import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.config.ConfigDir;
@@ -11,6 +10,7 @@ import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.scheduler.Task;
+import ru.spliterash.vkchat.HttpClientFactory;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.launchers.sponge.listeners.SpongeDieListener;
 import ru.spliterash.vkchat.launchers.sponge.listeners.SpongeJoinLeaveListener;
@@ -57,7 +57,7 @@ public class SpongePlugin implements Launcher {
     public void onServerStart(GameStartedServerEvent event) {
         saveDefaultConfig();
         config = wrapConfig(new File(getDataFolder(), "config.yml"));
-        VkChat.onEnable(this);
+        VkChat.onEnable(this, HttpClientFactory.get());
     }
 
     @Listener

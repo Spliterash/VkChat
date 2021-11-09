@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+import ru.spliterash.vkchat.HttpClientFactory;
 import ru.spliterash.vkchat.VkChat;
 import ru.spliterash.vkchat.launchers.bukkit.listeners.BukkitDieListener;
 import ru.spliterash.vkchat.launchers.bukkit.listeners.BukkitJoinLeaveListener;
@@ -32,7 +33,7 @@ public class BukkitPlugin extends JavaPlugin implements Launcher {
         instance = this;
         saveDefaultConfig();
         vkConfig = wrapConfig(new File(getDataFolder(), "config.yml"));
-        VkChat.onEnable(this);
+        VkChat.onEnable(this, HttpClientFactory.get()); //Я всё понимаю, но переписывать всё очень долго, поэтому такой вот некрасивый костыль из модуля
     }
 
     @Getter

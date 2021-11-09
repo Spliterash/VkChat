@@ -2,6 +2,8 @@ repositories {
     maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 dependencies {
-    compileOnly group: 'net.md-5', name: 'bungeecord-api', version: '1.16-R0.3'
+    compile rootProject
+    compile project(":http")
 
+    compileOnly group: 'net.md-5', name: 'bungeecord-api', version: '1.16-R0.3'
 }

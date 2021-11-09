@@ -3,13 +3,9 @@ package com.vk.api.sdk.httpclient;
 import com.vk.api.sdk.client.ClientResponse;
 import com.vk.api.sdk.client.TransportClient;
 import lombok.Getter;
-import ru.spliterash.vkchat.VkChat;
-import ru.spliterash.vkchat.utils.StringUtils;
 import sun.net.www.protocol.https.HttpsURLConnectionImpl;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.net.CookieHandler;
 import java.net.HttpURLConnection;
@@ -19,19 +15,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class HttpTransportClient implements TransportClient {
+public class JDK8HttpClient implements TransportClient {
 
-    private static final String FORM_CONTENT_TYPE = "application/x-www-form-urlencoded";
-    private static final String CONTENT_TYPE_HEADER = "Content-Type";
-    private static final String USER_AGENT = "Java VK SDK/1.0";
-
-    private static final int DEFAULT_RETRY_ATTEMPTS_NETWORK_ERROR_COUNT = 3;
-    private static final int FULL_CONNECTION_TIMEOUT_S = 60;
-    private static final int SOCKET_TIMEOUT_MS = FULL_CONNECTION_TIMEOUT_S * 1000;
     @Getter
-    private static final HttpTransportClient instance = new HttpTransportClient();
+    private static final JDK8HttpClient instance = new JDK8HttpClient();
     /**
      * Поскольку вк шлёт куки, надо создать пустой хандлер
      * А потом через рефлексию его заменять
@@ -89,7 +79,7 @@ public class HttpTransportClient implements TransportClient {
                 connection.getResponseCode();
                 return;
             } catch (IOException ex) {
-                VkChat.getLogger().warning(ex.getLocalizedMessage());
+                Logger.getGlobal().warning(ex.getLocalizedMessage());
             }
         }
         throw new RuntimeException("Retry reached");
@@ -98,12 +88,12 @@ public class HttpTransportClient implements TransportClient {
     private ClientResponse getResponse(HttpURLConnection connection) throws IOException {
         return new ClientResponse(
                 connection.getResponseCode(),
-                StringUtils.getString(connection.getInputStream()),
+                getString(connection.getInputStream()),
                 connection.getHeaderFields()
                         .entrySet()
                         .stream()
                         .filter(e -> e.getValue().size() > 0)
-                        .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get(0)))
+                        .collect(Collectors.toMap(e->e.getKey().toLowerCase(), e -> e.getValue().get(0)))
         );
     }
 
@@ -138,5 +128,20 @@ public class HttpTransportClient implements TransportClient {
     @Override
     public ClientResponse post(String url, String filename, File file) {
         throw new RuntimeException("Я всё равно не использую эти методы");
+    }
+
+    public String getString(InputStream stream) throws IOException {
+        final int bufferSize = 1024;
+        final char[] buffer = new char[bufferSize];
+        final StringBuilder out = new StringBuilder();
+        try (Reader in = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
+            while (true) {
+                int rsz = in.read(buffer, 0, buffer.length);
+                if (rsz < 0)
+                    break;
+                out.append(buffer, 0, rsz);
+            }
+            return out.toString();
+        }
     }
 }
